@@ -19,28 +19,28 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FastSIMD\FastSIMD.cpp" />
-    <ClCompile Include="FastSIMD\FastSIMD_AVX2.cpp" />
-    <ClCompile Include="FastSIMD\FastSIMD_SSE2.cpp" />
+    <ClCompile Include="..\FastSIMD\FastSIMD.cpp" />
+    <ClCompile Include="..\FastSIMD\FastSIMD_Level_AVX2.cpp" />
+    <ClCompile Include="..\FastSIMD\FastSIMD_Level_SSE2.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Example.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FastSIMD\FastSIMD.h" />
-    <ClInclude Include="FastSIMD\FastSIMD_Config.h" />
-    <ClInclude Include="FastSIMD\internal\CPPBuilder.h" />
-    <ClInclude Include="FastSIMD\internal\DynamicIncluder.h" />
-    <ClInclude Include="FastSIMD\simdtypes\AVX2.h" />
-    <ClInclude Include="FastSIMD\simdtypes\Base.h" />
-    <ClInclude Include="FastSIMD\simdtypes\Scalar.h" />
-    <ClInclude Include="FastSIMD\simdtypes\SSE2.h" />
-    <ClInclude Include="FastSIMD\simdtypes\TypeList.h" />
+    <ClInclude Include="..\FastSIMD\FastSIMD.h" />
+    <ClInclude Include="..\FastSIMD\FastSIMD_BuildList.h" />
+    <ClInclude Include="..\FastSIMD\FastSIMD_Config.h" />
+    <ClInclude Include="..\FastSIMD\internal\CPPBuilder.h" />
+    <ClInclude Include="..\FastSIMD\internal\DynamicIncluder.h" />
+    <ClInclude Include="..\FastSIMD\simdtypes\AVX2.h" />
+    <ClInclude Include="..\FastSIMD\simdtypes\Base.h" />
+    <ClInclude Include="..\FastSIMD\simdtypes\Scalar.h" />
+    <ClInclude Include="..\FastSIMD\simdtypes\SSE2.h" />
+    <ClInclude Include="..\FastSIMD\simdtypes\TypeList.h" />
     <ClInclude Include="Example.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="FastSIMD\FastSIMD_BuildList.h" />
-    <None Include="FastSIMD\FS_Class.inc" />
-    <None Include="FastSIMD\FS_Source.inc" />
+    <None Include="..\FastSIMD\FS_Class.inc" />
+    <None Include="..\FastSIMD\FS_Source.inc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

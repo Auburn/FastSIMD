@@ -24,62 +24,62 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FastSIMD\FastSIMD.cpp">
-      <Filter>FastSIMD</Filter>
-    </ClCompile>
-    <ClCompile Include="FastSIMD\FastSIMD_AVX2.cpp">
-      <Filter>FastSIMD</Filter>
-    </ClCompile>
-    <ClCompile Include="FastSIMD\FastSIMD_SSE2.cpp">
-      <Filter>FastSIMD</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Example.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\FastSIMD\FastSIMD.cpp">
+      <Filter>FastSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\FastSIMD\FastSIMD_Level_AVX2.cpp">
+      <Filter>FastSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\FastSIMD\FastSIMD_Level_SSE2.cpp">
+      <Filter>FastSIMD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FastSIMD\FastSIMD.h">
-      <Filter>FastSIMD</Filter>
-    </ClInclude>
-    <ClInclude Include="FastSIMD\simdtypes\AVX2.h">
-      <Filter>FastSIMD\SIMD Types</Filter>
-    </ClInclude>
-    <ClInclude Include="FastSIMD\simdtypes\Base.h">
-      <Filter>FastSIMD\SIMD Types</Filter>
-    </ClInclude>
-    <ClInclude Include="FastSIMD\simdtypes\Scalar.h">
-      <Filter>FastSIMD\SIMD Types</Filter>
-    </ClInclude>
-    <ClInclude Include="FastSIMD\simdtypes\SSE2.h">
-      <Filter>FastSIMD\SIMD Types</Filter>
-    </ClInclude>
-    <ClInclude Include="FastSIMD\internal\CPPBuilder.h">
-      <Filter>FastSIMD\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="FastSIMD\simdtypes\TypeList.h">
-      <Filter>FastSIMD\SIMD Types</Filter>
-    </ClInclude>
-    <ClInclude Include="FastSIMD\internal\DynamicIncluder.h">
-      <Filter>FastSIMD\Internal</Filter>
-    </ClInclude>
     <ClInclude Include="Example.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="FastSIMD\FastSIMD_Config.h">
+    <ClInclude Include="..\FastSIMD\simdtypes\AVX2.h">
+      <Filter>FastSIMD\SIMD Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FastSIMD\simdtypes\Base.h">
+      <Filter>FastSIMD\SIMD Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FastSIMD\simdtypes\Scalar.h">
+      <Filter>FastSIMD\SIMD Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FastSIMD\simdtypes\SSE2.h">
+      <Filter>FastSIMD\SIMD Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FastSIMD\simdtypes\TypeList.h">
+      <Filter>FastSIMD\SIMD Types</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FastSIMD\internal\CPPBuilder.h">
+      <Filter>FastSIMD\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FastSIMD\internal\DynamicIncluder.h">
+      <Filter>FastSIMD\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FastSIMD\FastSIMD.h">
+      <Filter>FastSIMD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FastSIMD\FastSIMD_BuildList.h">
+      <Filter>FastSIMD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FastSIMD\FastSIMD_Config.h">
       <Filter>FastSIMD</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="FastSIMD\FS_Class.inc">
+    <None Include="..\FastSIMD\FS_Class.inc">
       <Filter>FastSIMD</Filter>
     </None>
-    <None Include="FastSIMD\FS_Source.inc">
-      <Filter>FastSIMD</Filter>
-    </None>
-    <None Include="FastSIMD\FastSIMD_BuildList.h">
+    <None Include="..\FastSIMD\FS_Source.inc">
       <Filter>FastSIMD</Filter>
     </None>
   </ItemGroup>
