@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <iostream>
 
-#include "FastSIMD/FastSIMD.h"
+#include "../FastSIMD/FastSIMD.h"
 #include "Example.h"
 
 int main()

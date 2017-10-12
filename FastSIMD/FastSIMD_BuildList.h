@@ -6,6 +6,6 @@
 #endif
 
 
-#include FASTSIMD_INCLUDE(../Example)
+#include FASTSIMD_INCLUDE(../Example/Example)
 FASTSIMD_BUILD_CLASS( Example )
 

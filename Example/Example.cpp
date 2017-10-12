@@ -1,5 +1,5 @@
 
-#include "FastSIMD/FS_Source.inc"
+#include "../FastSIMD/FS_Source.inc"
 #include "Example.h"
 
 template<typename T>
