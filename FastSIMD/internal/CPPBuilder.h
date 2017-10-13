@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../simdtypes/TypeList.h"
+#include "../FastSIMD_Config.h"
 
 #define FASTSIMD_BUILD_CLASS(_CLASS) \
 template FS_CLASS(_CLASS) <FS_SIMD_CLASS>;

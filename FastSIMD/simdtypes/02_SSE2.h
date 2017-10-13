@@ -7,6 +7,16 @@
 struct SSE2_f32x4
 {
     FS_VECTOR_TYPE_SET(SSE2_f32x4, __m128);
+    
+    FS_INLINE static __m128 CONST(float I0, float I1, float I2, float I3)
+    {
+        static const union
+        {
+            float i[4];
+            __m128 v;
+        } u = { { I0, I1, I2, I3 } };
+        return u.v;
+    }
 
     FS_INLINE SSE2_f32x4& operator+=(const SSE2_f32x4& rhs)
     {
@@ -40,14 +50,14 @@ struct SSE2_i32x4
 {
     FS_VECTOR_TYPE_SET(SSE2_i32x4, __m128i);
 
-    template <int32_t I>
+    template <int32_t I0, int32_t I1, int32_t I2, int32_t I3>
     FS_INLINE static __m128i CONST()
     {
         static const union
         {
             int32_t i[4];
             __m128i v;
-        } u = { { I,I,I,I } };
+        } u = { { I0, I1, I2, I3 } };
         return u.v;
     }
 
@@ -110,28 +120,28 @@ class FastSIMD_SSE2
 public:
     static const FastSIMD::Level SIMD_Level = FastSIMD::Level_SSE2;
 
-    typedef SSE2_f32x4 v_f32;
-    typedef SSE2_i32x4 v_i32;
+    typedef SSE2_f32x4 float32_v;
+    typedef SSE2_i32x4 int32_v;
 
-    typedef const v_f32& v_f32_arg;
-    typedef const v_i32& v_i32_arg;
+    typedef const float32_v& float32_v_arg;
+    typedef const int32_v&   int32_v_arg;
 
-    FS_INLINE static v_f32 Set1_f32(float a)
+    FS_INLINE static float32_v SetAll_f32(float a)
     {
         return _mm_set1_ps(a);
     }
 
-    FS_INLINE static v_i32 Set1_i32(int32_t a)
+    FS_INLINE static int32_v SetAll_i32(int32_t a)
     {
         return _mm_set1_epi32(a);
     }
 
-    FS_INLINE static void Store_f32(float* p, v_f32_arg a)
+    FS_INLINE static void Store_f32(float* p, float32_v_arg a)
     {
         return _mm_store_ps(p, a);
     }
 
-    FS_INLINE static void Store_i32(void* p, v_i32_arg a)
+    FS_INLINE static void Store_i32(void* p, int32_v_arg a)
     {
         return _mm_store_si128(static_cast<__m128i*>(p), a);
     }

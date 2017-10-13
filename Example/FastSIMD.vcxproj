@@ -31,10 +31,11 @@
     <ClInclude Include="..\FastSIMD\FastSIMD_Config.h" />
     <ClInclude Include="..\FastSIMD\internal\CPPBuilder.h" />
     <ClInclude Include="..\FastSIMD\internal\DynamicIncluder.h" />
-    <ClInclude Include="..\FastSIMD\simdtypes\AVX2.h" />
+    <ClInclude Include="..\FastSIMD\simdtypes\00_Scalar.h" />
+    <ClInclude Include="..\FastSIMD\simdtypes\02_SSE2.h" />
+    <ClInclude Include="..\FastSIMD\simdtypes\08_AVX2.h" />
     <ClInclude Include="..\FastSIMD\simdtypes\Base.h" />
-    <ClInclude Include="..\FastSIMD\simdtypes\Scalar.h" />
-    <ClInclude Include="..\FastSIMD\simdtypes\SSE2.h" />
+    <ClInclude Include="..\FastSIMD\simdtypes\FunctionList.h" />
     <ClInclude Include="..\FastSIMD\simdtypes\TypeList.h" />
     <ClInclude Include="Example.h" />
   </ItemGroup>

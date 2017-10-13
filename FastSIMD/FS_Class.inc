@@ -29,10 +29,10 @@ virtual _FUNC = 0
 #define FASTSIMD_CLASS_DEFINITION(_CLASS) \
 template<typename FS_CLASS_T> class FS_CLASS(_CLASS) : public _CLASS
 
-#define FASTSIMD_CLASS_INIT()       \
-typedef typename FS_CLASS_T FS;     \
-typedef typename FS::v_f32  FS_f32; \
-typedef typename FS::v_i32  FS_i32; \
+#define FASTSIMD_CLASS_INIT()             \
+typedef typename FS_CLASS_T FS;           \
+typedef typename FS::float32_v float32_v; \
+typedef typename FS::int32_v   int32_v;   \
 
 #define FS_FUNC_EXTERNAL(_FUNC) \
 inline _FUNC
