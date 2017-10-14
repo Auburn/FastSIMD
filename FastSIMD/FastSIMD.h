@@ -24,6 +24,9 @@ namespace FastSIMD
     template<typename T>
     T* NewSIMDClass();
 
+    template<typename T>
+    T* NewSIMDClass(Level simdLevel);
+
     Level GetSIMDLevel();
 
 };

@@ -1,11 +1,13 @@
 #pragma once
-#include "internal/DynamicIncluder.h"
 
 #ifndef FASTSIMD_BUILD_CLASS
 #error Do not include this file
 #endif
 
-
-#include FASTSIMD_INCLUDE( ../Example/Example )
+#ifdef FASTSIMD_INCLUDE_HEADER_ONLY
+#include "../Example/Example.h"
+#else
+#include "../Example/Example.cpp"
+#endif
 FASTSIMD_BUILD_CLASS( Example )
 

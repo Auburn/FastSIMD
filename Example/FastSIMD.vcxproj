@@ -104,6 +104,7 @@
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <Distributable>false</Distributable>
       <MinimalRebuild>false</MinimalRebuild>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -115,6 +116,7 @@
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <Distributable>false</Distributable>
       <MinimalRebuild>false</MinimalRebuild>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -127,6 +129,7 @@
       <PreprocessToFile>false</PreprocessToFile>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <Distributable>false</Distributable>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -143,6 +146,7 @@
       <PreprocessToFile>false</PreprocessToFile>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <Distributable>false</Distributable>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

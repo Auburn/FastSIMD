@@ -163,22 +163,26 @@ FastSIMD::Level FastSIMD::GetSIMDLevel()
     return simdLevel;
 }
 
+
+#define FASTSIMD_BUILD_CLASS(_CLASS)                      \
+template<>                                                \
+_CLASS* FastSIMD::NewSIMDClass<_CLASS>( Level simdLevel ) \
+{                                                         \
+    FASTSIMD_TRY_LEVEL( _CLASS, FastSIMD_SSE2 )           \
+                                                          \
+    return new FS_CLASS( _CLASS )<FastSIMD_Scalar>;       \
+}                                                         \
+template<>                                                \
+_CLASS* FastSIMD::NewSIMDClass<_CLASS>()                  \
+{                                                         \
+    Level simdLevel = GetSIMDLevel();                     \
+                                                          \
+    return NewSIMDClass<_CLASS>(simdLevel);               \
+}     
+
+
 #define FS_SIMD_CLASS FastSIMD_Scalar
-#define FASTSIMD_INCLUDE_EXT FASTSIMD_INCLUDE_HEADER_EXT
-
+#define FASTSIMD_INCLUDE_HEADER_ONLY
 #define FASTSIMD_TRY_LEVEL(_CLASS, _LEVEL) if (simdLevel >= _LEVEL::SIMD_Level) return new FS_CLASS(_CLASS)<_LEVEL>;
-
-#define FS_CLASS(_CLASS) _CLASS ## _SIMD
-
-#define FASTSIMD_BUILD_CLASS(_CLASS)                 \
-template<>                                           \
-_CLASS* FastSIMD::NewSIMDClass<_CLASS>()             \
-{                                                    \
-    int simdLevel = GetSIMDLevel();                  \
-                                                     \
-    FASTSIMD_TRY_LEVEL(_CLASS, FastSIMD_SSE2)        \
-                                                     \
-    return new FS_CLASS(_CLASS)<FastSIMD_Scalar>;    \
-}                                                    
 
 #include "FastSIMD_BuildList.h"

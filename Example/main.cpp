@@ -6,15 +6,29 @@
 
 int main()
 {
-    int intArray[64];
+    const int size = 16;
+    int data0[size];
+    int data1[size];
+
+    for ( int i = 0; i < size; i++ )
+    {
+        data0[i] = i;
+        data1[i] = i * 2;
+    }
 
     Example* test = FastSIMD::NewSIMDClass<Example>();
 
-    test->DoStuff(&intArray[0]);
+    // Force scalar
+    //Example* test = FastSIMD::NewSIMDClass<Example>(FastSIMD::Level_Scalar);
 
-    printf("%d", intArray[0]);
+    test->DoArray(&data0[0], &data1[0], size);
+    
+    for ( int i = 0; i < size; i++ )
+    {
+        printf("%d, ", data0[i]);
+    }
+    
+    std::cin.ignore();
 
-    //std::cin.ignore();
-
-	return intArray[0];
+	return 0;
 }

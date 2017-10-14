@@ -13,9 +13,10 @@ FASTSIMD_CLASS_DEFINITION(Example)
 public:
     FASTSIMD_CLASS_INIT()
 
-    FS_FUNC_EXTERNAL(void DoStuff(int* data));
+    FS_FUNC_EXTERNAL( void DoStuff( int* data ) );
 
-    //FS_INTERNAL(FS_CLASS(Noise)() {});
+    FS_FUNC_EXTERNAL( void DoArray( int* data0, int* data1, int size ) );
+
 };
 
 #endif

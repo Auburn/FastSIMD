@@ -31,8 +31,8 @@ template<typename FS_CLASS_T> class FS_CLASS(_CLASS) : public _CLASS
 
 #define FASTSIMD_CLASS_INIT()             \
 typedef typename FS_CLASS_T FS;           \
-typedef typename FS::float32_v float32_v; \
-typedef typename FS::int32_v   int32_v;   \
+typedef typename FS::float32v float32v; \
+typedef typename FS::int32v   int32v;   \
 
 #define FS_FUNC_EXTERNAL(_FUNC) \
 inline _FUNC

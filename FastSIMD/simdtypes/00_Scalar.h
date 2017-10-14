@@ -7,30 +7,41 @@ class FastSIMD_Scalar
 {
 public:
     static const FastSIMD::Level SIMD_Level = FastSIMD::Level_Scalar;
+    static const int32_t VectorBits = 32;
 
-    typedef float_t float32_v;
-    typedef int32_t int32_v;
+    typedef float_t float32v;
+    typedef int32_t int32v;
 
-    typedef const float32_v& float32_v_arg;
-    typedef const int32_v&   int32_v_arg;
+    typedef const float32v& float32v_arg;
+    typedef const int32v&   int32v_arg;
 
-    static float32_v SetAll_f32( float_t a )
+    FS_INLINE static float32v SetAll_f32( float a )
     {
         return a;
     }
 
-    static int32_v SetAll_i32( int32_t a )
+    FS_INLINE static int32v SetAll_i32( int32_t a )
     {
         return a;
     }
 
-    static void Store_f32( float* p, float32_v_arg a )
+    FS_INLINE static float32v Load_f32( void* p )
     {
-        *p = a;
+        return *reinterpret_cast<float32v*>(p);
     }
 
-    static void Store_i32( void* p, int32_v_arg a )
+    FS_INLINE static int32v Load_i32( void* p )
     {
-        *static_cast<int32_v*>(p) = a;
+        return *reinterpret_cast<int32v*>(p);
+    }
+
+    FS_INLINE static void Store_f32( void* p, float32v_arg a )
+    {
+        *reinterpret_cast<float32v*>(p) = a;
+    }
+
+    FS_INLINE static void Store_i32( void* p, int32v_arg a )
+    {
+        *reinterpret_cast<int32v*>(p) = a;
     }
 };
