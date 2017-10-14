@@ -166,20 +166,20 @@ FastSIMD::Level FastSIMD::GetSIMDLevel()
 #define FASTSIMD_TRY_LEVEL(_CLASS, _LEVEL) \
 if (simdLevel >= _LEVEL::SIMD_Level) return new FS_CLASS(_CLASS)<_LEVEL>;
 
-#define FASTSIMD_BUILD_CLASS(_CLASS)                            \
-template<>                                                      \
-_CLASS* FastSIMD::NewSIMDClass<_CLASS>( Level simdLevel )       \
-{                                                               \
-    FASTSIMD_TRY_LEVEL( _CLASS, FastSIMD_SSE2 )                 \
-                                                                \
-    return new FS_CLASS( _CLASS )<FASTSIMD_FALLBACK_SIMD_LEVEL>;\
-}                                                               \
-template<>                                                      \
-_CLASS* FastSIMD::NewSIMDClass<_CLASS>()                        \
-{                                                               \
-    Level simdLevel = GetSIMDLevel();                           \
-                                                                \
-    return NewSIMDClass<_CLASS>(simdLevel);                     \
+#define FASTSIMD_BUILD_CLASS(_CLASS)                             \
+template<>                                                       \
+_CLASS* FastSIMD::NewSIMDClass<_CLASS>( Level simdLevel )        \
+{                                                                \
+    FASTSIMD_TRY_LEVEL( _CLASS, FastSIMD_SSE2 )                  \
+                                                                 \
+    return new FS_CLASS( _CLASS )<FASTSIMD_FALLBACK_SIMD_LEVEL>; \
+}                                                                \
+template<>                                                       \
+_CLASS* FastSIMD::NewSIMDClass<_CLASS>()                         \
+{                                                                \
+    Level simdLevel = GetSIMDLevel();                            \
+                                                                 \
+    return NewSIMDClass<_CLASS>(simdLevel);                      \
 }     
 
 

@@ -1,6 +1,3 @@
-#pragma once
-
-
 #include "Example.h"
 
 template<typename T>// Generic function, used if no specialised function found
