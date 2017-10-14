@@ -2,7 +2,7 @@
 #include <intrin.h>
 
 #include "FastSIMD.h"
-#include "SIMDTypes/TypeList.h"
+#include "Internal/TypeList.h"
 
 static FastSIMD::Level simdLevel = FastSIMD::Level_Null; 
 
@@ -163,26 +163,27 @@ FastSIMD::Level FastSIMD::GetSIMDLevel()
     return simdLevel;
 }
 
+#define FASTSIMD_TRY_LEVEL(_CLASS, _LEVEL) \
+if (simdLevel >= _LEVEL::SIMD_Level) return new FS_CLASS(_CLASS)<_LEVEL>;
 
-#define FASTSIMD_BUILD_CLASS(_CLASS)                      \
-template<>                                                \
-_CLASS* FastSIMD::NewSIMDClass<_CLASS>( Level simdLevel ) \
-{                                                         \
-    FASTSIMD_TRY_LEVEL( _CLASS, FastSIMD_SSE2 )           \
-                                                          \
-    return new FS_CLASS( _CLASS )<FastSIMD_Scalar>;       \
-}                                                         \
-template<>                                                \
-_CLASS* FastSIMD::NewSIMDClass<_CLASS>()                  \
-{                                                         \
-    Level simdLevel = GetSIMDLevel();                     \
-                                                          \
-    return NewSIMDClass<_CLASS>(simdLevel);               \
+#define FASTSIMD_BUILD_CLASS(_CLASS)                            \
+template<>                                                      \
+_CLASS* FastSIMD::NewSIMDClass<_CLASS>( Level simdLevel )       \
+{                                                               \
+    FASTSIMD_TRY_LEVEL( _CLASS, FastSIMD_SSE2 )                 \
+                                                                \
+    return new FS_CLASS( _CLASS )<FASTSIMD_FALLBACK_SIMD_LEVEL>;\
+}                                                               \
+template<>                                                      \
+_CLASS* FastSIMD::NewSIMDClass<_CLASS>()                        \
+{                                                               \
+    Level simdLevel = GetSIMDLevel();                           \
+                                                                \
+    return NewSIMDClass<_CLASS>(simdLevel);                     \
 }     
 
 
-#define FS_SIMD_CLASS FastSIMD_Scalar
+#define FS_SIMD_CLASS
 #define FASTSIMD_INCLUDE_HEADER_ONLY
-#define FASTSIMD_TRY_LEVEL(_CLASS, _LEVEL) if (simdLevel >= _LEVEL::SIMD_Level) return new FS_CLASS(_CLASS)<_LEVEL>;
 
 #include "FastSIMD_BuildList.h"

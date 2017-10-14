@@ -1,4 +1,6 @@
-#include "../FastSIMD/FS_Source.inc"
+#pragma once
+
+
 #include "Example.h"
 
 template<typename T>// Generic function, used if no specialised function found
@@ -8,6 +10,7 @@ void FS_CLASS( Example )<T>::DoStuff( int* data )
 
     FS_Store_i32( data, a );
 }
+
 
 template<> // Different function for level SSE2 or AVX2
 void FS_CLASS( Example )<FS_MULTI_TEMPLATE( FastSIMD_AVX2, FastSIMD_SSE2 )>::DoStuff( int* data )
@@ -20,7 +23,6 @@ void FS_CLASS( Example )<FS_MULTI_TEMPLATE( FastSIMD_AVX2, FastSIMD_SSE2 )>::DoS
 
     FS_Store_i32( data, a );
 }
-
 
 template<typename T>
 void FS_CLASS( Example )<T>::DoArray( int* data0, int* data1, int size )
@@ -37,5 +39,3 @@ void FS_CLASS( Example )<T>::DoArray( int* data0, int* data1, int size )
         FS_Store_i32( &data0[i], a );
     }
 }
-
-FASTSIMD_BUILD_CLASS( Example )

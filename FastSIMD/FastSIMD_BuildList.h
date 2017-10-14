@@ -7,7 +7,7 @@
 #ifdef FASTSIMD_INCLUDE_HEADER_ONLY
 #include "../Example/Example.h"
 #else
-#include "../Example/Example.cpp"
+#include "../Example/Example.inl"
 #endif
 FASTSIMD_BUILD_CLASS( Example )
 

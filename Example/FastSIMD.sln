@@ -9,6 +9,8 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Release c++11|x64 = Release c++11|x64
+		Release c++11|x86 = Release c++11|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
@@ -17,6 +19,10 @@ Global
 		{B39583A1-51EE-48E7-B5FE-C31C9AFD1774}.Debug|x64.Build.0 = Debug|x64
 		{B39583A1-51EE-48E7-B5FE-C31C9AFD1774}.Debug|x86.ActiveCfg = Debug|Win32
 		{B39583A1-51EE-48E7-B5FE-C31C9AFD1774}.Debug|x86.Build.0 = Debug|Win32
+		{B39583A1-51EE-48E7-B5FE-C31C9AFD1774}.Release c++11|x64.ActiveCfg = Release c++11|x64
+		{B39583A1-51EE-48E7-B5FE-C31C9AFD1774}.Release c++11|x64.Build.0 = Release c++11|x64
+		{B39583A1-51EE-48E7-B5FE-C31C9AFD1774}.Release c++11|x86.ActiveCfg = Release c++11|Win32
+		{B39583A1-51EE-48E7-B5FE-C31C9AFD1774}.Release c++11|x86.Build.0 = Release c++11|Win32
 		{B39583A1-51EE-48E7-B5FE-C31C9AFD1774}.Release|x64.ActiveCfg = Release|x64
 		{B39583A1-51EE-48E7-B5FE-C31C9AFD1774}.Release|x64.Build.0 = Release|x64
 		{B39583A1-51EE-48E7-B5FE-C31C9AFD1774}.Release|x86.ActiveCfg = Release|Win32

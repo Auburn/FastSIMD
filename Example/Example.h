@@ -1,10 +1,10 @@
 #ifndef NOISE_H 
 
-#include "../FastSIMD/FS_Class.inc"
+#include "../FastSIMD/FS_Class.inl"
 #ifdef FASTSIMD_INCLUDE_CHECK
 #include __FILE__
 #endif 
-#include "../FastSIMD/FS_Class.inc"
+#include "../FastSIMD/FS_Class.inl"
 
 #define NOISE_H
 

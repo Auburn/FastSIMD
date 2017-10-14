@@ -5,6 +5,14 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release c++11|Win32">
+      <Configuration>Release c++11</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release c++11|x64">
+      <Configuration>Release c++11</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
@@ -20,28 +28,30 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\FastSIMD\FastSIMD.cpp" />
-    <ClCompile Include="..\FastSIMD\FastSIMD_Level_AVX2.cpp" />
+    <ClCompile Include="..\FastSIMD\FastSIMD_Level_Scalar.cpp" />
     <ClCompile Include="..\FastSIMD\FastSIMD_Level_SSE2.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Example.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\FastSIMD\FastSIMD.h" />
     <ClInclude Include="..\FastSIMD\FastSIMD_BuildList.h" />
     <ClInclude Include="..\FastSIMD\FastSIMD_Config.h" />
-    <ClInclude Include="..\FastSIMD\internal\CPPBuilder.h" />
-    <ClInclude Include="..\FastSIMD\internal\DynamicIncluder.h" />
-    <ClInclude Include="..\FastSIMD\simdtypes\00_Scalar.h" />
-    <ClInclude Include="..\FastSIMD\simdtypes\02_SSE2.h" />
-    <ClInclude Include="..\FastSIMD\simdtypes\08_AVX2.h" />
-    <ClInclude Include="..\FastSIMD\simdtypes\Base.h" />
-    <ClInclude Include="..\FastSIMD\simdtypes\FunctionList.h" />
-    <ClInclude Include="..\FastSIMD\simdtypes\TypeList.h" />
+    <ClInclude Include="..\FastSIMD\Internal\00_Scalar.h" />
+    <ClInclude Include="..\FastSIMD\Internal\02_SSE2.h" />
+    <ClInclude Include="..\FastSIMD\Internal\08_AVX2.h" />
+    <ClInclude Include="..\FastSIMD\internal\VecTools.h" />
+    <ClInclude Include="..\FastSIMD\internal\SourceBuilder.h" />
+    <ClInclude Include="..\FastSIMD\Internal\FunctionList.h" />
+    <ClInclude Include="..\FastSIMD\Internal\TypeList.h" />
     <ClInclude Include="Example.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\FastSIMD\FS_Class.inc" />
-    <None Include="..\FastSIMD\FS_Source.inc" />
+    <ClInclude Include="..\FastSIMD\FS_Class.inl">
+      <FileType>Document</FileType>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Example.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -63,6 +73,13 @@
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release c++11|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -73,6 +90,13 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release c++11|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -87,10 +111,16 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release c++11|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release c++11|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -136,6 +166,23 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release c++11|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessToFile>false</PreprocessToFile>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <Distributable>false</Distributable>
+      <LanguageStandard>/std:c++11</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -147,6 +194,23 @@
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <Distributable>false</Distributable>
       <LanguageStandard>stdcpp14</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release c++11|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessToFile>false</PreprocessToFile>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <Distributable>false</Distributable>
+      <LanguageStandard>/std:c++11</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

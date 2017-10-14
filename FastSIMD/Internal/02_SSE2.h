@@ -2,7 +2,7 @@
 
 #include <intrin.h>
 
-#include "base.h"
+#include "VecTools.h"
 
 struct SSE2_f32x4
 {

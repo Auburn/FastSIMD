@@ -1,4 +1,4 @@
 #pragma once
 
-#define FASTSIMD_INCLUDE_HEADER_EXT .h
-#define FASTSIMD_INCLUDE_SOURCE_EXT .cpp
+#define FASTSIMD_FALLBACK_SIMD_LEVEL FastSIMD_Scalar
+

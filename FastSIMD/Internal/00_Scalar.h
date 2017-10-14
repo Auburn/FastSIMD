@@ -1,13 +1,12 @@
 #pragma once
 
-#include "base.h"
+#include "VecTools.h"
 #include <cmath>
 
 class FastSIMD_Scalar
 {
 public:
     static const FastSIMD::Level SIMD_Level = FastSIMD::Level_Scalar;
-    static const int32_t VectorBits = 32;
 
     typedef float_t float32v;
     typedef int32_t int32v;

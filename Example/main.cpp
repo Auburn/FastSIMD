@@ -28,7 +28,7 @@ int main()
         printf("%d, ", data0[i]);
     }
     
-    std::cin.ignore();
+    //std::cin.ignore();
 
 	return 1;
 }

@@ -1,4 +1,4 @@
 
-#define FS_SIMD_CLASS FastSIMD_SSE2
+#define FS_SIMD_CLASS FastSIMD_Scalar
 
 #include "Internal/SourceBuilder.h"
