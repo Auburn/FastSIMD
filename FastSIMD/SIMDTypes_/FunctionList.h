@@ -2,22 +2,26 @@
 #include <inttypes.h>
 
 template<typename FS, typename T>
-static int32_t VectorCount()
+static int32_t VectorSize()
 {
     static_assert( (FS::VectorBits / 8) % sizeof( T ) == 0, "Type does not fit into the vector exactly" );
 
     return (FS::VectorBits / 8) / sizeof( T );
 }
 
-/// Returns count of how many (TYPE) will fit into the vector
+/// Number of floats that will fit into the vector
 ///
 /// Compile time constant
 ///
-/// @param TYPE 
-/// Type to check
+/// @return int
+#define FS_VectorSize_f32 VectorSize<FS, int>
+
+/// Number of ints that will fit into the vector
 ///
-/// @return int32_t
-#define FS_VectorCount(TYPE) VectorCount<FS, TYPE>()
+/// Compile time constant
+///
+/// @return int
+#define FS_VectorSize_i32 VectorSize<FS, float>
 
 // Set all values in the vector
 // Compile time constant when using a const value
@@ -28,7 +32,7 @@ static int32_t VectorCount()
 // Set all values in the vector
 // Compile time constant when using a const value
 // I
-// int32v FS_SetAll_i32( int32_t value )
+// int32v FS_SetAll_i32( int value )
 #define FS_SetAll_i32 FS::SetAll_i32
 
 // Loads data from memory location into the vector

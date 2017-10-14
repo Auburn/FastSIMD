@@ -49,18 +49,7 @@ FS_VECTOR_OPERATORS_FLOAT(SSE2_f32x4)
 struct SSE2_i32x4
 {
     FS_VECTOR_TYPE_SET(SSE2_i32x4, __m128i);
-
-    template <int32_t I0, int32_t I1, int32_t I2, int32_t I3>
-    FS_INLINE static __m128i CONST()
-    {
-        static const union
-        {
-            int32_t i[4];
-            __m128i v;
-        } u = { { I0, I1, I2, I3 } };
-        return u.v;
-    }
-
+    
     FS_INLINE SSE2_i32x4& operator+=(const SSE2_i32x4& rhs)
     {
         *this = _mm_add_epi32(*this, rhs);

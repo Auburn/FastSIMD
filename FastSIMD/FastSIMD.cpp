@@ -2,7 +2,7 @@
 #include <intrin.h>
 
 #include "FastSIMD.h"
-#include "simdtypes/TypeList.h"
+#include "SIMDTypes/TypeList.h"
 
 static FastSIMD::Level simdLevel = FastSIMD::Level_Null; 
 

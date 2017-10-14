@@ -30,5 +30,5 @@ int main()
     
     std::cin.ignore();
 
-	return 0;
+	return 1;
 }

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "FastSIMD.h"
-#include "simdtypes/TypeList.h"
-#include "simdtypes/FunctionList.h"
+#include "SIMDTypes/TypeList.h"
+#include "SIMDTypes/FunctionList.h"
 
 #ifndef FS_SIMD_CLASS
 #define FS_SIMD_CLASS FastSIMD_Scalar

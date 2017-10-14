@@ -25,7 +25,7 @@ void FS_CLASS( Example )<FS_MULTI_TEMPLATE( FastSIMD_AVX2, FastSIMD_SSE2 )>::DoS
 template<typename T>
 void FS_CLASS( Example )<T>::DoArray( int* data0, int* data1, int size )
 {
-    for ( int i = 0; i < size; i += FS_VectorCount( int32_t ) )
+    for ( int i = 0; i < size; i += FS_VectorSize_i32() )
     {
         int32v a = FS_Load_i32( &data0[i] );
         int32v b = FS_Load_i32( &data1[i] );
