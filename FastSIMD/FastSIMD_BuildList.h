@@ -10,4 +10,3 @@
 #include "../Example/Example.inl"
 #endif
 FASTSIMD_BUILD_CLASS( Example )
-

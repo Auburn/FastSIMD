@@ -12,14 +12,15 @@ void FS_CLASS( Example )<T>::DoStuff( int* data )
 template<> // Different function for level SSE2 or AVX2
 void FS_CLASS( Example )<FS_MULTI_TEMPLATE( FastSIMD_AVX2, FastSIMD_SSE2 )>::DoStuff( int* data )
 {
-    int32v a = _mm_loadu_si128( reinterpret_cast<__m128i const*>( data ) );
+    int32v a = _mm_loadu_si128( reinterpret_cast<__m128i const*>(data) );
 
-    a += _mm_set_epi32( 2, 3, 4, 5 ); 
+    a += _mm_set_epi32( 2, 3, 4, 5 );
 
-    a -= _mm_castps_si128( FS_SetAll_f32(1.0f) );
+    a -= _mm_castps_si128( FS_SetAll_f32( 1.0f ) );
 
     FS_Store_i32( data, a );
 }
+
 
 template<typename T>
 void FS_CLASS( Example )<T>::DoArray( int* data0, int* data1, int size )
@@ -32,6 +33,10 @@ void FS_CLASS( Example )<T>::DoArray( int* data0, int* data1, int size )
         a += b;
 
         a <<= 1;
+
+        a -= FS_SetZero_i32();
+
+        a = (~a);
 
         FS_Store_i32( &data0[i], a );
     }

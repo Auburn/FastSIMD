@@ -12,7 +12,17 @@ public:
     typedef int32_t int32v;
 
     typedef const float32v& float32v_arg;
-    typedef const int32v&   int32v_arg;
+    typedef const int32v& int32v_arg;
+
+    FS_INLINE static float32v SetZero_f32()
+    {
+        return 0.0f;
+    }
+
+    FS_INLINE static int32v SetZero_i32()
+    {
+        return 0;
+    }
 
     FS_INLINE static float32v SetAll_f32( float a )
     {

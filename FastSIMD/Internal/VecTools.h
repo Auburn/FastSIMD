@@ -7,40 +7,38 @@
 #define FS_VECTORCALL __vectorcall
 #define FS_INLINE __forceinline
 
-#define FS_VECTOR_TYPE_SET(CLASS, TYPE)                                       \
-TYPE vector;									                              \
-CLASS(TYPE v) : vector(v) {};	                                              \
-CLASS& FS_VECTORCALL operator = (TYPE const& v) { vector = v; return *this; } \
-FS_VECTORCALL operator TYPE() const { return vector; }	                      \
-                                                                              
-#define FS_VECTOR_OPERATOR_TEMPLATE(TYPE, OPERATOR)	                          \
-FS_INLINE TYPE operator OPERATOR (TYPE lhs, const TYPE& rhs)                  \
+#define FS_VECTOR_TYPE_SET( CLASS, TYPE )                                       \
+TYPE vector;									                                \
+CLASS( TYPE v ) : vector(v) {};	                                                \
+CLASS& FS_VECTORCALL operator = ( TYPE const& v ) { vector = v; return *this; } \
+FS_VECTORCALL operator TYPE() const { return vector; }
+
+#define FS_VECTOR_OPERATOR_TEMPLATE( TYPE, OPERATOR )	                      \
+FS_INLINE TYPE operator OPERATOR ( TYPE lhs, const TYPE& rhs )                \
 {											                                  \
     lhs OPERATOR= rhs;								                          \
     return lhs;								                                  \
-}												                              \
-                                                                              
+}
+
 #define FS_VECTOR_INT_OPERATOR_TEMPLATE(TYPE, OPERATOR)	                      \
 FS_INLINE TYPE operator OPERATOR (TYPE lhs, int32_t rhs)                      \
 {											                                  \
     lhs OPERATOR= rhs;								                          \
     return lhs;								                                  \
-}												                              \
-                                                                              
-#define FS_VECTOR_OPERATORS_FLOAT(TYPE)                                 \
-FS_VECTOR_OPERATOR_TEMPLATE(TYPE, +)                                    \
-FS_VECTOR_OPERATOR_TEMPLATE(TYPE, -)                                    \
-FS_VECTOR_OPERATOR_TEMPLATE(TYPE, *)                                    \
-FS_VECTOR_OPERATOR_TEMPLATE(TYPE, /)                                    \
-                                                                              
-#define FS_VECTOR_OPERATORS_INT(TYPE)                                   \
-FS_VECTOR_OPERATOR_TEMPLATE(TYPE, + )                                   \
-FS_VECTOR_OPERATOR_TEMPLATE(TYPE, - )                                   \
-FS_VECTOR_OPERATOR_TEMPLATE(TYPE, * )                                   \
-FS_VECTOR_OPERATOR_TEMPLATE(TYPE, & )                                   \
-FS_VECTOR_OPERATOR_TEMPLATE(TYPE, | )                                   \
-FS_VECTOR_OPERATOR_TEMPLATE(TYPE, ^ )                                   \
-FS_VECTOR_INT_OPERATOR_TEMPLATE(TYPE, >>)                               \
-FS_VECTOR_INT_OPERATOR_TEMPLATE(TYPE, <<)                               \
+}
 
-
+#define FS_VECTOR_OPERATORS_FLOAT( TYPE )     \
+FS_VECTOR_OPERATOR_TEMPLATE( TYPE, + )        \
+FS_VECTOR_OPERATOR_TEMPLATE( TYPE, - )        \
+FS_VECTOR_OPERATOR_TEMPLATE( TYPE, * )        \
+FS_VECTOR_OPERATOR_TEMPLATE( TYPE, / )       
+                                             
+#define FS_VECTOR_OPERATORS_INT( TYPE )       \
+FS_VECTOR_OPERATOR_TEMPLATE( TYPE, + )        \
+FS_VECTOR_OPERATOR_TEMPLATE( TYPE, - )        \
+FS_VECTOR_OPERATOR_TEMPLATE( TYPE, * )        \
+FS_VECTOR_OPERATOR_TEMPLATE( TYPE, & )        \
+FS_VECTOR_OPERATOR_TEMPLATE( TYPE, | )        \
+FS_VECTOR_OPERATOR_TEMPLATE( TYPE, ^ )        \
+FS_VECTOR_INT_OPERATOR_TEMPLATE( TYPE, >> )   \
+FS_VECTOR_INT_OPERATOR_TEMPLATE( TYPE, << )

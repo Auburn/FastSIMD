@@ -10,7 +10,7 @@ int main()
     int data0[size];
     int data1[size];
 
-    for ( int i = 0; i < size; i++ )
+    for (int i = 0; i < size; i++)
     {
         data0[i] = i;
         data1[i] = i * 2;
@@ -21,14 +21,14 @@ int main()
     // Force scalar
     //Example* test = FastSIMD::NewSIMDClass<Example>(FastSIMD::Level_Scalar);
 
-    test->DoArray(&data0[0], &data1[0], size);
-    
-    for ( int i = 0; i < size; i++ )
+    test->DoArray( data0, data1, size );
+
+    for (int i = 0; i < size; i++)
     {
-        printf("%d, ", data0[i]);
+        printf( "%d, ", data0[i] );
     }
-    
+
     std::cin.ignore();
 
-	return 1;
+    return 1;
 }

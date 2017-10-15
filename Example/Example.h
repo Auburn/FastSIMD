@@ -1,22 +1,21 @@
-#ifndef NOISE_H 
+#ifndef NOISE_H
 
 #include "../FastSIMD/FS_Class.inl"
 #ifdef FASTSIMD_INCLUDE_CHECK
 #include __FILE__
-#endif 
+#endif
 #include "../FastSIMD/FS_Class.inl"
 
 #define NOISE_H
 
-FASTSIMD_CLASS_DEFINITION(Example)
+FASTSIMD_CLASS_DEFINITION( Example )
 {
 public:
-    FASTSIMD_CLASS_INIT()
+    FASTSIMD_CLASS_TYPEDEFS();
 
     FS_FUNC_EXTERNAL( void DoStuff( int* data ) );
 
     FS_FUNC_EXTERNAL( void DoArray( int* data0, int* data1, int size ) );
-
 };
 
 #endif
