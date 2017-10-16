@@ -6,7 +6,7 @@
 
 struct SSE2_f32x4
 {
-    FS_VECTOR_TYPE_SET( SSE2_f32x4, __m128 );
+    FASTSIMD_INTERNAL_TYPE_SET( SSE2_f32x4, __m128 );
 
     FS_INLINE SSE2_f32x4& operator+=( const SSE2_f32x4& rhs )
     {
@@ -33,12 +33,12 @@ struct SSE2_f32x4
     }
 };
 
-FS_VECTOR_OPERATORS_FLOAT( SSE2_f32x4 )
+FASTSIMD_INTERNAL_OPERATORS_FLOAT( SSE2_f32x4 )
 
 
 struct SSE2_i32x4
 {
-    FS_VECTOR_TYPE_SET( SSE2_i32x4, __m128i );
+    FASTSIMD_INTERNAL_TYPE_SET( SSE2_i32x4, __m128i );
 
     FS_INLINE SSE2_i32x4& operator+=( const SSE2_i32x4& rhs )
     {
@@ -97,7 +97,7 @@ struct SSE2_i32x4
     }
 };
 
-FS_VECTOR_OPERATORS_INT( SSE2_i32x4 )
+FASTSIMD_INTERNAL_OPERATORS_INT( SSE2_i32x4, int32_t )
 
 
 class FastSIMD_SSE2
@@ -108,33 +108,54 @@ public:
 
     typedef SSE2_f32x4 float32v;
     typedef SSE2_i32x4 int32v;
+    typedef SSE2_i32x4 mask32v;
 
     typedef const float32v& float32v_arg;
     typedef const int32v& int32v_arg;
 
-    FS_INLINE static float32v SetZero_f32()
+    FS_INLINE static float32v VecZero_f32()
     {
         return _mm_setzero_ps();
     }
 
-    FS_INLINE static int32v SetZero_i32()
+    FS_INLINE static int32v VecZero_i32()
     {
         return _mm_setzero_si128();
     }
 
-    FS_INLINE static float32v SetAll_f32( float a )
+    FS_INLINE static float32v VecIncremented_f32()
+    {
+        return _mm_set_ps( 3.0f, 2.0f, 1.0f, 0.0f );
+    }
+
+    FS_INLINE static int32v VecIncremented_i32()
+    {
+        return _mm_set_epi32( 3, 2, 1, 0 );
+    }
+
+    FS_INLINE static float32v VecFill_f32( float_t a )
     {
         return _mm_set1_ps( a );
     }
 
-    FS_INLINE static int32v SetAll_i32( int32_t a )
+    FS_INLINE static int32v VecFill_i32( int32_t a )
     {
         return _mm_set1_epi32( a );
     }
 
+    FS_INLINE static float32v Vec4_f32( float_t f0, float_t f1, float_t f2, float_t f3 )
+    {
+        return _mm_set_ps( f3, f2, f1, f0 );
+    }
+
+    FS_INLINE static int32v Vec4_i32( int32_t i0, int32_t i1, int32_t i2, int32_t i3 )
+    {
+        return _mm_set_epi32( i3, i2, i1, i0 );
+    }
+
     FS_INLINE static float32v Load_f32( void* p )
     {
-        return _mm_loadu_ps( reinterpret_cast<float*>(p) );
+        return _mm_loadu_ps( reinterpret_cast<float_t*>(p) );
     }
 
     FS_INLINE static int32v Load_i32( void* p )
@@ -144,7 +165,7 @@ public:
 
     FS_INLINE static void Store_f32( void* p, float32v_arg a )
     {
-        _mm_store_ps( reinterpret_cast<float*>(p), a );
+        _mm_store_ps( reinterpret_cast<float_t*>(p), a );
     }
 
     FS_INLINE static void Store_i32( void* p, int32v_arg a )

@@ -3,7 +3,7 @@
 template<typename T>// Generic function, used if no specialised function found
 void FS_CLASS( Example )<T>::DoStuff( int* data )
 {
-    int32v a = FS_SetAll_i32( 1 );
+    int32v a = FS_VecFill_i32( 1 );
 
     FS_Store_i32( data, a );
 }
@@ -16,7 +16,7 @@ void FS_CLASS( Example )<FS_MULTI_TEMPLATE( FastSIMD_AVX2, FastSIMD_SSE2 )>::DoS
 
     a += _mm_set_epi32( 2, 3, 4, 5 );
 
-    a -= _mm_castps_si128( FS_SetAll_f32( 1.0f ) );
+    a -= _mm_castps_si128( FS_VecFill_f32( 1.0f ) );
 
     FS_Store_i32( data, a );
 }
@@ -34,7 +34,7 @@ void FS_CLASS( Example )<T>::DoArray( int* data0, int* data1, int size )
 
         a <<= 1;
 
-        a -= FS_SetZero_i32();
+        a -= FS_VecZero_i32();
 
         a = (~a);
 

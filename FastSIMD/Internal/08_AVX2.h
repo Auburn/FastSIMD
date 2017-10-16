@@ -7,7 +7,7 @@
 
 struct AVX2_f32x4
 {
-    FS_VECTOR_TYPE_SET(AVX2_f32x4, __m256);
+    FASTSIMD_INTERNAL_TYPE_SET(AVX2_f32x4, __m256);
 
     AVX2_f32x4& FS_VECTORCALL operator+=( const AVX2_f32x4& rhs )
     {
@@ -39,7 +39,7 @@ struct AVX2_f32x4
 
 struct AVX2_i32x4
 {
-    FS_VECTOR_TYPE_SET(AVX2_i32x4, __m256i);
+    FASTSIMD_INTERNAL_TYPE_SET(AVX2_i32x4, __m256i);
 
     AVX2_i32x4& FS_VECTORCALL operator+=( const AVX2_i32x4& rhs )
     {
