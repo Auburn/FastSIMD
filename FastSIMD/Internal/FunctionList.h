@@ -7,14 +7,13 @@
 #define FS_MULTI_TEMPLATE(...) FastSIMD::MultiTemplate<__VA_ARGS__>::type
 
 /// Compile time constant
-/// 
-/// @return int:
-/// Number of floats that will fit into the vector
+/// @return
+/// int: Number of float32 that will fit into the vector
 #define FS_VectorSize_f32 FastSIMD::VectorSize<FS, float_t>::Count
 
 /// Compile time constant
-/// @return int:
-/// Number of ints that will fit into the vector
+/// @return
+/// int: Number of int32 that will fit into the vector
 #define FS_VectorSize_i32 FastSIMD::VectorSize<FS, int32_t>::Count
 
 // Set all values in the vector to 0
@@ -39,24 +38,45 @@
 // int32v FS_VecFill_i32( int value )
 #define FS_VecFill_i32 FS::VecFill_i32
 
-// Loads data from memory location into the vector
-// I
-// float32v FS_Load_f32( T* ptr )
+/*////////////////////////////////////////////////////////////////////////
+  Copies {vectorSize} bytes from memory location into a vector
+
+  @code :
+  float32v FS_Store_f32( void* ptr )
+
+  @param ptr 
+  Pointer to first byte (unaligned)
+
+  @returns 
+  Vector with copied data
+/*////////////////////////////////////////////////////////////////////////
 #define FS_Load_f32 FS::Load_f32
 
-// Loads data from memory location into the vector
-// I
-// int32v FS_Load_i32( T* ptr )
+/// Copies {vectorSize} bytes from memory location into a vector
+///
+/// @param ptr Pointer to first byte (unaligned)
+/// @returns Vector with copied data
+/// 
+/// @code -
+/// int32v FS_Store_i32( void* ptr )
 #define FS_Load_i32 FS::Load_i32
 
-// Copies all elements of the vector to given memory location
-// I
-// void FS_Store_f32( T* ptr, float32v toStore )
+/// Copies all elements of a vector to given memory location
+///
+/// @param ptr Pointer to location elements should be copied to
+/// @param vec Vector to copy from
+///
+/// @code -
+/// void FS_Store_f32( void* ptr, float32v vec )
 #define FS_Store_f32 FS::Store_f32
 
-// Copies all elements of the vector to given memory location
-// I
-// void FS_Store_i32( T* ptr, int32v toStore )
+/// Copies all elements of a vector to given memory location
+///
+/// @param ptr  Pointer to location elements should be copied to
+/// @param vec Vector to copy from
+///
+/// @code -
+/// void FS_Store_i32( void* ptr, int32v vec )
 #define FS_Store_i32 FS::Store_i32
 
 

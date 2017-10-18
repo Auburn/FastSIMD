@@ -22,9 +22,6 @@
     <ClCompile Include="..\FastSIMD\FastSIMD_Level_SSE2.cpp">
       <Filter>FastSIMD</Filter>
     </ClCompile>
-    <ClCompile Include="Example.hpp">
-      <Filter>Example</Filter>
-    </ClCompile>
     <ClCompile Include="..\FastSIMD\FastSIMD_Level_Scalar.cpp">
       <Filter>FastSIMD</Filter>
     </ClCompile>
@@ -63,14 +60,11 @@
     <ClInclude Include="..\FastSIMD\internal\VecTools.h">
       <Filter>FastSIMD\Internal</Filter>
     </ClInclude>
+    <ClInclude Include="..\FastSIMD\FS_Class.inl">
+      <Filter>FastSIMD</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\FastSIMD\FS_Class.inc">
-      <Filter>FastSIMD</Filter>
-    </None>
-    <None Include="..\FastSIMD\FS_Source.inc">
-      <Filter>FastSIMD</Filter>
-    </None>
     <None Include="Example.inl">
       <Filter>Example</Filter>
     </None>

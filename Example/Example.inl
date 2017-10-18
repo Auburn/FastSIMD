@@ -29,14 +29,14 @@ void FS_CLASS( Example )<T>::DoArray( int* data0, int* data1, int size )
     {
         int32v a = FS_Load_i32( &data0[i] );
         int32v b = FS_Load_i32( &data1[i] );
-
+        
         a += b;
 
         a <<= 1;
 
         a -= FS_VecZero_i32();
 
-        a = (~a);
+        (~a);
 
         FS_Store_i32( &data0[i], a );
     }

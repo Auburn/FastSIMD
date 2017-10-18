@@ -90,10 +90,9 @@ struct SSE2_i32x4
         return *this;
     }
 
-    FS_INLINE SSE2_i32x4& operator~()
+    FS_INLINE SSE2_i32x4 operator~() const
     {
-        *this = _mm_xor_si128( *this, _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() ) );
-        return *this;
+        return _mm_xor_si128( *this, _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() ) );        
     }
 };
 
@@ -111,7 +110,8 @@ public:
     typedef SSE2_i32x4 mask32v;
 
     typedef const float32v& float32v_arg;
-    typedef const int32v& int32v_arg;
+    typedef const int32v&   int32v_arg;
+    typedef const mask32v&  mask32v_arg;
 
     FS_INLINE static float32v VecZero_f32()
     {
@@ -171,5 +171,75 @@ public:
     FS_INLINE static void Store_i32( void* p, int32v_arg a )
     {
         _mm_store_si128( reinterpret_cast<__m128i*>(p), a );
+    }
+
+    FS_INLINE static float32v Casti32_f32( int32v_arg a )
+    {
+        return _mm_castsi128_ps( a );
+    }
+
+    FS_INLINE static int32v Castf32_i32( float32v_arg a )
+    {
+        return _mm_castps_si128( a );
+    }
+
+    FS_INLINE static float32v Converti32_f32( int32v_arg a )
+    {
+        return _mm_cvtepi32_ps( a );
+    }
+
+    FS_INLINE static int32v Convertf32_i32( float32v_arg a )
+    {
+        return _mm_cvtps_epi32( a );
+    }
+
+    FS_INLINE static int32v AndNot_i32( int32v_arg a, int32v_arg b )
+    {
+        return _mm_andnot_si128( b, a );
+    }
+
+    FS_INLINE static mask32v Equal_i32( int32v_arg a, int32v_arg b )
+    {
+        return _mm_cmpeq_epi32( a, b );
+    }
+
+    FS_INLINE static mask32v GreaterThan_i32( int32v_arg a, int32v_arg b )
+    {
+        return _mm_cmpgt_epi32( a, b );
+    }
+
+    FS_INLINE static mask32v LessThan_i32( int32v_arg a, int32v_arg b )
+    {
+        return _mm_cmplt_epi32( a, b );
+    }
+
+    FS_INLINE static int32v Select_i32( int32v_arg a, int32v_arg b, mask32v_arg m )
+    {
+        return  _mm_or_si128( _mm_and_si128( m, a ), _mm_andnot_si128( m, b ) );
+    }
+
+    FS_INLINE static int32v Max_i32( int32v_arg a, int32v_arg b )
+    {
+        return Select_i32( a, b, GreaterThan_i32( a, b ) );
+    }
+
+    FS_INLINE static int32v Min_i32( int32v_arg a, int32v_arg b )
+    {
+        return Select_i32( a, b, LessThan_i32( a, b ) );
+    }
+
+    FS_INLINE static float32v And_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_and_ps( a, b );
+    }
+
+    FS_INLINE static float32v AndNot_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_andnot_ps( b, a );
+    }
+
+    FS_INLINE static float32v Or_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_or_ps( a, b );
     }
 };

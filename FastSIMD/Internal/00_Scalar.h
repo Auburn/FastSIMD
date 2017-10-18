@@ -10,6 +10,7 @@ public:
 
     typedef float_t float32v;
     typedef int32_t int32v;
+    typedef bool    mask32v;
 
     typedef const float32v& float32v_arg;
     typedef const int32v& int32v_arg;
