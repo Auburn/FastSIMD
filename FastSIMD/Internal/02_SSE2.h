@@ -92,7 +92,12 @@ struct SSE2_i32x4
 
     FS_INLINE SSE2_i32x4 operator~() const
     {
-        return _mm_xor_si128( *this, _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() ) );        
+#ifdef FASTSIMD_CONFIG_GENERATE_CONSTANTS
+        __m128i neg1 = _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() );
+#else
+        __m128i neg1 = _mm_set1_epi32( -1 );
+#endif
+        return _mm_xor_si128( *this, neg1 );        
     }
 };
 
@@ -241,5 +246,114 @@ public:
     FS_INLINE static float32v Or_f32( float32v_arg a, float32v_arg b )
     {
         return _mm_or_ps( a, b );
+    }
+
+    FS_INLINE static float32v Xor_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_xor_ps( a, b );
+    }
+
+    FS_INLINE static float32v Not_f32( float32v_arg a )
+    {
+#ifdef FASTSIMD_CONFIG_GENERATE_CONSTANTS
+        __m128i neg1 = _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() );
+#else
+        __m128i neg1 = _mm_set1_epi32( -1 );
+#endif
+        return _mm_xor_ps( a, _mm_castsi128_ps( neg1 ) );
+    }
+
+    FS_INLINE static float32v Max_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_max_ps( a, b );
+    }
+
+    FS_INLINE static float32v Min_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_min_ps( a, b );
+    }
+
+    FS_INLINE static mask32v GreaterThan_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_castps_si128( _mm_cmpgt_ps( a, b ) );
+    }
+
+    FS_INLINE static mask32v LessThan_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_castps_si128( _mm_cmplt_ps( a, b ) );
+    }
+
+    FS_INLINE static mask32v GreaterEqualThan_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_castps_si128( _mm_cmpge_ps( a, b ) );
+    }
+
+    FS_INLINE static mask32v LessEqualThan_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_castps_si128( _mm_cmple_ps( a, b ) );
+    }
+
+    FS_INLINE static float32v Abs_f32( float32v_arg a )
+    {
+#ifdef FASTSIMD_CONFIG_GENERATE_CONSTANTS
+        __m128i intMax = _mm_srli_epi32( _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() ), 1 );
+#else
+        __m128i intMax = _mm_set1_epi32( 0x7FFFFFFF );
+#endif
+        return _mm_and_ps( a, _mm_castsi128_ps( intMax ) );
+    }
+
+    FS_INLINE static float32v InvSqrt_f32( float32v_arg a )
+    {
+        return _mm_rsqrt_ps( a );
+    }
+
+// Floor, Ceil, Round: http://dss.stephanierct.com/DevBlog/?p=8
+
+    FS_INLINE static float32v Floor_f32( float32v_arg a )
+    {
+#ifdef FASTSIMD_CONFIG_GENERATE_CONSTANTS
+        __m128 f1 = _mm_castsi128_ps( _mm_slli_epi32( _mm_srli_epi32( _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() ), 25 ), 23 ) );
+#else
+        __m128 f1 = _mm_set1_ps( 1.0f );
+#endif
+        __m128 fval = _mm_cvtepi32_ps( _mm_cvttps_epi32( a ) );
+
+        return _mm_sub_ps( fval, _mm_and_ps( _mm_cmplt_ps( a, fval ), f1 ) );
+    }
+
+    FS_INLINE static float32v Ceil_f32( float32v_arg a )
+    {
+#ifdef FASTSIMD_CONFIG_GENERATE_CONSTANTS
+        __m128 f1 = _mm_castsi128_ps( _mm_slli_epi32( _mm_srli_epi32( _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() ), 25 ), 23 ) );
+#else
+        __m128 f1 = _mm_set1_ps( 1.0f );
+#endif
+        __m128 fval = _mm_cvtepi32_ps( _mm_cvttps_epi32( a ) );
+
+        return _mm_add_ps( fval, _mm_and_ps( _mm_cmplt_ps( a, fval ), f1 ) );
+    }
+
+
+    FS_INLINE static float32v Round_f32( float32v_arg a )
+    {
+#ifdef FASTSIMD_CONFIG_GENERATE_CONSTANTS
+        __m128 nearest2 = _mm_castsi128_ps( _mm_srli_epi32( _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() ), 2 ) );
+#else
+        __m128 nearest2 = _mm_set1_ps( 1.99999988079071044921875f );
+#endif
+        __m128 aTrunc = _mm_cvtepi32_ps( _mm_cvttps_epi32( a ) );       // truncate a
+        __m128 rmd = _mm_sub_ps( a, aTrunc );                           // get remainder
+        __m128 rmd2 = _mm_mul_ps( rmd, nearest2 );                      // mul remainder by near 2 will yield the needed offset
+        __m128 rmd2Trunc = _mm_cvtepi32_ps( _mm_cvttps_epi32( rmd2 ) ); // after being truncated of course
+        return _mm_add_ps( aTrunc, rmd2Trunc );        
+    }
+
+
+    FS_INLINE static float32v_arg Select_f32( float32v_arg a, float32v_arg b, mask32v_arg m )
+    {
+        __m128 mf = _mm_castsi128_ps( m );
+
+        return  _mm_or_ps( _mm_and_ps( mf, a ), _mm_andnot_ps( mf, b ) );
     }
 };

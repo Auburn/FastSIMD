@@ -1,3 +1,5 @@
 #pragma once
 
 #define FASTSIMD_FALLBACK_SIMD_LEVEL FastSIMD_Scalar
+
+#define FASTSIMD_CONFIG_GENERATE_CONSTANTS
