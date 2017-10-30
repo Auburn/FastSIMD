@@ -5,36 +5,36 @@
 #include "VecTools.h"
 
 
-struct AVX2_f32x4
+struct AVX_f32x4
 {
-    FASTSIMD_INTERNAL_TYPE_SET(AVX2_f32x4, __m256);
+    FASTSIMD_INTERNAL_TYPE_SET(AVX_f32x4, __m256);
 
-    AVX2_f32x4& FS_VECTORCALL operator+=( const AVX2_f32x4& rhs )
+    AVX_f32x4& FS_VECTORCALL operator+=( const AVX_f32x4& rhs )
     {
         *this = _mm256_add_ps( *this, rhs );
         return *this;
     }
 
-    AVX2_f32x4& FS_VECTORCALL operator-=( const AVX2_f32x4& rhs )
+    AVX_f32x4& FS_VECTORCALL operator-=( const AVX_f32x4& rhs )
     {
         *this = _mm256_sub_ps( *this, rhs );
         return *this;
     }
 
-    AVX2_f32x4& FS_VECTORCALL operator*=( const AVX2_f32x4& rhs )
+    AVX_f32x4& FS_VECTORCALL operator*=( const AVX_f32x4& rhs )
     {
         *this = _mm256_mul_ps( *this, rhs );
         return *this;
     }
 
-    AVX2_f32x4& FS_VECTORCALL operator/=( const AVX2_f32x4& rhs )
+    AVX_f32x4& FS_VECTORCALL operator/=( const AVX_f32x4& rhs )
     {
         *this = _mm256_div_ps( *this, rhs );
         return *this;
     }
 };
 
-//FS_VECTOR_OPERATORS_FLOAT(AVX2_f32x4)
+//FS_VECTOR_OPERATORS_FLOAT(AVX_f32x4)
 
 
 struct AVX2_i32x4
@@ -66,7 +66,7 @@ struct AVX2_i32x4
 class FastSIMD_AVX2
 {
 public:
-    typedef AVX2_f32x4 v_f32;
+    typedef AVX_f32x4 v_f32;
     typedef AVX2_i32x4 v_i32;
 
     typedef const v_f32& v_f32_arg;

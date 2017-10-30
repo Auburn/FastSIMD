@@ -1,4 +1,5 @@
 #include "Example.h"
+#include "../FastSIMD/FS_IntelliSenseHelper.h"
 
 template<typename T>// Generic function, used if no specialised function found
 void FS_CLASS( Example )<T>::DoStuff( int* data )
@@ -16,7 +17,7 @@ void FS_CLASS( Example )<FS_MULTI_TEMPLATE( FastSIMD_AVX2, FastSIMD_SSE2 )>::DoS
 
     a += _mm_set_epi32( 2, 3, 4, 5 );
 
-    a -= _mm_castps_si128( FS_VecFill_f32( 1.0f ) );
+    a -= _mm_castps_si128( FS_VecZero_f32( ) );
 
     FS_Store_i32( data, a );
 }

@@ -39,15 +39,6 @@
     <ClInclude Include="..\FastSIMD\FastSIMD_Config.h">
       <Filter>FastSIMD</Filter>
     </ClInclude>
-    <ClInclude Include="..\FastSIMD\Internal\00_Scalar.h">
-      <Filter>FastSIMD\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\FastSIMD\Internal\02_SSE2.h">
-      <Filter>FastSIMD\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\FastSIMD\Internal\08_AVX2.h">
-      <Filter>FastSIMD\Internal</Filter>
-    </ClInclude>
     <ClInclude Include="..\FastSIMD\Internal\FunctionList.h">
       <Filter>FastSIMD\Internal</Filter>
     </ClInclude>
@@ -62,6 +53,18 @@
     </ClInclude>
     <ClInclude Include="..\FastSIMD\FS_Class.inl">
       <Filter>FastSIMD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FastSIMD\FS_IntelliSenseHelper.h">
+      <Filter>FastSIMD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FastSIMD\Internal\SSE.h">
+      <Filter>FastSIMD\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FastSIMD\Internal\Scalar.h">
+      <Filter>FastSIMD\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FastSIMD\Internal\AVX.h">
+      <Filter>FastSIMD\Internal</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

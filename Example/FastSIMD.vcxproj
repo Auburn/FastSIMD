@@ -36,9 +36,10 @@
     <ClInclude Include="..\FastSIMD\FastSIMD.h" />
     <ClInclude Include="..\FastSIMD\FastSIMD_BuildList.h" />
     <ClInclude Include="..\FastSIMD\FastSIMD_Config.h" />
-    <ClInclude Include="..\FastSIMD\Internal\00_Scalar.h" />
-    <ClInclude Include="..\FastSIMD\Internal\02_SSE2.h" />
-    <ClInclude Include="..\FastSIMD\Internal\08_AVX2.h" />
+    <ClInclude Include="..\FastSIMD\FS_IntelliSenseHelper.h" />
+    <ClInclude Include="..\FastSIMD\Internal\Scalar.h" />
+    <ClInclude Include="..\FastSIMD\Internal\SSE.h" />
+    <ClInclude Include="..\FastSIMD\Internal\AVX.h" />
     <ClInclude Include="..\FastSIMD\internal\VecTools.h" />
     <ClInclude Include="..\FastSIMD\internal\SourceBuilder.h" />
     <ClInclude Include="..\FastSIMD\Internal\FunctionList.h" />

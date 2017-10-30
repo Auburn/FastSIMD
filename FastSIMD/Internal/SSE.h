@@ -4,55 +4,56 @@
 
 #include "VecTools.h"
 
-struct SSE2_f32x4
+struct SSE_f32x4
 {
-    FASTSIMD_INTERNAL_TYPE_SET( SSE2_f32x4, __m128 );
+    FASTSIMD_INTERNAL_TYPE_SET( SSE_f32x4, __m128 );
 
-    FS_INLINE SSE2_f32x4& operator+=( const SSE2_f32x4& rhs )
+    FS_INLINE SSE_f32x4& operator+=( const SSE_f32x4& rhs )
     {
         *this = _mm_add_ps( *this, rhs );
         return *this;
     }
 
-    FS_INLINE SSE2_f32x4& operator-=( const SSE2_f32x4& rhs )
+    FS_INLINE SSE_f32x4& operator-=( const SSE_f32x4& rhs )
     {
         *this = _mm_sub_ps( *this, rhs );
         return *this;
     }
 
-    FS_INLINE SSE2_f32x4& operator*=( const SSE2_f32x4& rhs )
+    FS_INLINE SSE_f32x4& operator*=( const SSE_f32x4& rhs )
     {
         *this = _mm_mul_ps( *this, rhs );
         return *this;
     }
 
-    FS_INLINE SSE2_f32x4& operator/=( const SSE2_f32x4& rhs )
+    FS_INLINE SSE_f32x4& operator/=( const SSE_f32x4& rhs )
     {
         *this = _mm_div_ps( *this, rhs );
         return *this;
     }
 };
 
-FASTSIMD_INTERNAL_OPERATORS_FLOAT( SSE2_f32x4 )
+FASTSIMD_INTERNAL_OPERATORS_FLOAT( SSE_f32x4 )
 
 
-struct SSE2_i32x4
+template<FastSIMD::Level T>
+struct SSE_i32x4
 {
-    FASTSIMD_INTERNAL_TYPE_SET( SSE2_i32x4, __m128i );
+    FASTSIMD_INTERNAL_TYPE_SET( SSE_i32x4, __m128i );
 
-    FS_INLINE SSE2_i32x4& operator+=( const SSE2_i32x4& rhs )
+    FS_INLINE SSE_i32x4& operator+=( const SSE_i32x4& rhs )
     {
         *this = _mm_add_epi32( *this, rhs );
         return *this;
     }
 
-    FS_INLINE SSE2_i32x4& operator-=( const SSE2_i32x4& rhs )
+    FS_INLINE SSE_i32x4& operator-=( const SSE_i32x4& rhs )
     {
         *this = _mm_sub_epi32( *this, rhs );
         return *this;
     }
 
-    FS_INLINE SSE2_i32x4& operator*=( const SSE2_i32x4& rhs )
+    FS_INLINE SSE_i32x4& operator*=( const SSE_i32x4& rhs )
     {
         __m128 tmp1 = _mm_castsi128_ps( _mm_mul_epu32( *this, rhs ) ); /* mul 2,0*/
         __m128 tmp2 = _mm_castsi128_ps( _mm_mul_epu32( _mm_srli_si128( *this, 4 ), _mm_srli_si128( rhs, 4 ) ) ); /* mul 3,1 */
@@ -60,37 +61,44 @@ struct SSE2_i32x4
         return *this;
     }
 
-    FS_INLINE SSE2_i32x4& operator&=( const SSE2_i32x4& rhs )
+    template<FastSIMD::Level LEVEL_T>
+    FS_INLINE FS_ENABLE_IF(LEVEL_T >= FastSIMD::Level_SSE41, SSE_i32x4<LEVEL_T>&) operator*=( const SSE_i32x4<LEVEL_T>& rhs )
+    {
+        *this = _mm_mullo_epi32( *this, rhs );
+        return *this;
+    }
+
+    FS_INLINE SSE_i32x4& operator&=( const SSE_i32x4& rhs )
     {
         *this = _mm_and_si128( *this, rhs );
         return *this;
     }
 
-    FS_INLINE SSE2_i32x4& operator|=( const SSE2_i32x4& rhs )
+    FS_INLINE SSE_i32x4& operator|=( const SSE_i32x4& rhs )
     {
         *this = _mm_or_si128( *this, rhs );
         return *this;
     }
 
-    FS_INLINE SSE2_i32x4& operator^=( const SSE2_i32x4& rhs )
+    FS_INLINE SSE_i32x4& operator^=( const SSE_i32x4& rhs )
     {
         *this = _mm_xor_si128( *this, rhs );
         return *this;
     }
 
-    FS_INLINE SSE2_i32x4& operator>>=( int32_t rhs )
+    FS_INLINE SSE_i32x4& operator>>=( int32_t rhs )
     {
         *this = _mm_srai_epi32( *this, rhs );
         return *this;
     }
 
-    FS_INLINE SSE2_i32x4& operator<<=( int32_t rhs )
+    FS_INLINE SSE_i32x4& operator<<=( int32_t rhs )
     {
         *this = _mm_slli_epi32( *this, rhs );
         return *this;
     }
 
-    FS_INLINE SSE2_i32x4 operator~() const
+    FS_INLINE SSE_i32x4 operator~() const
     {
 #ifdef FASTSIMD_CONFIG_GENERATE_CONSTANTS
         __m128i neg1 = _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() );
@@ -101,22 +109,24 @@ struct SSE2_i32x4
     }
 };
 
-FASTSIMD_INTERNAL_OPERATORS_INT( SSE2_i32x4, int32_t )
+FASTSIMD_INTERNAL_OPERATORS_INT( SSE_i32x4<FastSIMD::Level_SSE2>, int32_t )
 
-
-class FastSIMD_SSE2
+template<FastSIMD::Level LEVEL_T>
+class FastSIMD_SSE_T
 {
 public:
-    static const FastSIMD::Level SIMD_Level = FastSIMD::Level_SSE2;
+    static const FastSIMD::Level SIMD_Level = LEVEL_T;
     static const size_t VectorBits = 128;
 
-    typedef SSE2_f32x4 float32v;
-    typedef SSE2_i32x4 int32v;
-    typedef SSE2_i32x4 mask32v;
+    typedef SSE_f32x4          float32v;
+    typedef SSE_i32x4<LEVEL_T> int32v;
+    typedef SSE_i32x4<LEVEL_T> mask32v;
 
     typedef const float32v& float32v_arg;
     typedef const int32v&   int32v_arg;
     typedef const mask32v&  mask32v_arg;
+
+    // Vector builders
 
     FS_INLINE static float32v VecZero_f32()
     {
@@ -158,6 +168,8 @@ public:
         return _mm_set_epi32( i3, i2, i1, i0 );
     }
 
+    // Load
+
     FS_INLINE static float32v Load_f32( void* p )
     {
         return _mm_loadu_ps( reinterpret_cast<float_t*>(p) );
@@ -168,15 +180,19 @@ public:
         return _mm_loadu_si128( reinterpret_cast<__m128i*>(p) );
     }
 
-    FS_INLINE static void Store_f32( void* p, float32v_arg a )
-    {
-        _mm_store_ps( reinterpret_cast<float_t*>(p), a );
-    }
+    // Store
 
     FS_INLINE static void Store_i32( void* p, int32v_arg a )
     {
         _mm_store_si128( reinterpret_cast<__m128i*>(p), a );
     }
+
+    FS_INLINE static void Store_f32( void* p, float32v_arg a )
+    {
+        _mm_store_ps( reinterpret_cast<float_t*>(p), a );
+    }
+
+    // Cast
 
     FS_INLINE static float32v Casti32_f32( int32v_arg a )
     {
@@ -188,6 +204,8 @@ public:
         return _mm_castps_si128( a );
     }
 
+    // Convert
+
     FS_INLINE static float32v Converti32_f32( int32v_arg a )
     {
         return _mm_cvtepi32_ps( a );
@@ -198,80 +216,7 @@ public:
         return _mm_cvtps_epi32( a );
     }
 
-    FS_INLINE static int32v AndNot_i32( int32v_arg a, int32v_arg b )
-    {
-        return _mm_andnot_si128( b, a );
-    }
-
-    FS_INLINE static mask32v Equal_i32( int32v_arg a, int32v_arg b )
-    {
-        return _mm_cmpeq_epi32( a, b );
-    }
-
-    FS_INLINE static mask32v GreaterThan_i32( int32v_arg a, int32v_arg b )
-    {
-        return _mm_cmpgt_epi32( a, b );
-    }
-
-    FS_INLINE static mask32v LessThan_i32( int32v_arg a, int32v_arg b )
-    {
-        return _mm_cmplt_epi32( a, b );
-    }
-
-    FS_INLINE static int32v Select_i32( int32v_arg a, int32v_arg b, mask32v_arg m )
-    {
-        return  _mm_or_si128( _mm_and_si128( m, a ), _mm_andnot_si128( m, b ) );
-    }
-
-    FS_INLINE static int32v Max_i32( int32v_arg a, int32v_arg b )
-    {
-        return Select_i32( a, b, GreaterThan_i32( a, b ) );
-    }
-
-    FS_INLINE static int32v Min_i32( int32v_arg a, int32v_arg b )
-    {
-        return Select_i32( a, b, LessThan_i32( a, b ) );
-    }
-
-    FS_INLINE static float32v And_f32( float32v_arg a, float32v_arg b )
-    {
-        return _mm_and_ps( a, b );
-    }
-
-    FS_INLINE static float32v AndNot_f32( float32v_arg a, float32v_arg b )
-    {
-        return _mm_andnot_ps( b, a );
-    }
-
-    FS_INLINE static float32v Or_f32( float32v_arg a, float32v_arg b )
-    {
-        return _mm_or_ps( a, b );
-    }
-
-    FS_INLINE static float32v Xor_f32( float32v_arg a, float32v_arg b )
-    {
-        return _mm_xor_ps( a, b );
-    }
-
-    FS_INLINE static float32v Not_f32( float32v_arg a )
-    {
-#ifdef FASTSIMD_CONFIG_GENERATE_CONSTANTS
-        __m128i neg1 = _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() );
-#else
-        __m128i neg1 = _mm_set1_epi32( -1 );
-#endif
-        return _mm_xor_ps( a, _mm_castsi128_ps( neg1 ) );
-    }
-
-    FS_INLINE static float32v Max_f32( float32v_arg a, float32v_arg b )
-    {
-        return _mm_max_ps( a, b );
-    }
-
-    FS_INLINE static float32v Min_f32( float32v_arg a, float32v_arg b )
-    {
-        return _mm_min_ps( a, b );
-    }
+    // Comparisons
 
     FS_INLINE static mask32v GreaterThan_f32( float32v_arg a, float32v_arg b )
     {
@@ -293,6 +238,96 @@ public:
         return _mm_castps_si128( _mm_cmple_ps( a, b ) );
     }
 
+    FS_INLINE static mask32v Equal_i32( int32v_arg a, int32v_arg b )
+    {
+        return _mm_cmpeq_epi32( a, b );
+    }
+
+    FS_INLINE static mask32v GreaterThan_i32( int32v_arg a, int32v_arg b )
+    {
+        return _mm_cmpgt_epi32( a, b );
+    }
+
+    FS_INLINE static mask32v LessThan_i32( int32v_arg a, int32v_arg b )
+    {
+        return _mm_cmplt_epi32( a, b );
+    }
+
+    // Select
+
+    FS_INLINE static float32v_arg Select_f32( mask32v_arg m, float32v_arg a, float32v_arg b )
+    {
+        __m128 mf = _mm_castsi128_ps( m );
+
+        return  _mm_or_ps( _mm_and_ps( mf, a ), _mm_andnot_ps( mf, b ) );
+    }
+
+    FS_INLINE static int32v Select_i32( mask32v_arg m, int32v a, int32v b )
+    {
+        return  _mm_or_si128( _mm_and_si128( m, a ), _mm_andnot_si128( m, b ) );
+    }
+
+    // Min, Max
+
+    FS_INLINE static float32v Min_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_min_ps( a, b );
+    }
+
+    FS_INLINE static float32v Max_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_max_ps( a, b );
+    }
+
+    FS_INLINE static int32v Min_i32( int32v_arg a, int32v_arg b )
+    {
+        return Select_i32( LessThan_i32( a, b ), a, b );
+    }
+
+    FS_INLINE static int32v Max_i32( int32v_arg a, int32v_arg b )
+    {
+        return Select_i32( GreaterThan_i32( a, b ), a, b );
+    }
+    
+    // Bitwise
+
+    FS_INLINE static float32v BitwiseAnd_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_and_ps( a, b );
+    }
+
+    FS_INLINE static float32v BitwiseOr_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_or_ps( a, b );
+    }
+
+    FS_INLINE static float32v BitwiseXor_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_xor_ps( a, b );
+    }
+
+    FS_INLINE static float32v BitwiseNot_f32( float32v_arg a )
+    {
+#ifdef FASTSIMD_CONFIG_GENERATE_CONSTANTS
+        __m128i neg1 = _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() );
+#else
+        __m128i neg1 = _mm_set1_epi32( -1 );
+#endif
+        return _mm_xor_ps( a, _mm_castsi128_ps( neg1 ) );
+    }
+
+    FS_INLINE static float32v BitwiseAndNot_f32( float32v_arg a, float32v_arg b )
+    {
+        return _mm_andnot_ps( b, a );
+    }
+
+    FS_INLINE static int32v BitwiseAndNot_i32( int32v_arg a, int32v_arg b )
+    {
+        return _mm_andnot_si128( b, a );
+    }
+
+    // Float math
+
     FS_INLINE static float32v Abs_f32( float32v_arg a )
     {
 #ifdef FASTSIMD_CONFIG_GENERATE_CONSTANTS
@@ -308,7 +343,7 @@ public:
         return _mm_rsqrt_ps( a );
     }
 
-// Floor, Ceil, Round: http://dss.stephanierct.com/DevBlog/?p=8
+    // Floor, Ceil, Round: http://dss.stephanierct.com/DevBlog/?p=8
 
     FS_INLINE static float32v Floor_f32( float32v_arg a )
     {
@@ -348,12 +383,6 @@ public:
         __m128 rmd2Trunc = _mm_cvtepi32_ps( _mm_cvttps_epi32( rmd2 ) ); // after being truncated of course
         return _mm_add_ps( aTrunc, rmd2Trunc );        
     }
-
-
-    FS_INLINE static float32v_arg Select_f32( float32v_arg a, float32v_arg b, mask32v_arg m )
-    {
-        __m128 mf = _mm_castsi128_ps( m );
-
-        return  _mm_or_ps( _mm_and_ps( mf, a ), _mm_andnot_ps( mf, b ) );
-    }
 };
+
+typedef FastSIMD_SSE_T<FastSIMD::Level_SSE2> FastSIMD_SSE2;
