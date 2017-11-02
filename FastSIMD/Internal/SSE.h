@@ -338,6 +338,11 @@ public:
         return _mm_and_ps( a, _mm_castsi128_ps( intMax ) );
     }
 
+    FS_INLINE static float32v Sqrt_f32( float32v_arg a )
+    {
+        return _mm_sqrt_ps( a );
+    }
+
     FS_INLINE static float32v InvSqrt_f32( float32v_arg a )
     {
         return _mm_rsqrt_ps( a );

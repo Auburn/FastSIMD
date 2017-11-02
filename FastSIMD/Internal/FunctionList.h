@@ -6,77 +6,319 @@
 
 #define FS_MULTI_TEMPLATE(...) FastSIMD::MultiTemplate<__VA_ARGS__>::type
 
+// Vector builders
+
 // Compile time constant
-// int: Number of float32 that will fit into the vector
+// returns: Number of float32 that will fit into the vector
+// I
+// int FS_VectorSize_f32()
 #define FS_VectorSize_f32 FastSIMD::VectorSize<FS, float_t>::Count
 
 // Compile time constant
-// int: Number of int32 that will fit into the vector
+// returns: Number of int32 that will fit into the vector
+// I
+// int FS_VectorSize_i32()
 #define FS_VectorSize_i32 FastSIMD::VectorSize<FS, int32_t>::Count
 
-// Set all values in the vector to 
-// Test more stuff
-// l
-// float32v FS_VecFill_f32()
+// returns: Vector with all values set to 0
+// I
+// float32v FS_VecZero_f32()
 #define FS_VecZero_f32 FS::VecZero_f32
 
-// Set all values in the vector to 0
+// returns: Vector with all values set to 0
 // I
-// int32v FS_VecFill_i32()
+// int32v FS_VecZero_i32()
 #define FS_VecZero_i32 FS::VecZero_i32
 
-// Set all values in the vector
 // Compile time constant when using a const value
+// value: Value to fill vector with
+// returns: Vector with all elements set to given value
 // I
 // float32v FS_VecFill_f32( float value )
 #define FS_VecFill_f32 FS::VecFill_f32
 
-// Set all values in the vector
 // Compile time constant when using a const value
+// value: Value to fill vector with
+// returns: Vector with all elements set to given value
 // I
 // int32v FS_VecFill_i32( int value )
 #define FS_VecFill_i32 FS::VecFill_i32
 
-/*
-  Copies {vectorSize} bytes from memory location into a vector
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_Vec4_f32( float_t f0, float_t f1, float_t f2, float_t f3 )
+#define FS_Vec4_f32 FS::Vec4_f32
 
-  @code :
-  float32v FS_Store_f32( void* ptr )
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// int32v FS_Vec4_i32( int32_t i0, int32_t i1, int32_t i2, int32_t i3 )
+#define FS_Vec4_i32 FS::Vec4_i32
 
-  @param ptr 
-  Pointer to first byte (unaligned)
 
-  @returns 
-  Vector with copied data
-*/
+// Load
+
+// Copies {vectorSize} bytes from memory location into a vector
+// ptr: Pointer to first byte (unaligned)
+// returns: Vector with copied data
+// I
+// float32v FS_Store_f32( void* ptr )
 #define FS_Load_f32 FS::Load_f32
 
 // Copies {vectorSize} bytes from memory location into a vector
-//
-// @param ptr Pointer to first byte (unaligned)
-// @returns Vector with copied data
-// 
-// @code -
-// int32v FS_Store_i32( void* ptr )
+// ptr: Pointer to first byte (unaligned)
+// returns: Vector with copied data
+// I
+// int32v FS_Load_i32( void* ptr )
 #define FS_Load_i32 FS::Load_i32
 
+
+// Store
+
 // Copies all elements of a vector to given memory location
-//
-// @param ptr Pointer to location elements should be copied to
-// @param vec Vector to copy from
-//
-// @code -
+// ptr: Pointer to memory location that elements will be copied to
+// vec: Vector to copy from
+// I
 // void FS_Store_f32( void* ptr, float32v vec )
 #define FS_Store_f32 FS::Store_f32
 
 // Copies all elements of a vector to given memory location
-//
-// @param ptr  Pointer to location elements should be copied to
-// @param vec Vector to copy from
-//
-// @code -
+// ptr: Pointer to memory location that elements will be copied to
+// vec: Vector to copy from
+// I
 // void FS_Store_i32( void* ptr, int32v vec )
 #define FS_Store_i32 FS::Store_i32
+
+
+// Cast
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_Casti32_f32( int32v_arg a )
+#define FS_Casti32_f32 FS::Casti32_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// int32v FS_Castf32_i32( float32v_arg a )
+#define FS_Castf32_i32 FS::Castf32_i32
+
+
+// Convert
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_Converti32_f32( int32v_arg a )
+#define FS_Converti32_f32 FS::Converti32_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// int32v FS_Convertf32_i32( float32v_arg a )
+#define FS_Convertf32_i32 FS::Convertf32_i32
+
+
+// Comparisons
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// mask32v FS_GreaterThan_f32( float32v_arg a, float32v_arg b )
+#define FS_GreaterThan_f32 FS::GreaterThan_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// mask32v FS_LessThan_f32( float32v_arg a, float32v_arg b )
+#define FS_LessThan_f32 FS::LessThan_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// mask32v FS_GreaterEqualThan_f32( float32v_arg a, float32v_arg b )
+#define FS_GreaterEqualThan_f32 FS::GreaterEqualThan_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// mask32v FS_LessEqualThan_f32( float32v_arg a, float32v_arg b )
+#define FS_LessEqualThan_f32 FS::LessEqualThan_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// mask32v FS_Equal_i32( int32v_arg a, int32v_arg b )
+#define FS_Equal_i32 FS::Equal_i32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// mask32v FS_GreaterThan_i32( int32v_arg a, int32v_arg b )
+#define FS_GreaterThan_i32 FS::GreaterThan_i32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// mask32v FS_LessThan_i32( int32v_arg a, int32v_arg b )
+#define FS_LessThan_i32 FS::LessThan_i32
+
+
+// Select
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v_arg FS_Select_f32( mask32v_arg m, float32v_arg a, float32v_arg b )
+#define FS_Select_f32 FS::Select_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// int32v FS_Select_i32( mask32v_arg m, int32v a, int32v b )
+#define FS_Select_i32 FS::Select_i32
+
+
+// Min, Max
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_Min_f32( float32v_arg a, float32v_arg b )
+#define FS_Min_f32 FS::Min_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_Max_f32( float32v_arg a, float32v_arg b )
+#define FS_Max_f32 FS::Max_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// int32v FS_Min_i32( int32v_arg a, int32v_arg b )
+#define FS_Min_i32 FS::Min_i32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// int32v FS_Max_i32( int32v_arg a, int32v_arg b )
+#define FS_Max_i32 FS::Max_i32
+
+
+// Bitwise
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_BitwiseAnd_f32( float32v_arg a, float32v_arg b )
+#define FS_BitwiseAnd_f32 FS::BitwiseAnd_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_BitwiseOr_f32( float32v_arg a, float32v_arg b )
+#define FS_BitwiseOr_f32 FS::BitwiseOr_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_BitwiseXor_f32( float32v_arg a, float32v_arg b )
+#define FS_BitwiseXor_f32 FS::BitwiseXor_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_BitwiseNot_f32( float32v_arg a )
+#define FS_BitwiseNot_f32 FS::BitwiseNot_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_BitwiseAndNot_f32( float32v_arg a, float32v_arg b )
+#define FS_BitwiseAndNot_f32 FS::BitwiseAndNot_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// int32v FS_BitwiseAndNot_i32( int32v_arg a, int32v_arg b )
+#define FS_BitwiseAndNot_i32 FS::BitwiseAndNot_i32
+
+
+// Float math
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_Abs_f32( float32v_arg a )
+#define FS_Abs_f32 FS::Abs_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_Sqrt_f32( float32v_arg a )
+#define FS_Sqrt_f32 FS::Sqrt_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_InvSqrt_f32( float32v_arg a )
+#define FS_InvSqrt_f32 FS::InvSqrt_f32
+
+
+// Floor, Ceil, Round
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_Floor_f32( float32v_arg a )
+#define FS_Floor_f32 FS::Floor_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_Ceil_f32( float32v_arg a )
+#define FS_Ceil_f32 FS::Ceil_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_Round_f32( float32v_arg a )
+#define FS_Round_f32 FS::Round_f32
+
 
 
 namespace FastSIMD
@@ -86,7 +328,7 @@ namespace FastSIMD
     {
         static_assert((FS::VectorBits / 8) % sizeof( T ) == 0, "Type does not fit into the vector exactly");
 
-        static int Count()
+        constexpr static int Count()
         {            
             return (FS::VectorBits / 8) / sizeof( T );
         }
@@ -95,7 +337,7 @@ namespace FastSIMD
     template<typename T>
     struct VectorSize<FastSIMD_Scalar, T>
     {
-        static int Count()
+        constexpr static int Count()
         {
             return 1;
         }
