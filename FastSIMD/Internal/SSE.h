@@ -31,12 +31,22 @@ struct SSE_f32x4
         *this = _mm_div_ps( *this, rhs );
         return *this;
     }
+
+    FS_INLINE SSE_f32x4 operator-() const
+    {
+#ifdef FASTSIMD_CONFIG_GENERATE_CONSTANTS
+        __m128i minInt = _mm_slli_epi32( _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() ), 31 );
+#else
+        __m128i minInt = _mm_set1_epi32( -2147483648 );
+#endif
+        return _mm_xor_ps( *this, _mm_castsi128_ps( minInt ) );
+    }
 };
 
 FASTSIMD_INTERNAL_OPERATORS_FLOAT( SSE_f32x4 )
 
 
-template<FastSIMD::Level T>
+template<FastSIMD::Level LEVEL_T>
 struct SSE_i32x4
 {
     FASTSIMD_INTERNAL_TYPE_SET( SSE_i32x4, __m128i );
@@ -53,16 +63,17 @@ struct SSE_i32x4
         return *this;
     }
 
-    FS_INLINE SSE_i32x4& operator*=( const SSE_i32x4& rhs )
+    template<FastSIMD::Level L>
+    FS_INLINE FS_ENABLE_IF( L < FastSIMD::Level_SSE41, SSE_i32x4<L>& ) operator*=( const SSE_i32x4<L>& rhs )
     {
-        __m128 tmp1 = _mm_castsi128_ps( _mm_mul_epu32( *this, rhs ) ); /* mul 2,0*/
-        __m128 tmp2 = _mm_castsi128_ps( _mm_mul_epu32( _mm_srli_si128( *this, 4 ), _mm_srli_si128( rhs, 4 ) ) ); /* mul 3,1 */
-        *this = _mm_shuffle_epi32( _mm_castps_si128( _mm_shuffle_ps( tmp1, tmp2, _MM_SHUFFLE( 2, 0, 2, 0 ) ) ), _MM_SHUFFLE( 3, 1, 2, 0 ) );
+        __m128i tmp1 = _mm_mul_epu32( *this, rhs ); /* mul 2,0*/
+        __m128i tmp2 = _mm_mul_epu32( _mm_srli_si128( *this, 4 ), _mm_srli_si128( rhs, 4 ) ); /* mul 3,1 */
+        *this = _mm_unpacklo_epi32( _mm_shuffle_epi32( tmp1, _MM_SHUFFLE( 0, 0, 2, 0 ) ), _mm_shuffle_epi32( tmp2, _MM_SHUFFLE( 0, 0, 2, 0 ) ) ); /* shuffle results to [63..0] and pack */
         return *this;
     }
 
-    template<FastSIMD::Level LEVEL_T>
-    FS_INLINE FS_ENABLE_IF(LEVEL_T >= FastSIMD::Level_SSE41, SSE_i32x4<LEVEL_T>&) operator*=( const SSE_i32x4<LEVEL_T>& rhs )
+    template<FastSIMD::Level L>
+    FS_INLINE FS_ENABLE_IF( L >= FastSIMD::Level_SSE41, SSE_i32x4<L>& ) operator*=( const SSE_i32x4<L>& rhs )
     {
         *this = _mm_mullo_epi32( *this, rhs );
         return *this;
@@ -107,14 +118,26 @@ struct SSE_i32x4
 #endif
         return _mm_xor_si128( *this, neg1 );        
     }
+
+    FS_INLINE SSE_f32x4 operator-() const
+    {
+#ifdef FASTSIMD_CONFIG_GENERATE_CONSTANTS
+        __m128i minInt = _mm_slli_epi32( _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() ), 31 );
+#else
+        __m128i minInt = _mm_set1_epi32( -2147483648 );
+#endif
+        return _mm_xor_si128( *this, minInt );
+    }
 };
 
-FASTSIMD_INTERNAL_OPERATORS_INT( SSE_i32x4<FastSIMD::Level_SSE2>, int32_t )
+FASTSIMD_INTERNAL_OPERATORS_INT_TEMPLATED( SSE_i32x4, int32_t )
 
 template<FastSIMD::Level LEVEL_T>
 class FastSIMD_SSE_T
 {
 public:
+    static_assert( LEVEL_T >= FastSIMD::Level_SSE2 && LEVEL_T <= FastSIMD::Level_SSE42, "Cannot create template with unsupported SIMD level" );
+
     static const FastSIMD::Level SIMD_Level = LEVEL_T;
     static const size_t VectorBits = 128;
 
@@ -170,26 +193,26 @@ public:
 
     // Load
 
-    FS_INLINE static float32v Load_f32( void* p )
+    FS_INLINE static float32v Load_f32( void const* p )
     {
-        return _mm_loadu_ps( reinterpret_cast<float_t*>(p) );
+        return _mm_loadu_ps( reinterpret_cast<float_t const*>(p) );
     }
 
-    FS_INLINE static int32v Load_i32( void* p )
+    FS_INLINE static int32v Load_i32( void const* p )
     {
-        return _mm_loadu_si128( reinterpret_cast<__m128i*>(p) );
+        return _mm_loadu_si128( reinterpret_cast<__m128i const*>(p) );
     }
 
     // Store
 
-    FS_INLINE static void Store_i32( void* p, int32v_arg a )
-    {
-        _mm_store_si128( reinterpret_cast<__m128i*>(p), a );
-    }
-
     FS_INLINE static void Store_f32( void* p, float32v_arg a )
     {
-        _mm_store_ps( reinterpret_cast<float_t*>(p), a );
+        _mm_storeu_ps( reinterpret_cast<float_t*>(p), a );
+    }
+
+    FS_INLINE static void Store_i32( void* p, int32v_arg a )
+    {
+        _mm_storeu_si128( reinterpret_cast<__m128i*>(p), a );
     }
 
     // Cast
@@ -255,16 +278,30 @@ public:
 
     // Select
 
-    FS_INLINE static float32v_arg Select_f32( mask32v_arg m, float32v_arg a, float32v_arg b )
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L < FastSIMD::Level_SSE41, float32v ) Select_f32( mask32v_arg m, float32v_arg a, float32v_arg b )
     {
         __m128 mf = _mm_castsi128_ps( m );
 
         return  _mm_or_ps( _mm_and_ps( mf, a ), _mm_andnot_ps( mf, b ) );
     }
 
-    FS_INLINE static int32v Select_i32( mask32v_arg m, int32v a, int32v b )
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L >= FastSIMD::Level_SSE41, float32v ) Select_f32( mask32v_arg m, float32v_arg a, float32v_arg b )
+    {
+        return  _mm_blendv_ps( b, a, _mm_castsi128_ps( m ) );
+    }
+
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L < FastSIMD::Level_SSE41, int32v ) Select_i32( mask32v_arg m, int32v_arg a, int32v_arg b )
     {
         return  _mm_or_si128( _mm_and_si128( m, a ), _mm_andnot_si128( m, b ) );
+    }
+
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L >= FastSIMD::Level_SSE41, int32v ) Select_i32( mask32v_arg m, int32v_arg a, int32v_arg b )
+    {
+        return _mm_castps_si128( _mm_blendv_ps( _mm_castsi128_ps( b ), _mm_castsi128_ps( a ), _mm_castsi128_ps( m ) ) );
     }
 
     // Min, Max
@@ -279,14 +316,28 @@ public:
         return _mm_max_ps( a, b );
     }
 
-    FS_INLINE static int32v Min_i32( int32v_arg a, int32v_arg b )
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L < FastSIMD::Level_SSE41, int32v ) Min_i32( int32v_arg a, int32v_arg b )
     {
         return Select_i32( LessThan_i32( a, b ), a, b );
     }
 
-    FS_INLINE static int32v Max_i32( int32v_arg a, int32v_arg b )
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L >= FastSIMD::Level_SSE41, int32v ) Min_i32( int32v_arg a, int32v_arg b )
+    {
+        return _mm_min_epi32( a, b );
+    }
+
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L < FastSIMD::Level_SSE41, int32v ) Max_i32( int32v_arg a, int32v_arg b )
     {
         return Select_i32( GreaterThan_i32( a, b ), a, b );
+    }
+
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L >= FastSIMD::Level_SSE41, int32v ) Max_i32( int32v_arg a, int32v_arg b )
+    {
+        return _mm_max_epi32( a, b );
     }
     
     // Bitwise
@@ -326,7 +377,7 @@ public:
         return _mm_andnot_si128( b, a );
     }
 
-    // Float math
+    // Abs
 
     FS_INLINE static float32v Abs_f32( float32v_arg a )
     {
@@ -337,6 +388,21 @@ public:
 #endif
         return _mm_and_ps( a, _mm_castsi128_ps( intMax ) );
     }
+
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L < FastSIMD::Level_SSSE3, int32v ) Abs_i32( int32v_arg a )
+    {
+        __m128i signMask = _mm_srai_epi32( a, 31 );
+        return _mm_sub_epi32( _mm_xor_si128( a, signMask ), signMask );
+    }
+
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L >= FastSIMD::Level_SSSE3, int32v ) Abs_i32( int32v_arg a )
+    {
+        return _mm_abs_epi32( a );
+    }
+
+    // Float math
 
     FS_INLINE static float32v Sqrt_f32( float32v_arg a )
     {
@@ -350,7 +416,8 @@ public:
 
     // Floor, Ceil, Round: http://dss.stephanierct.com/DevBlog/?p=8
 
-    FS_INLINE static float32v Floor_f32( float32v_arg a )
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L < FastSIMD::Level_SSE41, float32v ) Floor_f32( float32v_arg a )
     {
 #ifdef FASTSIMD_CONFIG_GENERATE_CONSTANTS
         __m128 f1 = _mm_castsi128_ps( _mm_slli_epi32( _mm_srli_epi32( _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() ), 25 ), 23 ) );
@@ -362,7 +429,14 @@ public:
         return _mm_sub_ps( fval, _mm_and_ps( _mm_cmplt_ps( a, fval ), f1 ) );
     }
 
-    FS_INLINE static float32v Ceil_f32( float32v_arg a )
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L >= FastSIMD::Level_SSE41, float32v ) Floor_f32( float32v_arg a )
+    {
+        return _mm_floor_ps( a );
+    }
+
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L < FastSIMD::Level_SSE41, float32v ) Ceil_f32( float32v_arg a )
     {
 #ifdef FASTSIMD_CONFIG_GENERATE_CONSTANTS
         __m128 f1 = _mm_castsi128_ps( _mm_slli_epi32( _mm_srli_epi32( _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() ), 25 ), 23 ) );
@@ -374,8 +448,14 @@ public:
         return _mm_add_ps( fval, _mm_and_ps( _mm_cmplt_ps( a, fval ), f1 ) );
     }
 
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L >= FastSIMD::Level_SSE41, float32v ) Ceil_f32( float32v_arg a )
+    {
+        return _mm_ceil_ps( a );
+    }
 
-    FS_INLINE static float32v Round_f32( float32v_arg a )
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L < FastSIMD::Level_SSE41, float32v ) Round_f32( float32v_arg a )
     {
 #ifdef FASTSIMD_CONFIG_GENERATE_CONSTANTS
         __m128 nearest2 = _mm_castsi128_ps( _mm_srli_epi32( _mm_cmpeq_epi32( _mm_setzero_si128(), _mm_setzero_si128() ), 2 ) );
@@ -386,8 +466,18 @@ public:
         __m128 rmd = _mm_sub_ps( a, aTrunc );                           // get remainder
         __m128 rmd2 = _mm_mul_ps( rmd, nearest2 );                      // mul remainder by near 2 will yield the needed offset
         __m128 rmd2Trunc = _mm_cvtepi32_ps( _mm_cvttps_epi32( rmd2 ) ); // after being truncated of course
-        return _mm_add_ps( aTrunc, rmd2Trunc );        
+        return _mm_add_ps( aTrunc, rmd2Trunc );
+    }
+
+    template<FastSIMD::Level L>
+    FS_INLINE static FS_ENABLE_IF( L >= FastSIMD::Level_SSE41, float32v ) Round_f32( float32v_arg a )
+    {
+        return _mm_round_ps( a, _MM_FROUND_TO_NEAREST_INT );
     }
 };
 
-typedef FastSIMD_SSE_T<FastSIMD::Level_SSE2> FastSIMD_SSE2;
+typedef FastSIMD_SSE_T<FastSIMD::Level_SSE2>  FastSIMD_SSE2;
+typedef FastSIMD_SSE_T<FastSIMD::Level_SSE3>  FastSIMD_SSE3;
+typedef FastSIMD_SSE_T<FastSIMD::Level_SSSE3> FastSIMD_SSSE3;
+typedef FastSIMD_SSE_T<FastSIMD::Level_SSE41> FastSIMD_SSE41;
+typedef FastSIMD_SSE_T<FastSIMD::Level_SSE42> FastSIMD_SSE42;

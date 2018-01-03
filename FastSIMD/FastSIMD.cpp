@@ -73,7 +73,7 @@ static int64_t xgetbv( int ctr )
 
 FastSIMD::Level FastSIMD::GetSIMDLevel()
 {
-    if ( simdLevel >= 0 )
+    if ( simdLevel > Level_Null )
     {
         return simdLevel;
     }
@@ -164,19 +164,37 @@ FastSIMD::Level FastSIMD::GetSIMDLevel()
     return simdLevel;
 }
 
+template<typename CLASS_T, typename SIMD_T>
+FS_ENABLE_IF( (CLASS_T::Supported_SIMD_Levels & SIMD_T::SIMD_Level & FASTSIMD_COMPILED_SIMD_LEVELS) == 0, CLASS_T*) ClassFactoryHelper()
+{
+	return nullptr;
+}
+
+template<typename CLASS_T, typename SIMD_T>
+FS_ENABLE_IF((CLASS_T::Supported_SIMD_Levels & SIMD_T::SIMD_Level & FASTSIMD_COMPILED_SIMD_LEVELS) != 0, CLASS_T*) ClassFactoryHelper()
+{
+	return FastSIMD::ClassFactory<CLASS_T, SIMD_T>::Get();
+}
+
+
 #define FASTSIMD_TRY_LEVEL( CLASS, LEVEL ) \
-if (simdLevel >= LEVEL::SIMD_Level) return new FS_CLASS( CLASS )<LEVEL>;
+if ( LEVEL::SIMD_Level <= maxSIMDLevel && (ptr = ClassFactoryHelper<CLASS, LEVEL>()) ) return ptr;
 
 #define FASTSIMD_BUILD_CLASS( CLASS )                            \
 template<>                                                       \
-CLASS* FastSIMD::NewSIMDClass<CLASS>( Level simdLevel )          \
+CLASS* FastSIMD::NewSIMDClass<CLASS>( Level maxSIMDLevel )       \
 {                                                                \
+    CLASS* ptr = nullptr;                                        \
+    FASTSIMD_TRY_LEVEL( CLASS, FastSIMD_SSE42 )                  \
+    FASTSIMD_TRY_LEVEL( CLASS, FastSIMD_SSE41 )                  \
+    FASTSIMD_TRY_LEVEL( CLASS, FastSIMD_SSSE3 )                  \
+    FASTSIMD_TRY_LEVEL( CLASS, FastSIMD_SSE3 )                   \
     FASTSIMD_TRY_LEVEL( CLASS, FastSIMD_SSE2 )                   \
                                                                  \
-    return new FS_CLASS( CLASS )<FASTSIMD_FALLBACK_SIMD_LEVEL>;  \
+    return new FS_CLASS( CLASS )<FASTSIMD_FALLBACK_SIMD_CLASS>;  \
 }                                                                \
 template<>                                                       \
-CLASS* FastSIMD::NewSIMDClass<CLASS>()                           \
+CLASS* FastSIMD::NewSIMDClass<CLASS>()                 \
 {                                                                \
     Level simdLevel = GetSIMDLevel();                            \
                                                                  \

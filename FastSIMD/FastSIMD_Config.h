@@ -1,5 +1,15 @@
 #pragma once
 
-#define FASTSIMD_FALLBACK_SIMD_LEVEL FastSIMD_Scalar
+#define FASTSIMD_FALLBACK_SIMD_CLASS FastSIMD_SSE2
+#define FASTSIMD_FALLBACK_SIMD_LEVEL FastSIMD::Level_SSE2
+
+
+#define FASTSIMD_COMPILED_SIMD_LEVELS (\
+    FastSIMD::Level_SSE2   |\
+    FastSIMD::Level_SSE3   |\
+    FastSIMD::Level_SSSE3  |\
+    FastSIMD::Level_SSE41   \
+)
 
 #define FASTSIMD_CONFIG_GENERATE_CONSTANTS
+

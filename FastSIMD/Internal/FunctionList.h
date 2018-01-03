@@ -34,14 +34,14 @@
 // value: Value to fill vector with
 // returns: Vector with all elements set to given value
 // I
-// float32v FS_VecFill_f32( float value )
+// float32v FS_VecFill_f32( float_t value )
 #define FS_VecFill_f32 FS::VecFill_f32
 
 // Compile time constant when using a const value
 // value: Value to fill vector with
 // returns: Vector with all elements set to given value
 // I
-// int32v FS_VecFill_i32( int value )
+// int32v FS_VecFill_i32( int32_t value )
 #define FS_VecFill_i32 FS::VecFill_i32
 
 // TEXT
@@ -65,14 +65,14 @@
 // ptr: Pointer to first byte (unaligned)
 // returns: Vector with copied data
 // I
-// float32v FS_Store_f32( void* ptr )
+// float32v FS_Store_f32( void const* ptr )
 #define FS_Load_f32 FS::Load_f32
 
 // Copies {vectorSize} bytes from memory location into a vector
 // ptr: Pointer to first byte (unaligned)
 // returns: Vector with copied data
 // I
-// int32v FS_Load_i32( void* ptr )
+// int32v FS_Load_i32( void const* ptr )
 #define FS_Load_i32 FS::Load_i32
 
 
@@ -99,14 +99,14 @@
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_Casti32_f32( int32v_arg a )
+// float32v FS_Casti32_f32( int32v a )
 #define FS_Casti32_f32 FS::Casti32_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// int32v FS_Castf32_i32( float32v_arg a )
+// int32v FS_Castf32_i32( float32v a )
 #define FS_Castf32_i32 FS::Castf32_i32
 
 
@@ -116,14 +116,14 @@
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_Converti32_f32( int32v_arg a )
+// float32v FS_Converti32_f32( int32v a )
 #define FS_Converti32_f32 FS::Converti32_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// int32v FS_Convertf32_i32( float32v_arg a )
+// int32v FS_Convertf32_i32( float32v a )
 #define FS_Convertf32_i32 FS::Convertf32_i32
 
 
@@ -133,49 +133,49 @@
 // val: TEXT
 // returns: TEXT
 // I
-// mask32v FS_GreaterThan_f32( float32v_arg a, float32v_arg b )
+// mask32v FS_GreaterThan_f32( float32v a, float32v b )
 #define FS_GreaterThan_f32 FS::GreaterThan_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// mask32v FS_LessThan_f32( float32v_arg a, float32v_arg b )
+// mask32v FS_LessThan_f32( float32v a, float32v b )
 #define FS_LessThan_f32 FS::LessThan_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// mask32v FS_GreaterEqualThan_f32( float32v_arg a, float32v_arg b )
+// mask32v FS_GreaterEqualThan_f32( float32v a, float32v b )
 #define FS_GreaterEqualThan_f32 FS::GreaterEqualThan_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// mask32v FS_LessEqualThan_f32( float32v_arg a, float32v_arg b )
+// mask32v FS_LessEqualThan_f32( float32v a, float32v b )
 #define FS_LessEqualThan_f32 FS::LessEqualThan_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// mask32v FS_Equal_i32( int32v_arg a, int32v_arg b )
+// mask32v FS_Equal_i32( int32v a, int32v b )
 #define FS_Equal_i32 FS::Equal_i32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// mask32v FS_GreaterThan_i32( int32v_arg a, int32v_arg b )
+// mask32v FS_GreaterThan_i32( int32v a, int32v b )
 #define FS_GreaterThan_i32 FS::GreaterThan_i32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// mask32v FS_LessThan_i32( int32v_arg a, int32v_arg b )
+// mask32v FS_LessThan_i32( int32v a, int32v b )
 #define FS_LessThan_i32 FS::LessThan_i32
 
 
@@ -185,14 +185,14 @@
 // val: TEXT
 // returns: TEXT
 // I
-// float32v_arg FS_Select_f32( mask32v_arg m, float32v_arg a, float32v_arg b )
+// float32v FS_Select_f32( mask32v m, float32v a, float32v b )
 #define FS_Select_f32 FS::Select_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// int32v FS_Select_i32( mask32v_arg m, int32v a, int32v b )
+// int32v FS_Select_i32( mask32v m, int32v a, int32v b )
 #define FS_Select_i32 FS::Select_i32
 
 
@@ -202,28 +202,28 @@
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_Min_f32( float32v_arg a, float32v_arg b )
+// float32v FS_Min_f32( float32v a, float32v b )
 #define FS_Min_f32 FS::Min_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_Max_f32( float32v_arg a, float32v_arg b )
+// float32v FS_Max_f32( float32v a, float32v b )
 #define FS_Max_f32 FS::Max_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// int32v FS_Min_i32( int32v_arg a, int32v_arg b )
+// int32v FS_Min_i32( int32v a, int32v b )
 #define FS_Min_i32 FS::Min_i32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// int32v FS_Max_i32( int32v_arg a, int32v_arg b )
+// int32v FS_Max_i32( int32v a, int32v b )
 #define FS_Max_i32 FS::Max_i32
 
 
@@ -233,44 +233,60 @@
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_BitwiseAnd_f32( float32v_arg a, float32v_arg b )
+// float32v FS_BitwiseAnd_f32( float32v a, float32v b )
 #define FS_BitwiseAnd_f32 FS::BitwiseAnd_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_BitwiseOr_f32( float32v_arg a, float32v_arg b )
+// float32v FS_BitwiseOr_f32( float32v a, float32v b )
 #define FS_BitwiseOr_f32 FS::BitwiseOr_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_BitwiseXor_f32( float32v_arg a, float32v_arg b )
+// float32v FS_BitwiseXor_f32( float32v a, float32v b )
 #define FS_BitwiseXor_f32 FS::BitwiseXor_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_BitwiseNot_f32( float32v_arg a )
+// float32v FS_BitwiseNot_f32( float32v a )
 #define FS_BitwiseNot_f32 FS::BitwiseNot_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_BitwiseAndNot_f32( float32v_arg a, float32v_arg b )
+// float32v FS_BitwiseAndNot_f32( float32v a, float32v b )
 #define FS_BitwiseAndNot_f32 FS::BitwiseAndNot_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// int32v FS_BitwiseAndNot_i32( int32v_arg a, int32v_arg b )
+// int32v FS_BitwiseAndNot_i32( int32v a, int32v b )
 #define FS_BitwiseAndNot_i32 FS::BitwiseAndNot_i32
 
+
+// Abs
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_Abs_f32( float32v a )
+#define FS_Abs_f32 FS::Abs_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// int32v FS_Abs_i32( int32v a )
+#define FS_Abs_i32 FS::Abs_i32
 
 // Float math
 
@@ -278,21 +294,21 @@
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_Abs_f32( float32v_arg a )
+// float32v FS_Abs_f32( float32v a )
 #define FS_Abs_f32 FS::Abs_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_Sqrt_f32( float32v_arg a )
+// float32v FS_Sqrt_f32( float32v a )
 #define FS_Sqrt_f32 FS::Sqrt_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_InvSqrt_f32( float32v_arg a )
+// float32v FS_InvSqrt_f32( float32v a )
 #define FS_InvSqrt_f32 FS::InvSqrt_f32
 
 
@@ -302,23 +318,22 @@
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_Floor_f32( float32v_arg a )
+// float32v FS_Floor_f32( float32v a )
 #define FS_Floor_f32 FS::Floor_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_Ceil_f32( float32v_arg a )
+// float32v FS_Ceil_f32( float32v a )
 #define FS_Ceil_f32 FS::Ceil_f32
 
 // TEXT
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_Round_f32( float32v_arg a )
+// float32v FS_Round_f32( float32v a )
 #define FS_Round_f32 FS::Round_f32
-
 
 
 namespace FastSIMD

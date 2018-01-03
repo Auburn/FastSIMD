@@ -25,6 +25,18 @@
     <ClCompile Include="..\FastSIMD\FastSIMD_Level_Scalar.cpp">
       <Filter>FastSIMD</Filter>
     </ClCompile>
+    <ClCompile Include="..\FastSIMD\FastSIMD_Level_SSE41.cpp">
+      <Filter>FastSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\FastSIMD\FastSIMD_Level_SSE3.cpp">
+      <Filter>FastSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\FastSIMD\FastSIMD_Level_SSE42.cpp">
+      <Filter>FastSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\FastSIMD\FastSIMD_Level_SSSE3.cpp">
+      <Filter>FastSIMD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Example.h">

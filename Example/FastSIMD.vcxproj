@@ -30,6 +30,10 @@
     <ClCompile Include="..\FastSIMD\FastSIMD.cpp" />
     <ClCompile Include="..\FastSIMD\FastSIMD_Level_Scalar.cpp" />
     <ClCompile Include="..\FastSIMD\FastSIMD_Level_SSE2.cpp" />
+    <ClCompile Include="..\FastSIMD\FastSIMD_Level_SSE3.cpp" />
+    <ClCompile Include="..\FastSIMD\FastSIMD_Level_SSE41.cpp" />
+    <ClCompile Include="..\FastSIMD\FastSIMD_Level_SSE42.cpp" />
+    <ClCompile Include="..\FastSIMD\FastSIMD_Level_SSSE3.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -77,7 +81,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release c++11|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -97,7 +101,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release c++11|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>

@@ -8,7 +8,9 @@
 FASTSIMD_CLASS_DEFINITION( Example )
 {
 public:
-    FASTSIMD_CLASS_TYPEDEFS();
+    FASTSIMD_SET_SUPPORTED_SIMD_LEVELS( FastSIMD::Level_AVX2 | FastSIMD::Level_SSE41 | FastSIMD::Level_SSE2 | FastSIMD::Level_Scalar );
+
+    FASTSIMD_CLASS_SETUP();
 
     FS_FUNC_EXTERNAL( void DoStuff( int* data ) );
 
