@@ -1,10 +1,14 @@
 #include <inttypes.h>
 #include <intrin.h>
+#include <stdexcept>
 
 #include "FastSIMD.h"
 #include "Internal/TypeList.h"
 
 static FastSIMD::Level simdLevel = FastSIMD::Level_Null;
+
+static_assert( std::is_same<FastSIMD::Level, decltype( FastSIMD::FASTSIMD_FALLBACK_SIMD_LEVEL )>::value, "FASTSIMD_FALLBACK_SIMD_LEVEL not set to a valid SIMD Level, check FastSIMD_Config.h" );
+static_assert( FastSIMD::FASTSIMD_FALLBACK_SIMD_LEVEL & FastSIMD::COMPILED_SIMD_LEVELS, "FASTSIMD_FALLBACK_SIMD_LEVEL is not a compiled SIMD level, check FastSIMD_Config.h" );
 
 // Define interface to cpuid instruction.
 // input:  eax = functionnumber, ecx = 0
@@ -71,7 +75,7 @@ static int64_t xgetbv( int ctr )
 }
 
 
-FastSIMD::Level FastSIMD::GetSIMDLevel()
+FastSIMD::Level FastSIMD::CPUMaxSIMDLevel()
 {
     if ( simdLevel > Level_Null )
     {
@@ -165,41 +169,36 @@ FastSIMD::Level FastSIMD::GetSIMDLevel()
 }
 
 template<typename CLASS_T, typename SIMD_T>
-FS_ENABLE_IF( (CLASS_T::Supported_SIMD_Levels & SIMD_T::SIMD_Level & FASTSIMD_COMPILED_SIMD_LEVELS) == 0, CLASS_T*) ClassFactoryHelper()
+FS_ENABLE_IF( (CLASS_T::Supported_SIMD_Levels & SIMD_T::SIMD_Level & FastSIMD::COMPILED_SIMD_LEVELS) == 0, CLASS_T* ) ClassFactoryHelper()
 {
 	return nullptr;
 }
 
 template<typename CLASS_T, typename SIMD_T>
-FS_ENABLE_IF((CLASS_T::Supported_SIMD_Levels & SIMD_T::SIMD_Level & FASTSIMD_COMPILED_SIMD_LEVELS) != 0, CLASS_T*) ClassFactoryHelper()
+FS_ENABLE_IF( (CLASS_T::Supported_SIMD_Levels & SIMD_T::SIMD_Level & FastSIMD::COMPILED_SIMD_LEVELS) != 0, CLASS_T* ) ClassFactoryHelper()
 {
 	return FastSIMD::ClassFactory<CLASS_T, SIMD_T>::Get();
 }
 
 
 #define FASTSIMD_TRY_LEVEL( CLASS, LEVEL ) \
-if ( LEVEL::SIMD_Level <= maxSIMDLevel && (ptr = ClassFactoryHelper<CLASS, LEVEL>()) ) return ptr;
+if ( (LEVEL::SIMD_Level <= maxSIMDLevel || LEVEL::SIMD_Level == FastSIMD::FASTSIMD_FALLBACK_SIMD_LEVEL) && (ptr = ClassFactoryHelper<CLASS, LEVEL>()) ) return ptr;
 
 #define FASTSIMD_BUILD_CLASS( CLASS )                            \
 template<>                                                       \
 CLASS* FastSIMD::NewSIMDClass<CLASS>( Level maxSIMDLevel )       \
 {                                                                \
-    CLASS* ptr = nullptr;                                        \
+    CLASS* ptr;                                                  \
+    FASTSIMD_TRY_LEVEL( CLASS, FastSIMD_AVX2 )                   \
     FASTSIMD_TRY_LEVEL( CLASS, FastSIMD_SSE42 )                  \
     FASTSIMD_TRY_LEVEL( CLASS, FastSIMD_SSE41 )                  \
     FASTSIMD_TRY_LEVEL( CLASS, FastSIMD_SSSE3 )                  \
     FASTSIMD_TRY_LEVEL( CLASS, FastSIMD_SSE3 )                   \
     FASTSIMD_TRY_LEVEL( CLASS, FastSIMD_SSE2 )                   \
+    FASTSIMD_TRY_LEVEL( CLASS, FastSIMD_Scalar )                 \
                                                                  \
-    return new FS_CLASS( CLASS )<FASTSIMD_FALLBACK_SIMD_CLASS>;  \
-}                                                                \
-template<>                                                       \
-CLASS* FastSIMD::NewSIMDClass<CLASS>()                 \
-{                                                                \
-    Level simdLevel = GetSIMDLevel();                            \
-                                                                 \
-    return NewSIMDClass<CLASS>( simdLevel );                     \
-}
+    throw std::logic_error( "FASTSIMD_FALLBACK_SIMD_LEVEL not found in FastSIMD::NewSIMDClass" );\
+}                                                                
 
 
 #define FS_SIMD_CLASS void

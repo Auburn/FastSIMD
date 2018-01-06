@@ -3,7 +3,6 @@
 
 #include "../FastSIMD/FastSIMD.h"
 #include "Example.h"
-#include "../FastSIMD/Internal/SSE.h"
 
 int main()
 {
@@ -24,7 +23,7 @@ int main()
     // Will get an instance of the class using the highest SIMD level that is compiled and supported by the class, up to the supplied maxSIMDLevel
     //Example* test = FastSIMD::NewSIMDClass<Example>(FastSIMD::Level_SSE2);
 
-    // Force: SSE42
+    // Force: SSE41
     // Will throw static assert if the class doesn't support the selected level or the level is not being compiled
     //Example* test = FastSIMD::ClassFactory<Example, FastSIMD_SSE41>::Get();
 

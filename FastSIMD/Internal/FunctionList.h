@@ -4,7 +4,7 @@
 
 #define FS_CLASS( CLASS ) CLASS ## _SIMD
 
-#define FS_MULTI_TEMPLATE(...) FastSIMD::MultiTemplate<__VA_ARGS__>::type
+#define FS_MULTI_TEMPLATE(...) FastSIMD::MultiTemplate<__VAS__>::type
 
 // Vector builders
 
@@ -12,7 +12,7 @@
 // returns: Number of float32 that will fit into the vector
 // I
 // int FS_VectorSize_f32()
-#define FS_VectorSize_f32 FastSIMD::VectorSize<FS, float_t>::Count
+#define FS_VectorSize_f32 FastSIMD::VectorSize<FS, float>::Count
 
 // Compile time constant
 // returns: Number of int32 that will fit into the vector
@@ -34,7 +34,7 @@
 // value: Value to fill vector with
 // returns: Vector with all elements set to given value
 // I
-// float32v FS_VecFill_f32( float_t value )
+// float32v FS_VecFill_f32( float value )
 #define FS_VecFill_f32 FS::VecFill_f32
 
 // Compile time constant when using a const value
@@ -48,7 +48,7 @@
 // val: TEXT
 // returns: TEXT
 // I
-// float32v FS_Vec4_f32( float_t f0, float_t f1, float_t f2, float_t f3 )
+// float32v FS_Vec4_f32( float f0, float f1, float f2, float f3 )
 #define FS_Vec4_f32 FS::Vec4_f32
 
 // TEXT
@@ -58,6 +58,19 @@
 // int32v FS_Vec4_i32( int32_t i0, int32_t i1, int32_t i2, int32_t i3 )
 #define FS_Vec4_i32 FS::Vec4_i32
 
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// float32v FS_Vec4_f32( float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7 )
+#define FS_Vec8_f32 FS::Vec8_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// int32v FS_Vec4_i32( int32_t i0, int32_t i1, int32_t i2, int32_t i3, int32_t i4, int32_t i5, int32_t i6, int32_t i7 )
+#define FS_Vec8_i32 FS::Vec8_i32
 
 // Load
 

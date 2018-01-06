@@ -63,6 +63,8 @@ void FS_CLASS( Example )<T>::DoArray( int* data0, int* data1, int size )
 
         a <<= 1;
 
+        a *= b;
+
         a -= FS_VecZero_i32();
 
         (~a);
