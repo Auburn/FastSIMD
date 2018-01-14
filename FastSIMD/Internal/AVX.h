@@ -122,11 +122,13 @@ struct AVX2_i32x4
 
 FASTSIMD_INTERNAL_OPERATORS_INT( AVX2_i32x4, int32_t )
 
-
-class FastSIMD_AVX2
+template<FastSIMD::Level LEVEL_T>
+class FastSIMD_AVX_T
 {
 public:
-    static const FastSIMD::Level SIMD_Level = FastSIMD::Level_AVX2;
+    static_assert(LEVEL_T >= FastSIMD::Level_AVX && LEVEL_T <= FastSIMD::Level_AVX2, "Cannot create template with unsupported SIMD level");
+
+    static const FastSIMD::Level SIMD_Level = LEVEL_T;
     static const size_t VectorBits = 256;
 
     typedef AVX_f32x4  float32v;
@@ -377,3 +379,10 @@ public:
         return _mm256_round_ps( a, _MM_FROUND_NINT );
     }
 };
+
+#if FASTSIMD_COMPILE_AVX
+typedef FastSIMD_AVX_T<FastSIMD::Level_AVX>   FastSIMD_AVX;
+#endif
+#if FASTSIMD_COMPILE_AVX2
+typedef FastSIMD_AVX_T<FastSIMD::Level_AVX2>  FastSIMD_AVX2;
+#endif

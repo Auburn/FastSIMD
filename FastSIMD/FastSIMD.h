@@ -26,7 +26,7 @@ namespace FastSIMD
         Level_SSE        * FASTSIMD_COMPILE_SSE       |
         Level_SSE2       * FASTSIMD_COMPILE_SSE2      |
         Level_SSE3       * FASTSIMD_COMPILE_SSE3      |
-        Level_SSSE3      * FASTSIMD_COMPILE_SSSE2     |
+        Level_SSSE3      * FASTSIMD_COMPILE_SSSE3     |
         Level_SSE41      * FASTSIMD_COMPILE_SSE41     |
         Level_SSE42      * FASTSIMD_COMPILE_SSE42     |
         Level_AVX        * FASTSIMD_COMPILE_AVX       |

@@ -14,7 +14,7 @@ virtual FastSIMD::Level GetSIMDLevel() = 0
 
 #define FASTSIMD_SET_SUPPORTED_SIMD_LEVELS( LEVELS ) \
 static const unsigned int Supported_SIMD_Levels = ( LEVELS );\
-static_assert( (Supported_SIMD_Levels & FastSIMD::FASTSIMD_FALLBACK_SIMD_LEVEL) != 0, "Fallback SIMD level must be supported" );
+static_assert( (Supported_SIMD_Levels & FastSIMD::FASTSIMD_FALLBACK_SIMD_LEVEL) != 0, "FASTSIMD_FALLBACK_SIMD_LEVEL must be supported" );
 
 #define FS_FUNC_EXTERNAL( FUNC ) \
 virtual FUNC = 0

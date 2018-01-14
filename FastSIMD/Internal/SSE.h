@@ -136,7 +136,7 @@ template<FastSIMD::Level LEVEL_T>
 class FastSIMD_SSE_T
 {
 public:
-    static_assert( LEVEL_T >= FastSIMD::Level_SSE2 && LEVEL_T <= FastSIMD::Level_SSE42, "Cannot create template with unsupported SIMD level" );
+    static_assert( LEVEL_T >= FastSIMD::Level_SSE && LEVEL_T <= FastSIMD::Level_SSE42, "Cannot create template with unsupported SIMD level" );
 
     static const FastSIMD::Level SIMD_Level = LEVEL_T;
     static const size_t VectorBits = 128;
@@ -472,8 +472,21 @@ public:
     }
 };
 
+#if FASTSIMD_COMPILE_SSE
+typedef FastSIMD_SSE_T<FastSIMD::Level_SSE>   FastSIMD_SSE;
+#endif
+#if FASTSIMD_COMPILE_SSE2
 typedef FastSIMD_SSE_T<FastSIMD::Level_SSE2>  FastSIMD_SSE2;
+#endif
+#if FASTSIMD_COMPILE_SSE3
 typedef FastSIMD_SSE_T<FastSIMD::Level_SSE3>  FastSIMD_SSE3;
+#endif
+#if FASTSIMD_COMPILE_SSSE3
 typedef FastSIMD_SSE_T<FastSIMD::Level_SSSE3> FastSIMD_SSSE3;
+#endif
+#if FASTSIMD_COMPILE_SSE41
 typedef FastSIMD_SSE_T<FastSIMD::Level_SSE41> FastSIMD_SSE41;
+#endif
+#if FASTSIMD_COMPILE_SSE42
 typedef FastSIMD_SSE_T<FastSIMD::Level_SSE42> FastSIMD_SSE42;
+#endif
