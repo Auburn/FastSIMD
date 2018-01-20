@@ -78,6 +78,7 @@
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="SIMDUnitTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\FastSIMD\FastSIMD.h" />
@@ -92,6 +93,7 @@
     <ClInclude Include="..\FastSIMD\Internal\FunctionList.h" />
     <ClInclude Include="..\FastSIMD\Internal\TypeList.h" />
     <ClInclude Include="Example.h" />
+    <ClInclude Include="SIMDUnitTest.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\FastSIMD\FS_Class.inl">
@@ -183,6 +185,7 @@
       <Distributable>false</Distributable>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -195,6 +198,7 @@
       <Distributable>false</Distributable>
       <MinimalRebuild>false</MinimalRebuild>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -208,6 +212,7 @@
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <Distributable>false</Distributable>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -226,6 +231,7 @@
       <Distributable>false</Distributable>
       <LanguageStandard>/std:c++11</LanguageStandard>
       <Cpp0xSupport>true</Cpp0xSupport>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -243,6 +249,7 @@
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <Distributable>false</Distributable>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -261,6 +268,7 @@
       <Distributable>false</Distributable>
       <LanguageStandard>/std:c++11</LanguageStandard>
       <Cpp0xSupport>true</Cpp0xSupport>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

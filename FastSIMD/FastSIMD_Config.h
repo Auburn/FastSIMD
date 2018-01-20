@@ -8,7 +8,7 @@
 #define FASTSIMD_COMPILE_SSE3        1
 #define FASTSIMD_COMPILE_SSSE3       1
 #define FASTSIMD_COMPILE_SSE41       1
-#define FASTSIMD_COMPILE_SSE42      000
+#define FASTSIMD_COMPILE_SSE42       1
 #define FASTSIMD_COMPILE_AVX        000 // Not supported
 #define FASTSIMD_COMPILE_AVX2        1
 #define FASTSIMD_COMPILE_AVX512F    000

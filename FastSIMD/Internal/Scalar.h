@@ -103,44 +103,49 @@ public:
 
     FS_INLINE static int32v Convertf32_i32( float32v a )
     {
-        return static_cast<int32v>( a );
+        return static_cast<int32v>( nearbyint( a ) );
     }
 
     // Comparisons
 
+    FS_INLINE static mask32v Equal_f32( float32v a, float32v b )
+    {
+        return a == b;
+    }
+
     FS_INLINE static mask32v GreaterThan_f32( float32v a, float32v b )
     {
-        return a > b ? -1 : 0;
+        return a > b;
     }
 
     FS_INLINE static mask32v LessThan_f32( float32v a, float32v b )
     {
-        return a < b ? -1 : 0;
+        return a < b;
     }
 
     FS_INLINE static mask32v GreaterEqualThan_f32( float32v a, float32v b )
     {
-        return a >= b ? -1 : 0;
+        return a >= b;
     }
 
     FS_INLINE static mask32v LessEqualThan_f32( float32v a, float32v b )
     {
-        return a <= b ? -1 : 0;
+        return a <= b;
     }
 
     FS_INLINE static mask32v Equal_i32( int32v a, int32v b )
     {
-        return a == b ? -1 : 0;
+        return a == b;
     }
 
     FS_INLINE static mask32v GreaterThan_i32( int32v a, int32v b )
     {
-        return a > b ? -1 : 0;
+        return a > b;
     }
 
     FS_INLINE static mask32v LessThan_i32( int32v a, int32v b )
     {
-        return a < b ? -1 : 0;
+        return a < b;
     }
 
     // Select
@@ -213,19 +218,19 @@ public:
 
     FS_INLINE static float32v Abs_f32( float32v a )
     {
-        return std::abs( a );
+        return abs( a );
     }
 
     FS_INLINE static int32v Abs_i32( int32v a )
     {
-        return std::abs( a );
+        return abs( a );
     }
 
     // Float math
 
     FS_INLINE static float32v Sqrt_f32( float32v a )
     {
-        return std::sqrt( a );
+        return sqrt( a );
     }
 
     FS_INLINE static float32v InvSqrt_f32( float32v a )
@@ -242,16 +247,23 @@ public:
     
     FS_INLINE static float32v Floor_f32( float32v a )
     {
-        return std::floor( a );
+        return floor( a );
     }
 
     FS_INLINE static float32v Ceil_f32( float32v a )
     {
-        return std::ceil( a );
+        return ceil( a );
     }
 
     FS_INLINE static float32v Round_f32( float32v a )
     {
-        return std::round( a );
+        return round( a );
+    }
+
+    // Mask
+
+    FS_INLINE static int32v Mask_i32( mask32v m, int32v a )
+    {
+        return m ? a : 0;
     }
 };

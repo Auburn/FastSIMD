@@ -1,10 +1,13 @@
 #undef FASTSIMD_CLASS_DEFINITION
 #undef FASTSIMD_CLASS_SETUP
 #undef FASTSIMD_SET_SUPPORTED_SIMD_LEVELS
-#undef FS_FUNC_EXTERNAL
+#undef FS_EXTERNAL_FUNC
+#undef FS_EXTERNAL
 #undef FS_INTERNAL
 
 #if !defined( FASTSIMD_INCLUDE_CHECK ) || !defined( FS_SIMD_CLASS )
+
+#include "FastSIMD.h"
 
 #define FASTSIMD_CLASS_DEFINITION( CLASS ) \
 class CLASS
@@ -16,10 +19,9 @@ virtual FastSIMD::Level GetSIMDLevel() = 0
 static const unsigned int Supported_SIMD_Levels = ( LEVELS );\
 static_assert( (Supported_SIMD_Levels & FastSIMD::FASTSIMD_FALLBACK_SIMD_LEVEL) != 0, "FASTSIMD_FALLBACK_SIMD_LEVEL must be supported" );
 
-#define FS_FUNC_EXTERNAL( FUNC ) \
-virtual FUNC = 0
-
-#define FS_INTERNAL( FUNC )
+#define FS_EXTERNAL_FUNC( FUNC ) virtual FUNC = 0
+#define FS_EXTERNAL( FOO ) FOO
+#define FS_INTERNAL( FOO )
 
 #ifdef FS_SIMD_CLASS
 #define FASTSIMD_INCLUDE_CHECK
@@ -28,7 +30,6 @@ virtual FUNC = 0
 #else
 
 #include "Internal/FunctionList.h"
-#include "FastSIMD.h"
 
 #undef FASTSIMD_INCLUDE_CHECK
 
@@ -44,11 +45,9 @@ FastSIMD::Level GetSIMDLevel() override { return FS::SIMD_Level; }
 
 #define FASTSIMD_SET_SUPPORTED_SIMD_LEVELS( LEVELS )
 
-#define FS_FUNC_EXTERNAL( FUNC ) \
-FUNC override
-
-#define FS_INTERNAL( FUNC ) \
-FUNC
+#define FS_EXTERNAL_FUNC( FUNC ) FUNC override
+#define FS_EXTERNAL( FOO ) 
+#define FS_INTERNAL( FOO ) FOO
 
 #endif
 

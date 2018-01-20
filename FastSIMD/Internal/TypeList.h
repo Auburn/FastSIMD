@@ -53,11 +53,16 @@ namespace FastSIMD
     {
         using FrontT = void;
 
+        using FrontCompiledT = void;
+
         template<Level L>
         using GetByLevelT = void;
 
         template<typename CLASS>
-        using GetNextClassT = void;
+        using GetFollowingClassT = void;
+
+        template<typename CLASS>
+        using GetNextCompiledClassT = void;
     };
 
     template<typename HEAD, typename... TAIL>
@@ -65,11 +70,16 @@ namespace FastSIMD
     {
         using FrontT = HEAD;
 
+        using FrontCompiledT = typename std::conditional<(HEAD::SIMD_Level & COMPILED_SIMD_LEVELS) != 0, HEAD, typename SIMDClassContainer<TAIL...>::FrontCompiledT>::type;
+
         template<Level L>
         using GetByLevelT = typename std::conditional< L == HEAD::SIMD_Level, HEAD, typename SIMDClassContainer<TAIL...>::template GetByLevelT<L> >::type;
 
         template<typename CLASS>
-        using GetNextClassT = typename std::conditional< std::is_same<CLASS, HEAD>::value, typename SIMDClassContainer<TAIL...>::FrontT, typename SIMDClassContainer<TAIL...>::template GetNextClassT<CLASS> >::type;
+        using GetFollowingClassT = typename std::conditional< std::is_same<CLASS, HEAD>::value, typename SIMDClassContainer<TAIL...>::FrontT, typename SIMDClassContainer<TAIL...>::template GetFollowingClassT<CLASS> >::type;
+
+        template<typename CLASS>
+        using GetNextCompiledClassT = typename std::conditional< std::is_same<CLASS, HEAD>::value, typename SIMDClassContainer<TAIL...>::FrontCompiledT, typename SIMDClassContainer<TAIL...>::template GetNextCompiledClassT<CLASS> >::type;
     };
 
     typedef SIMDClassContainer<
@@ -85,4 +95,5 @@ namespace FastSIMD
     >
         SIMDClassList;
 
+    static_assert( SIMDClassList::FrontCompiledT::SIMD_Level == FASTSIMD_FALLBACK_SIMD_LEVEL, "FASTSIMD_FALLBACK_SIMD_LEVEL is not the lowest compiled SIMD level" );
 }

@@ -1,16 +1,22 @@
 #include <cstdio>
 #include <iostream>
+#include <array>
 
 #include "../FastSIMD/FastSIMD.h"
 #include "Example.h"
+#include "SIMDUnitTest.h"
+
+
 
 int main()
 {
+    SIMDUnitTest::RunAll();
+
     const int size = 16;
     int data0[size];
     int data1[size];
 
-    for (int i = 0; i < size; i++)
+    for ( int i = 0; i < size; i++ )
     {
         data0[i] = i;
         data1[i] = i * 2;
@@ -31,7 +37,7 @@ int main()
 
     printf( "SIMD Level: %d\n", test->GetSIMDLevel() );
 
-    for (int i = 0; i < size; i++)
+    for ( int i = 0; i < size; i++ )
     {
         printf( "%d, ", data0[i] );
     }

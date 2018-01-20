@@ -227,6 +227,11 @@ public:
 
     // Comparisons
 
+    FS_INLINE static mask32v Equal_f32( float32v a, float32v b )
+    {
+        return _mm256_castps_si256( _mm256_cmp_ps( a, b, _CMP_EQ_OS ) );
+    }
+
     FS_INLINE static mask32v GreaterThan_f32( float32v a, float32v b )
     {
         return _mm256_castps_si256( _mm256_cmp_ps( a, b, _CMP_GT_OS ) );
@@ -377,6 +382,13 @@ public:
     FS_INLINE static float32v Round_f32( float32v a )
     {
         return _mm256_round_ps( a, _MM_FROUND_NINT );
+    }
+
+    //Mask
+
+    FS_INLINE static int32v Mask_i32( mask32v m, int32v a )
+    {
+        return a & m;
     }
 };
 

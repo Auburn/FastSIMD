@@ -12,7 +12,7 @@ public:
 
     FASTSIMD_CLASS_SETUP();
 
-    FS_FUNC_EXTERNAL( void DoStuff( int* data ) );
+    FS_EXTERNAL_FUNC( void DoStuff( int* data ) );
 
-    FS_FUNC_EXTERNAL( void DoArray( int* data0, int* data1, int size ) );
+    FS_EXTERNAL_FUNC( void DoArray( int* data0, int* data1, int size ) );
 };

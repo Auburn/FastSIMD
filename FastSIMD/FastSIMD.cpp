@@ -171,7 +171,7 @@ FastSIMD::Level FastSIMD::CPUMaxSIMDLevel()
 template<typename CLASS_T, typename SIMD_T>
 FS_ENABLE_IF( (CLASS_T::Supported_SIMD_Levels & SIMD_T::SIMD_Level & FastSIMD::COMPILED_SIMD_LEVELS) != 0, CLASS_T*) ClassBuilder( FastSIMD::Level maxSIMDLevel )
 {
-    CLASS_T* newClass = ClassBuilder<CLASS_T, FastSIMD::SIMDClassList::GetNextClassT<SIMD_T> >( maxSIMDLevel );
+    CLASS_T* newClass = ClassBuilder<CLASS_T, FastSIMD::SIMDClassList::GetFollowingClassT<SIMD_T> >( maxSIMDLevel );
 
     if ( !newClass && SIMD_T::SIMD_Level <= maxSIMDLevel )
     {
@@ -184,7 +184,7 @@ FS_ENABLE_IF( (CLASS_T::Supported_SIMD_Levels & SIMD_T::SIMD_Level & FastSIMD::C
 template<typename CLASS_T, typename SIMD_T>
 FS_ENABLE_IF( (CLASS_T::Supported_SIMD_Levels & SIMD_T::SIMD_Level & FastSIMD::COMPILED_SIMD_LEVELS) == 0, CLASS_T* ) ClassBuilder( FastSIMD::Level maxSIMDLevel )
 {
-    return ClassBuilder<CLASS_T, FastSIMD::SIMDClassList::GetNextClassT<SIMD_T> >( maxSIMDLevel );
+    return ClassBuilder<CLASS_T, FastSIMD::SIMDClassList::GetFollowingClassT<SIMD_T> >( maxSIMDLevel );
 }
 
 template<typename CLASS_T, typename SIMD_T>

@@ -146,6 +146,13 @@
 // val: TEXT
 // returns: TEXT
 // I
+// mask32v FS_Equal_f32( float32v a, float32v b )
+#define FS_Equal_f32 FS::Equal_f32
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
 // mask32v FS_GreaterThan_f32( float32v a, float32v b )
 #define FS_GreaterThan_f32 FS::GreaterThan_f32
 
@@ -349,6 +356,15 @@
 #define FS_Round_f32 FS::Round_f32
 
 
+// Mask
+
+// TEXT
+// val: TEXT
+// returns: TEXT
+// I
+// int32v FS_Mask_i32( mask32v m, int32v a )
+#define FS_Mask_i32 FS::Mask_i32
+
 namespace FastSIMD
 {
     template<typename FS, typename T>
@@ -370,7 +386,7 @@ namespace FastSIMD
             return 1;
         }
     };
-
+/*
     template<typename FirstT, typename... Types>
     struct MultiTemplate
     {
@@ -387,5 +403,5 @@ namespace FastSIMD
     struct MultiTemplate<FirstT>
     {
         typedef FirstT type;
-    };
+    };*/
 }
