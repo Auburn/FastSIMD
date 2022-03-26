@@ -1,48 +1,24 @@
-#include <cstdio>
+#include "example.h"
+#include <vector>
 #include <iostream>
-#include <array>
-
-#include "../FastSIMD/FastSIMD.h"
-#include "Example.h"
-#include "SIMDUnitTest.h"
-
-
 
 int main()
 {
-    SIMDUnitTest::RunAll();
-
-    const int size = 16;
-    int data0[size];
-    int data1[size];
-
-    for ( int i = 0; i < size; i++ )
+    std::vector<float> data;
+    for( int i = 0; i < 32; i++ )
     {
-        data0[i] = i;
-        data1[i] = i * 2;
+        data.push_back( (float)i );
+    }
+    std::vector<float> out( data.size() );
+
+    ExampleSIMD* simd = FastSIMD::NewDispatchClass<ExampleSIMD>( FastSIMD::FeatureSet::AVX2_FMA );
+
+    simd->SimpleData( data.data(), out.data(), data.size(), 10, 17 );
+    
+    for( std::size_t i = 0; i < data.size(); i++ )
+    {
+        std::cout << data[i] << "\t: " << out[i] << std::endl;
     }
 
-    // Will get an instance of the class using the highest SIMD level that is compiled and supported by the class
-    Example* test = FastSIMD::NewSIMDClass<Example>();
-
-    // Max level: SSE2
-    // Will get an instance of the class using the highest SIMD level that is compiled and supported by the class, up to the supplied maxSIMDLevel
-    //Example* test = FastSIMD::NewSIMDClass<Example>(FastSIMD::Level_SSE2);
-
-    // Force: SSE41
-    // Will throw static assert if the class doesn't support the selected level or the level is not being compiled
-    //Example* test = FastSIMD::ClassFactory<Example, FastSIMD_SSE41>::Get();
-
-    test->DoArray( data0, data1, size );
-
-    printf( "SIMD Level: %d\n", test->GetSIMDLevel() );
-
-    for ( int i = 0; i < size; i++ )
-    {
-        printf( "%d, ", data0[i] );
-    }
-
-    std::cin.ignore();
-
-    return 1;
+    return 0;
 }

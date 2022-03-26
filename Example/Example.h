@@ -1,18 +1,11 @@
-#include "../FastSIMD/FS_Class.inl"
-#ifdef FASTSIMD_INCLUDE_CHECK
-#include __FILE__
-#endif
-#include "../FastSIMD/FS_Class.inl"
 #pragma once
+#include <FastSIMD/NewDispatchClass.h>
+#include <cstddef>
 
-FASTSIMD_CLASS_DEFINITION( Example )
+class ExampleSIMD
 {
 public:
-    FASTSIMD_SET_SUPPORTED_SIMD_LEVELS( FastSIMD::Level_AVX2 | FastSIMD::Level_SSE41 | FastSIMD::Level_SSE2 | FastSIMD::Level_Scalar );
+    virtual ~ExampleSIMD() = default;
 
-    FASTSIMD_CLASS_SETUP();
-
-    FS_EXTERNAL_FUNC( void DoStuff( int* data ) );
-
-    FS_EXTERNAL_FUNC( void DoArray( int* data0, int* data1, int size ) );
+    virtual void SimpleData( const float* in, float* out, std::size_t dataSize, float multiplier, float cutoff ) = 0;
 };

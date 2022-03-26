@@ -1,0 +1,9 @@
+#pragma once
+
+#include <FastSIMD/Utility/FeatureSetList.h>
+
+namespace FastSIMD
+{
+using CompiledFeatureSets = FeatureSetList<
+${feature_set_list}>;
+}

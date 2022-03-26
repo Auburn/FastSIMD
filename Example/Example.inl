@@ -1,94 +1,32 @@
-#include "Example.h"
-#include "../FastSIMD/FS_IntelliSenseHelper.h"
+#pragma once
+#include "example.h"
 
-//template<typename T>// Generic function, used if no specialised function found
-//FS_CLASS( Example ) < T, FS_SIMD_CLASS::SIMD_Level >::FS_CLASS( Example )()
-//{
-//    int test = 1;
-//
-//    test += test;
-//}
+#include <FastSIMD/ToolSet/DispatchClassImpl.h>
 
-template<typename T>// Generic function, used if no specialised function found
-void FS_CLASS( Example )<T>::DoStuff( int* data )
+template<FastSIMD::FeatureSet SIMD>
+class FastSIMD::DispatchClass<ExampleSIMD, SIMD> : public ExampleSIMD
 {
-    int32v a = FS_VecFill_i32( 1 );
-
-    FS_Store_i32( data, a );
-}
-
-
-//template<typename CLASS_T, typename SIMD_T> // Different function for level SSE2 or AVX2
-//void FS_CLASS( Example )::DoStuff( int* data )
-//{
-//    int32v a = _mm_loadu_si128( reinterpret_cast<__m128i const*>(data) );
-//
-//    a += _mm_set_epi32( 2, 3, 4, 5 );
-//
-//    a -= _mm_castps_si128( FS_VecZero_f32( ) );
-//
-//    FS_Store_i32( data, a );
-//}
-//
-//
-//template<typename CLASS_T, FastSIMD::Level LEVEL_T>
-//void FS_CLASS( Example )::DoArray( int* data0, int* data1, int size )
-//{
-//    for ( int i = 0; i < size; i += FS_VectorSize_i32() )
-//    {
-//        int32v a = FS_Load_i32( &data0[i] );
-//        int32v b = FS_Load_i32( &data1[i] );
-//        
-//        a *= b;
-//
-//        a <<= 1;
-//
-//        a -= FS_VecZero_i32();
-//
-//        (~a);
-//
-//        FS_Store_i32( &data0[i], a );
-//    }
-//}
-
-template<typename T>
-void FS_CLASS( Example )<T>::DoArray( int* data0, int* data1, int size )
-{
-    for ( int i = 0; i < size; i += FS_VectorSize_i32() )
+    void SimpleData( const float* in, float* out, std::size_t dataSize, float multiplier, float cutoff ) override
     {
-        int32v a = FS_Load_i32( &data0[i] );
-        int32v b = FS_Load_i32( &data1[i] );
+        if constexpr( SIMD == FastSIMD::FeatureSet::SSE41 )
+        {
+            //static_assert( !(SIMD == FastSIMD::FeatureSet::SSE41));
+        }
 
-        a += b;
+        constexpr std::size_t N = 16;
 
-        a <<= 1;
+        auto vMultiplier = FS::f32<N>( multiplier );
+        auto vCutoff     = FS::f32<N>( cutoff );
 
-        a *= b;
+        for( std::size_t i = 0; i < dataSize; i += N )
+        {
+            FS::f32<N> data = FS::Load<FS::f32<N>>( in + i );
 
-        a -= FS_VecZero_i32();
+            data = FS::Select( data < vCutoff, data * vMultiplier, data );
 
-        (~a);
-
-        FS_Store_i32( &data0[i], a );
+            FS::Store( out + i, data );
+        }
     }
-}
-//
-//template<typename T>
-//typename std::enable_if<(T::SIMD_Level <= 1)>::type FS_CLASS( Example )<T, FS_SIMD_CLASS::SIMD_Level>::DoArray( int* data0, int* data1, int size )
-//{
-//    for ( int i = 0; i < size; i += FS_VectorSize_i32() )
-//    {
-//        int32v a = FS_Load_i32( &data0[i] );
-//        int32v b = FS_Load_i32( &data1[i] );
-//
-//        a += b;
-//
-//        a <<= 1;
-//
-//        a -= FS_VecZero_i32();
-//
-//        (~a);
-//
-//        FS_Store_i32( &data0[i], a );
-//    }
-//}
+};
+
+template class FastSIMD::RegisterDispatchClass<ExampleSIMD>;
