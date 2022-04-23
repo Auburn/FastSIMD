@@ -20,7 +20,7 @@ class FastSIMD::DispatchClass<ExampleSIMD, SIMD> : public ExampleSIMD
 
         for( std::size_t i = 0; i < dataSize; i += N )
         {
-            FS::f32<N> data = FS::Load<FS::f32<N>>( in + i );
+            FS::f32<N> data = FS::Load<N>( in + i );
 
             data = FS::Select( data < vCutoff, data * vMultiplier, data );
 

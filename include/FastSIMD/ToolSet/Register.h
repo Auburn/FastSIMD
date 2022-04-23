@@ -210,18 +210,23 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     struct TypeWrapper
     {
+        using Half = TypeWrapper<T, N / 2, SIMD>;
+
         constexpr explicit TypeWrapper( T v ) : value( v ) { } 
         
-        constexpr TypeWrapper<T, N / 2, SIMD> AsHalf() const
+        constexpr Half AsHalf() const
         {
-            return TypeWrapper<T, N / 2, SIMD>( value );
+            return Half( value );
         }
 
         T value;
     };
 
     template<std::size_t N, bool OPTIMISE_FLOAT = true>
-    struct Mask { Mask() = delete; };
+    struct Mask
+    {
+        Mask() = delete;
+    };
 
     template<typename T, typename = void>
     struct IsNative : std::false_type { };

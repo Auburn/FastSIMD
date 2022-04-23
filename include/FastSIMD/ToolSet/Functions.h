@@ -11,6 +11,12 @@ namespace FS
     {
         return Load( TypeWrapper<const typename R::ElementType*, R::ElementCount, R::SimdFlags>( ptr ) );
     }
+
+    template<std::size_t N, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET, typename T>
+    FS_FORCEINLINE Register<T, N, SIMD> Load( const T* ptr )
+    {
+        return Load( TypeWrapper<const T*, N, SIMD>( ptr ) );
+    }
     
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Load( TypeWrapper<const T*, N, SIMD> ptr )

@@ -4,6 +4,8 @@
 
 int main()
 {
+    FastSIMD::FeatureSet featureSet = FastSIMD::DetectCpuMaxFeatureSet();
+
     std::vector<float> data;
     for( int i = 0; i < 32; i++ )
     {
@@ -11,7 +13,7 @@ int main()
     }
     std::vector<float> out( data.size() );
 
-    ExampleSIMD* simd = FastSIMD::NewDispatchClass<ExampleSIMD>( FastSIMD::FeatureSet::AVX2_FMA );
+    ExampleSIMD* simd = FastSIMD::NewDispatchClass<ExampleSIMD>();
 
     simd->SimpleData( data.data(), out.data(), data.size(), 10, 17 );
     

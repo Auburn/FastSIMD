@@ -9,7 +9,10 @@ set(CMAKE_CXX_STANDARD 17)
 
 include(cmake/ClassSIMD.cmake)
 
-add_library(fastsimd INTERFACE)
-target_include_directories(fastsimd INTERFACE "include")
+add_library(fastsimd_headers INTERFACE)
+target_include_directories(fastsimd_headers INTERFACE "include")
+
+add_library(fastsimd "src/FastSIMD.cpp")
+target_link_libraries(fastsimd PUBLIC fastsimd_headers)
 
 add_subdirectory(example)
