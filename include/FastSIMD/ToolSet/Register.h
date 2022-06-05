@@ -206,10 +206,23 @@ namespace FS
     {
         return lhs ^= rhs;
     }
-    
+
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE static Register<T, N, SIMD> operator <<( Register<T, N, SIMD> lhs, int rhs )
+    {
+        return lhs <<= rhs;
+    }
+
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE static Register<T, N, SIMD> operator >>( Register<T, N, SIMD> lhs, int rhs )
+    {
+        return lhs >>= rhs;
+    }
+    
+    template<typename T, std::size_t N = 0, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET>
     struct TypeWrapper
     {
+        using Type = T;
         using Half = TypeWrapper<T, N / 2, SIMD>;
 
         constexpr explicit TypeWrapper( T v ) : value( v ) { } 
@@ -220,6 +233,12 @@ namespace FS
         }
 
         T value;
+    };
+
+    template<typename T>
+    struct TypeDummy
+    {
+        using Type = T;        
     };
 
     template<std::size_t N, bool OPTIMISE_FLOAT = true>

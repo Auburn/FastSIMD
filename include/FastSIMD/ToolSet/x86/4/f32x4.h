@@ -136,8 +136,55 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Abs( const f32<4, SIMD>& a )
     {
-         const __m128i intMax = _mm_set1_epi32( 0x7FFFFFFF );
+        const __m128i intMax = _mm_set1_epi32( 0x7FFFFFFF );
         return _mm_and_ps( a.native, _mm_castsi128_ps( intMax ) );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE f32<4, SIMD> Round( const f32<4, SIMD>& a )
+    {
+        if constexpr( SIMD & FastSIMD::FeatureFlag::SSE41 )
+        {
+            return _mm_round_ps( a.native, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC );
+        }
+        else
+        {
+            __m128 aSign = _mm_and_ps( a.native, _mm_castsi128_ps( _mm_set1_epi32( 0x80000000 ) ) );
+
+            __m128 offset = _mm_or_ps( aSign, _mm_set1_ps( 0.5f ) );
+
+            return _mm_cvtepi32_ps( _mm_cvttps_epi32( _mm_add_ps( a.native, offset ) ) );
+        }
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE f32<4, SIMD> Floor( const f32<4, SIMD>& a )
+    {
+        if constexpr( SIMD & FastSIMD::FeatureFlag::SSE41 )
+        {
+            return _mm_round_ps( a.native, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC );
+        }
+        else
+        {
+            __m128 ival = _mm_cvtepi32_ps( _mm_cvttps_epi32( a.native ) );
+
+            return _mm_add_ps( ival, _mm_cvtepi32_ps( _mm_castps_si128( _mm_cmplt_ps( a.native, ival ) ) ) );
+        }
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE f32<4, SIMD> Ceil( const f32<4, SIMD>& a )
+    {
+        if constexpr( SIMD & FastSIMD::FeatureFlag::SSE41 )
+        {
+            return _mm_round_ps( a.native, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC );
+        }
+        else
+        {
+            __m128 ival = _mm_cvtepi32_ps( _mm_cvttps_epi32( a.native ) );
+        
+            return _mm_sub_ps( ival, _mm_cvtepi32_ps( _mm_castps_si128( _mm_cmplt_ps( ival, a.native ) ) ) );
+        }
     }
         
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
