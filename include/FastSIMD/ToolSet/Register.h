@@ -26,7 +26,7 @@ namespace FS
         static_assert( ( N & ( N - 1 ) ) == 0, "Vector size must be power of 2" );
 
         static constexpr std::size_t ElementCount = N;
-        static constexpr auto SimdFlags = SIMD;
+        static constexpr auto FeatureFlags = SIMD;
 
         using DoubledType = Register<T, N / 2, SIMD>;
         using ElementType = T;
@@ -261,6 +261,7 @@ namespace FS
 
     template<typename T>
     constexpr bool IsNativeV = IsNative<T>::value;
+        
 
     template<std::size_t N, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET>
     using i32 = Register<std::int32_t, N, SIMD>;
@@ -270,5 +271,50 @@ namespace FS
 
     template<std::size_t N, bool OPTIMISE_FLOAT = true, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET>
     using m32 = Register<Mask<32, OPTIMISE_FLOAT>, N, SIMD>;
+
+    
+    template<typename T>
+    static constexpr std::size_t NativeRegisterCount( FastSIMD::FeatureSet featureSet = FASTSIMD_DEFAULT_FEATURE_SET );
+
+    template<>
+    constexpr std::size_t NativeRegisterCount<float>( FastSIMD::FeatureSet featureSet )
+    {
+        if( featureSet & FastSIMD::FeatureFlag::AVX512_F )
+        {
+            return 16;
+        }
+        if( featureSet & FastSIMD::FeatureFlag::AVX )
+        {
+            return 8;
+        }
+        if( featureSet & (FastSIMD::FeatureFlag::SSE | FastSIMD::FeatureFlag::NEON) )
+        {
+            return 4;
+        }
+
+        return 1;
+    }
+
+    template<>
+    constexpr std::size_t NativeRegisterCount<std::int32_t>( FastSIMD::FeatureSet featureSet )
+    {
+        if( featureSet & FastSIMD::FeatureFlag::AVX512_F )
+        {
+            return 16;
+        }
+        if( featureSet & FastSIMD::FeatureFlag::AVX2 )
+        {
+            return 8;
+        }
+        if( featureSet & (FastSIMD::FeatureFlag::SSE2 | FastSIMD::FeatureFlag::NEON) )
+        {
+            return 4;
+        }
+
+        return 1;
+    }
+    
+    template<typename T, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET>
+    using NativeRegister = Register<T, NativeRegisterCount<T>( SIMD ), SIMD>;
 
 } // namespace FS

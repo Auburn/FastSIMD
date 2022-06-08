@@ -10,7 +10,7 @@ namespace FS
     struct Register<std::enable_if_t<SIMD & FastSIMD::FeatureFlag::SSE, float>, 4, SIMD>
     {
         static constexpr size_t ElementCount = 4;
-        static constexpr auto SimdFlags = SIMD;
+        static constexpr auto FeatureFlags = SIMD;
 
         using ElementType = float;
         using MaskType = m32<ElementCount, true, SIMD>;

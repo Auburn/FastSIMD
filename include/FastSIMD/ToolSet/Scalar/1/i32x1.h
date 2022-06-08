@@ -11,7 +11,7 @@ namespace FS
     struct Register<std::enable_if_t<SIMD & FastSIMD::FeatureFlag::Scalar, std::int32_t>, 1, SIMD>
     {
         static constexpr size_t ElementCount = 1;
-        static constexpr auto SimdFlags = SIMD;
+        static constexpr auto FeatureFlags = SIMD;
 
         using ElementType = std::int32_t;
         using MaskType = m32<ElementCount, false, SIMD>;
