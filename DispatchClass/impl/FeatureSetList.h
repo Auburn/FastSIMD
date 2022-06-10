@@ -1,5 +1,5 @@
 #pragma once
-#include "FeatureEnums.h"
+#include <FastSIMD/Utility/FeatureEnums.h>
 
 namespace FastSIMD
 {

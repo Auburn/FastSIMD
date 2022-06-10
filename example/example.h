@@ -1,5 +1,5 @@
 #pragma once
-#include <FastSIMD/NewDispatchClass.h>
+#include <FastSIMD/DispatchClass.h>
 #include <cstddef>
 
 class ExampleSIMD

@@ -1,8 +1,6 @@
 #pragma once
 #include "example.h"
 
-#include <FastSIMD/ToolSet/DispatchClassImpl.h>
-
 template<FastSIMD::FeatureSet SIMD>
 class FastSIMD::DispatchClass<ExampleSIMD, SIMD> : public ExampleSIMD
 {

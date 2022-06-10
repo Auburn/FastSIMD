@@ -1,12 +1,11 @@
 #pragma once
-#include <FastSIMD/Utility/FeatureSetList.h>
 #include <FastSIMD/ToolSet/Functions.h>
-#include <FastSIMD/NewDispatchClass.h>
+#include <FastSIMD/DispatchClass.h>
 
 #include <new>
 
 namespace FastSIMD
-{
+{    
     template<typename T, FastSIMD::FeatureSet SIMD>
     class DispatchClass;
 

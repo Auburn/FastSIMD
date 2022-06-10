@@ -3,7 +3,8 @@ function(fastsimd_add_feature_set_source feature_set)
     set(feature_set_source "${simd_library_source_dir}/${simd_library_name}_${feature_set}.cpp")
     set(simd_inl_full "${CMAKE_CURRENT_LIST_DIR}/${simd_inl}")
     
-    configure_file("${FastSIMD_SOURCE_DIR}/cmake/feature_set_source.cpp.in" ${feature_set_source})
+    get_target_property(DispatchClass_source_dir FastSIMD_DispatchClass SOURCE_DIR) 
+    configure_file("${DispatchClass_source_dir}/cmake/feature_set_source.cpp.in" ${feature_set_source})
     target_sources(${simd_library_name} PRIVATE ${feature_set_source})
             
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -57,9 +58,11 @@ function(fastsimd_create_simd_library simd_library_name simd_inl)
         AVX2
         AVX512_Baseline)
 
+    get_target_property(DispatchClass_source_dir FastSIMD_DispatchClass SOURCE_DIR) 
+
     add_library(${simd_library_name} STATIC)
-    target_link_libraries(${simd_library_name} PUBLIC fastsimd)
-    target_include_directories(${simd_library_name} PRIVATE "${FastSIMD_SOURCE_DIR}/src")
+    target_link_libraries(${simd_library_name} PUBLIC FastSIMD_DispatchClass)
+    target_include_directories(${simd_library_name} PRIVATE "${DispatchClass_source_dir}/src")
     
     set(simd_library_source_dir "${CMAKE_CURRENT_BINARY_DIR}/fastsimd/${simd_library_name}")
     set(feature_set_list "")
@@ -71,6 +74,6 @@ function(fastsimd_create_simd_library simd_library_name simd_inl)
 
     # Create array of compiled feature sets for lookup in FastSIMD::New()
     string(REPLACE ";" ",\n" feature_set_list "${feature_set_list}")
-    configure_file("${FastSIMD_SOURCE_DIR}/cmake/simd_lib_config.h.in" "${simd_library_source_dir}/simd_lib_config.h")
+    configure_file("${DispatchClass_source_dir}/cmake/simd_lib_config.h.in" "${simd_library_source_dir}/simd_lib_config.h")
 
 endfunction()

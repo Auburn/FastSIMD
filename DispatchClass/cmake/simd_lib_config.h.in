@@ -1,6 +1,6 @@
 #pragma once
 
-#include <FastSIMD/Utility/FeatureSetList.h>
+#include "${DispatchClass_source_dir}/impl/FeatureSetList.h"
 
 namespace FastSIMD
 {

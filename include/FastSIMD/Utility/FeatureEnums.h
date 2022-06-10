@@ -73,5 +73,5 @@ namespace FastSIMD
         return static_cast<std::uint32_t>(a) & b;
     }    
 
-    FASTSIMD_API FeatureSet CPUMaxFeatureSet();
+    FASTSIMD_API FeatureSet DetectCpuMaxFeatureSet();
 }

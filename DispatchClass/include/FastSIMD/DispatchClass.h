@@ -1,5 +1,5 @@
 #pragma once
-#include "Utility/FeatureEnums.h"
+#include <FastSIMD/Utility/FeatureEnums.h>
 
 #include <cstddef>
 
@@ -9,6 +9,4 @@ namespace FastSIMD
 
     template<typename T>
     FASTSIMD_API T* NewDispatchClass( FeatureSet maxFeatureSet = FeatureSet::Max, MemoryAllocator allocator = nullptr );
-
-    FASTSIMD_API FeatureSet DetectCpuMaxFeatureSet();
 }

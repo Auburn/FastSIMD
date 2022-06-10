@@ -13,19 +13,19 @@ if (NOT DEFINED FASTSIMD_STANDALONE_PROJECT)
     endif ()
 endif()
 
+option(FASTSIMD_DISPATCH_CLASS "Enable FastSIMD Dispatch Classes" ON)
 option(FASTSIMD_EXAMPLES "Build FastSIMD examples" ${FASTSIMD_STANDALONE_PROJECT})
 option(FASTSIMD_TESTS "Build FastSIMD tests" ${FASTSIMD_STANDALONE_PROJECT})
 
 # Build DLL
 #set(BUILD_SHARED_LIBS ON) 
 
-include(cmake/ClassSIMD.cmake)
+add_library(FastSIMD "src/FastSIMD.cpp")
+target_include_directories(FastSIMD PUBLIC "include")
 
-add_library(fastsimd_headers INTERFACE)
-target_include_directories(fastsimd_headers INTERFACE "include")
-
-add_library(fastsimd "src/FastSIMD.cpp")
-target_link_libraries(fastsimd PUBLIC fastsimd_headers)
+if(FASTSIMD_DISPATCH_CLASS)
+    add_subdirectory(DispatchClass)
+endif()
 
 if(FASTSIMD_EXAMPLES)
     add_subdirectory(example)
