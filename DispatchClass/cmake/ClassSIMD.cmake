@@ -62,7 +62,6 @@ function(fastsimd_create_simd_library simd_library_name simd_inl)
 
     add_library(${simd_library_name} STATIC)
     target_link_libraries(${simd_library_name} PUBLIC FastSIMD_DispatchClass)
-    target_include_directories(${simd_library_name} PRIVATE "${DispatchClass_source_dir}/src")
     
     set(simd_library_source_dir "${CMAKE_CURRENT_BINARY_DIR}/fastsimd/${simd_library_name}")
     set(feature_set_list "")

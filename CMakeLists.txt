@@ -21,7 +21,10 @@ option(FASTSIMD_TESTS "Build FastSIMD tests" ${FASTSIMD_STANDALONE_PROJECT})
 #set(BUILD_SHARED_LIBS ON) 
 
 add_library(FastSIMD "src/FastSIMD.cpp")
-target_include_directories(FastSIMD PUBLIC "include")
+target_include_directories(FastSIMD PUBLIC 
+    $<BUILD_INTERFACE:${FastSIMD_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
 
 if(FASTSIMD_DISPATCH_CLASS)
     add_subdirectory(DispatchClass)
