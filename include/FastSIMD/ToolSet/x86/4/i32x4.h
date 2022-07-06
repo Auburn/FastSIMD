@@ -199,4 +199,16 @@ namespace FS
         }
     }
 
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
+    FS_FORCEINLINE i32<4, SIMD> BitwiseAndNot( const i32<4, SIMD>& a, const i32<4, SIMD>& b )
+    {
+        return _mm_andnot_si128( b.native, a.native );        
+    }
+        
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
+    FS_FORCEINLINE i32<4, SIMD> Masked( const typename i32<4, SIMD>::MaskTypeArg& mask, const i32<4, SIMD>& a )
+    {
+        return _mm_and_si128( _mm_castps_si128( mask.native ), a.native );    
+    }
+
 }

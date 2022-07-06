@@ -7,13 +7,15 @@
 
 #ifdef _MSC_VER
 #define FS_FORCEINLINE __forceinline
+#define FS_VECTORCALL __vectorcall
 #else
 #define FS_FORCEINLINE __attribute__( ( always_inline ) ) inline
+#define FS_VECTORCALL
 #endif
 
     
 #ifndef FASTSIMD_DEFAULT_FEATURE_SET
-#define FASTSIMD_DEFAULT_FEATURE_SET FastSIMD::Level_Scalar
+#define FASTSIMD_DEFAULT_FEATURE_SET FastSIMD::FeatureSet::Scalar
 #endif
 
 namespace FS
@@ -225,11 +227,17 @@ namespace FS
         using Type = T;
         using Half = TypeWrapper<T, N / 2, SIMD>;
 
-        constexpr explicit TypeWrapper( T v ) : value( v ) { } 
-        
-        constexpr Half AsHalf() const
+        FS_FORCEINLINE constexpr explicit TypeWrapper( T v ) : value( v ) { }
+
+        FS_FORCEINLINE constexpr Half AsHalf() const
         {
             return Half( value );
+        }
+
+        template<typename U>
+        FS_FORCEINLINE constexpr Half AsHalf( U offset ) const
+        {
+            return Half( value + offset );
         }
 
         T value;
@@ -297,6 +305,25 @@ namespace FS
 
     template<>
     constexpr std::size_t NativeRegisterCount<std::int32_t>( FastSIMD::FeatureSet featureSet )
+    {
+        if( featureSet & FastSIMD::FeatureFlag::AVX512_F )
+        {
+            return 16;
+        }
+        if( featureSet & FastSIMD::FeatureFlag::AVX2 )
+        {
+            return 8;
+        }
+        if( featureSet & (FastSIMD::FeatureFlag::SSE2 | FastSIMD::FeatureFlag::NEON) )
+        {
+            return 4;
+        }
+
+        return 1;
+    }
+
+    template<>
+    constexpr std::size_t NativeRegisterCount<Mask<32>>( FastSIMD::FeatureSet featureSet )
     {
         if( featureSet & FastSIMD::FeatureFlag::AVX512_F )
         {

@@ -134,6 +134,12 @@ namespace FS
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE float Extract0( const f32<4, SIMD>& a )
+    {
+        return _mm_cvtss_f32( a.native );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Abs( const f32<4, SIMD>& a )
     {
         const __m128i intMax = _mm_set1_epi32( 0x7FFFFFFF );
@@ -210,6 +216,18 @@ namespace FS
         {
             return _mm_xor_ps( ifFalse.native, _mm_and_ps( mask.native, _mm_xor_ps( ifTrue.native, ifFalse.native ) ) );
         }
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE f32<4, SIMD> BitwiseAndNot( const f32<4, SIMD>& a, const f32<4, SIMD>& b )
+    {
+        return _mm_andnot_ps( b.native, a.native );        
+    }
+            
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE f32<4, SIMD> Masked( const typename f32<4, SIMD>::MaskTypeArg& mask, const f32<4, SIMD>& a )
+    {
+        return _mm_and_ps( mask.native, a.native );    
     }
 
 }

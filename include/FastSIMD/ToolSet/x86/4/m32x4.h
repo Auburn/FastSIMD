@@ -51,6 +51,12 @@ namespace FS
         __m128 native;
     };
 
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<m32<4, true, SIMD>>>
+    FS_FORCEINLINE m32<4, true, SIMD> BitwiseAndNot( const m32<4, true, SIMD>& a, const m32<4, true, SIMD>& b )
+    {
+        return _mm_andnot_ps( b.native, a.native );        
+    }
+
     template<FastSIMD::FeatureSet SIMD>
     struct Register<std::enable_if_t<SIMD & FastSIMD::FeatureFlag::SSE2, Mask<32, false>>, 4, SIMD> : Register<Mask<32, true>, 4, SIMD>
     {
@@ -89,5 +95,10 @@ namespace FS
         }        
     };
 
-
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<m32<4, false, SIMD>>>
+    FS_FORCEINLINE m32<4, false, SIMD> BitwiseAndNot( const m32<4, false, SIMD>& a, const m32<4, false, SIMD>& b )
+    {
+        return _mm_andnot_si128( b.native, a.native );        
+    }
+    
 }
