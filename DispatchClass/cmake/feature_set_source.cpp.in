@@ -2,5 +2,5 @@
 
 #include "simd_lib_config.h"
 
-#include "${DispatchClass_source_dir}/impl/DispatchClassImpl.h"
+#include "${FastSIMD_SOURCE_DIR}/DispatchClass/impl/DispatchClassImpl.h"
 #include "${simd_inl_full}"

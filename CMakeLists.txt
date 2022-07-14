@@ -17,18 +17,17 @@ option(FASTSIMD_DISPATCH_CLASS "Enable FastSIMD Dispatch Classes" ON)
 option(FASTSIMD_EXAMPLES "Build FastSIMD examples" ${FASTSIMD_STANDALONE_PROJECT})
 option(FASTSIMD_TESTS "Build FastSIMD tests" ${FASTSIMD_STANDALONE_PROJECT})
 
-add_library(FastSIMD "src/FastSIMD.cpp")
-
-target_include_directories(FastSIMD PUBLIC 
-    $<BUILD_INTERFACE:${FastSIMD_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-)
-
+add_library(FastSIMD OBJECT "src/FastSIMD.cpp")
 target_compile_definitions(FastSIMD PRIVATE FASTSIMD_EXPORT)
 
 if(NOT BUILD_SHARED_LIBS)
     target_compile_definitions(FastSIMD PUBLIC FASTSIMD_STATIC_LIB)
 endif()
+
+target_include_directories(FastSIMD PUBLIC 
+    $<BUILD_INTERFACE:${FastSIMD_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
 
 if(FASTSIMD_DISPATCH_CLASS)
     add_subdirectory(DispatchClass)
