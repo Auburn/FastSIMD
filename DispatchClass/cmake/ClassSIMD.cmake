@@ -54,8 +54,8 @@ function(fastsimd_create_simd_library simd_library_name simd_inl)
     set(feature_sets
         SSE2
         SSE41
-        AVX2
-        AVX512_Baseline)
+        AVX2_FMA
+        AVX512_Baseline_FMA)
 
     add_library(${simd_library_name} OBJECT)
     target_compile_definitions(${simd_library_name} PRIVATE FASTSIMD_EXPORT)
