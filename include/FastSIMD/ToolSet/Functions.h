@@ -191,6 +191,20 @@ namespace FS
         }
     }
     
+    // FNMulAdd -(a * b) + c
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> FNMulAdd( const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b, const Register<T, N, SIMD>& c )
+    {
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return c - (a * b);
+        }
+        else
+        {        
+            return Register<T, N, SIMD>{ FNMulAdd( a.v0, b.v0, c.v0 ), FNMulAdd( a.v1, b.v1, c.v1 ) };
+        }
+    }
+    
     // Bitwise AndNot
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> BitwiseAndNot( const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b )
