@@ -11,13 +11,19 @@ namespace FS
         static constexpr size_t ElementCount = 4;
         static constexpr auto FeatureFlags = SIMD;
 
+        using NativeType = __m128i;
         using ElementType = std::int32_t;
         using MaskType = m32<ElementCount, false, SIMD>;
         using MaskTypeArg = m32<ElementCount, true, SIMD>;
 
         FS_FORCEINLINE Register() = default;
-        FS_FORCEINLINE Register( __m128i v ) : native( v ) { }
+        FS_FORCEINLINE Register( NativeType v ) : native( v ) { }
         FS_FORCEINLINE Register( std::int32_t v ) : native( _mm_set1_epi32( v ) ) { }
+        
+        FS_FORCEINLINE NativeType GetNative() const
+        {
+            return native;
+        }
 
         FS_FORCEINLINE Register& operator +=( const Register& rhs )
         {
@@ -130,7 +136,7 @@ namespace FS
             return _mm_cmplt_epi32( native, rhs.native );
         }
 
-        __m128i native;
+        NativeType native;
     };
 
     
@@ -204,11 +210,23 @@ namespace FS
     {
         return _mm_andnot_si128( b.native, a.native );        
     }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
+    FS_FORCEINLINE i32<4, SIMD> BitShiftRightZeroExtend( const i32<4, SIMD>& a, int b )
+    {
+        return _mm_srli_epi32( a.native, b );        
+    }
         
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
     FS_FORCEINLINE i32<4, SIMD> Masked( const typename i32<4, SIMD>::MaskTypeArg& mask, const i32<4, SIMD>& a )
     {
         return _mm_and_si128( _mm_castps_si128( mask.native ), a.native );    
+    }
+        
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
+    FS_FORCEINLINE i32<4, SIMD> InvMasked( const typename i32<4, SIMD>::MaskTypeArg& mask, const i32<4, SIMD>& a )
+    {
+        return _mm_andnot_si128( _mm_castps_si128( mask.native ), a.native );    
     }
 
 }

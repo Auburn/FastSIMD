@@ -11,14 +11,20 @@ namespace FS
     {
         static constexpr size_t ElementCount = 4;
         static constexpr auto FeatureFlags = SIMD;
-
+        
+        using NativeType = __m128;
         using ElementType = float;
         using MaskType = m32<ElementCount, true, SIMD>;
         using MaskTypeArg = m32<ElementCount, true, SIMD>;
 
         FS_FORCEINLINE Register() = default;
-        FS_FORCEINLINE Register( __m128 v ) : native( v ) { }
+        FS_FORCEINLINE Register( NativeType v ) : native( v ) { }
         FS_FORCEINLINE Register( float v ) : native( _mm_set1_ps( v ) ) { }
+        
+        FS_FORCEINLINE NativeType GetNative() const
+        {
+            return native;
+        }
 
         FS_FORCEINLINE Register& operator +=( const Register& rhs )
         {
@@ -117,7 +123,7 @@ namespace FS
             return _mm_cmplt_ps( native, rhs.native );
         }
 
-        __m128 native;
+        NativeType native;
     };
     
     
@@ -230,4 +236,22 @@ namespace FS
         return _mm_and_ps( mask.native, a.native );    
     }
 
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE f32<4, SIMD> InvMasked( const typename f32<4, SIMD>::MaskTypeArg& mask, const f32<4, SIMD>& a )
+    {
+        return _mm_andnot_ps( mask.native, a.native );    
+    }
+
+    
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE f32<4, SIMD> Reciprocal( const f32<4, SIMD>& a )
+    {            
+        return _mm_rcp_ps( a.native );
+    }
+    
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE f32<4, SIMD> InvSqrt( const f32<4, SIMD>& a )
+    {            
+        return _mm_rsqrt_ps( a.native );
+    }
 }

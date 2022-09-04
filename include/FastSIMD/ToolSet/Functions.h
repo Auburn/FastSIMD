@@ -211,6 +211,14 @@ namespace FS
     {
         static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
         return Register<T, N, SIMD>{ BitwiseAndNot( a.v0, b.v0 ), BitwiseAndNot( a.v1, b.v1 ) };
+    }    
+
+    // BitShift Right Zero Extend
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> BitShiftRightZeroExtend( const Register<T, N, SIMD>& a, int b )
+    {
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        return Register<T, N, SIMD>{ BitShiftRightZeroExtend( a.v0, b ), BitShiftRightZeroExtend( a.v1, b ) };
     }
     
     // Mask elements
@@ -219,6 +227,19 @@ namespace FS
     {
         static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
         return Register<T, N, SIMD>{ Masked( mask.v0, a.v0 ), Masked( mask.v1, a.v1 ) };
+    }
+
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> InvMasked( const typename Register<T, N, SIMD>::MaskTypeArg& mask, const Register<T, N, SIMD>& a )
+    {        
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return Masked( ~mask, a );
+        }
+        else
+        {   
+            return Register<T, N, SIMD>{ InvMasked( mask.v0, a.v0 ), InvMasked( mask.v1, a.v1 ) };
+        }
     }
     
     // Masked Increment
@@ -235,6 +256,20 @@ namespace FS
         }
     }
     
+    // Masked Decrement
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> MaskedDecrement( const typename Register<T, N, SIMD>::MaskTypeArg& mask, const Register<T, N, SIMD>& a )
+    {
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return a + Masked( mask, Register<T, N, SIMD>( -1 ) );
+        }
+        else
+        {   
+            return Register<T, N, SIMD>{ MaskedDecrement( mask.v0, a.v0 ), MaskedDecrement( mask.v1, a.v1 ) };
+        }
+    }
+    
     // Masked Add
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> MaskedAdd( const typename Register<T, N, SIMD>::MaskTypeArg& mask, const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b )
@@ -246,6 +281,19 @@ namespace FS
         else
         {        
             return Register<T, N, SIMD>{ MaskedAdd( mask.v0, a.v0, b.v0 ), MaskedAdd( mask.v1, a.v1, b.v1 ) };
+        }
+    }
+
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> InvMaskedAdd( const typename Register<T, N, SIMD>::MaskTypeArg& mask, const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b )
+    {
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return a + InvMasked( mask, b );
+        }
+        else
+        {        
+            return Register<T, N, SIMD>{ InvMaskedAdd( mask.v0, a.v0, b.v0 ), InvMaskedAdd( mask.v1, a.v1, b.v1 ) };
         }
     }
     
@@ -263,31 +311,72 @@ namespace FS
         }
     }
     
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> InvMaskedSub( const typename Register<T, N, SIMD>::MaskTypeArg& mask, const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b )
+    {
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return a - InvMasked( mask, b );
+        }
+        else
+        {        
+            return Register<T, N, SIMD>{ InvMaskedSub( mask.v0, a.v0, b.v0 ), InvMaskedSub( mask.v1, a.v1, b.v1 ) };
+        }
+    }
+    
+    // Reciprocal
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> Reciprocal( const Register<T, N, SIMD>& a )
+    {
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return Register<T, N, SIMD>( 1 ) / a;
+        }
+        else
+        {        
+            return Register<T, N, SIMD>{ Reciprocal( a.v0 ), Reciprocal( a.v1 ) };
+        }
+    }
+    
+    // Inv Sqrt
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> InvSqrt( const Register<T, N, SIMD>& a )
+    {
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return a; //TODO
+        }
+        else
+        {        
+            return Register<T, N, SIMD>{ InvSqrt( a.v0 ), InvSqrt( a.v1 ) };
+        }
+    }
+
     template<std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<float, N, SIMD> Cos( const Register<float, N, SIMD>& a )
     {
         if constexpr( IsNativeV<Register<float, N, SIMD>> )
         {
-            using RegFloat = Register<float, N, SIMD>;
-            using RegInt = Register<std::int32_t, N, SIMD>;
+            using RegisterF = Register<float, N, SIMD>;
+            using RegisterI = Register<std::int32_t, N, SIMD>;
 
-            RegFloat value = Abs( a );
-            value -= Floor( value * RegFloat( 0.1591549f ) ) * RegFloat( 6.283185f );
+            RegisterF value = Abs( a );
+            value -= Floor( value * RegisterF( 0.1591549f ) ) * RegisterF( 6.283185f );
 
-            auto geHalfPi  = value >= RegFloat( 1.570796f );
-            auto geHalfPi2 = value >= RegFloat( 3.141593f );
-            auto geHalfPi3 = value >= RegFloat( 4.7123889f );
+            auto geHalfPi  = value >= RegisterF( 1.570796f );
+            auto geHalfPi2 = value >= RegisterF( 3.141593f );
+            auto geHalfPi3 = value >= RegisterF( 4.7123889f );
 
-            RegFloat cosAngle;
-            cosAngle = value ^ Masked( geHalfPi, value ^ ( RegFloat( 3.141593f ) - value ) );
-            cosAngle = cosAngle ^ Masked( geHalfPi2, Cast<float>( RegInt( 0x80000000 ) ) );
-            cosAngle = cosAngle ^ Masked( geHalfPi3, cosAngle ^ ( RegFloat( 6.283185f ) - value ) );
+            RegisterF cosAngle;
+            cosAngle = value ^ Masked( geHalfPi, value ^ ( RegisterF( 3.141593f ) - value ) );
+            cosAngle = cosAngle ^ Masked( geHalfPi2, Cast<float>( RegisterI( 0x80000000 ) ) );
+            cosAngle = cosAngle ^ Masked( geHalfPi3, cosAngle ^ ( RegisterF( 6.283185f ) - value ) );
 
             cosAngle *= cosAngle;
 
-            cosAngle = FMulAdd( cosAngle, FMulAdd( cosAngle, RegFloat( 0.03679168f ), RegFloat( -0.49558072f ) ), RegFloat( 0.99940307f ) );
+            cosAngle = FMulAdd( cosAngle, FMulAdd( cosAngle, RegisterF( 0.03679168f ), RegisterF( -0.49558072f ) ), RegisterF( 0.99940307f ) );
 
-            return cosAngle ^ Masked( BitwiseAndNot( geHalfPi, geHalfPi3 ), Cast<float>( RegInt( 0x80000000 ) ) );
+            return cosAngle ^ Masked( BitwiseAndNot( geHalfPi, geHalfPi3 ), Cast<float>( RegisterI( 0x80000000 ) ) );
         }
         else
         {   
@@ -299,5 +388,134 @@ namespace FS
     FS_FORCEINLINE Register<T, N, SIMD> Sin( const Register<T, N, SIMD>& a )
     {
         return Cos( Register<T, N, SIMD>( (T)1.57079632679 ) - a );
+    }
+    
+    template<std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<float, N, SIMD> Exp( const Register<float, N, SIMD>& a )
+    {
+        if constexpr( IsNativeV<Register<float, N, SIMD>> )
+        {
+            using RegisterF = Register<float, N, SIMD>;
+            using RegisterI = Register<std::int32_t, N, SIMD>;
+
+            RegisterF value = a;
+            value = Min( value, RegisterF( 88.3762626647949f ) );
+            value = Max( value, RegisterF( -88.3762626647949f ) );
+
+            /* express exp(x) as exp(g + n*log(2)) */
+            RegisterF fx = value * RegisterF( 1.44269504088896341f );
+            fx += RegisterF( 0.5f );
+
+            RegisterF flr = Floor( fx );  
+            fx = MaskedDecrement( flr > fx, flr );
+
+            value -= fx * RegisterF( 0.693359375f );
+            value -= fx * RegisterF( -2.12194440e-4f );
+
+            RegisterF y( 1.9875691500E-4f );
+            y *= value;
+            y += RegisterF( 1.3981999507E-3f );
+            y *= value;
+            y += RegisterF( 8.3334519073E-3f );
+            y *= value;
+            y += RegisterF( 4.1665795894E-2f );
+            y *= value;
+            y += RegisterF( 1.6666665459E-1f );
+            y *= value;
+            y += RegisterF( 5.0000001201E-1f );
+            y *= value * value;
+            y += value + RegisterF( 1 );        
+
+            /* build 2^n */
+            RegisterI i = Convert<std::int32_t>( fx );
+
+            i += RegisterI( 0x7f );
+            i <<= 23;
+            RegisterF pow2n = Cast<float>( i );
+        
+            return y * pow2n;
+        }
+        else
+        {   
+            return Register<float, N, SIMD>{ Exp( a.v0 ), Exp( a.v1 ) };
+        }
+    }
+    
+    template<std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<float, N, SIMD> Log( const Register<float, N, SIMD>& a )
+    {
+        if constexpr( IsNativeV<Register<float, N, SIMD>> )
+        {
+            using RegisterF = Register<float, N, SIMD>;
+            using RegisterI = Register<std::int32_t, N, SIMD>;
+                
+            auto validMask = a > RegisterF( 0 );
+
+            RegisterF value = Max( a, Cast<float>( RegisterI( 0x00800000 ) ) );  /* cut off denormalized stuff */
+            
+            RegisterI i = BitShiftRightZeroExtend( Cast<std::int32_t>( value ), 23 );
+
+            /* keep only the fractional part */
+            value &= Cast<float>( RegisterI( ~0x7f800000 ) );
+            value |= RegisterF( 0.5f );
+            
+            i -= RegisterI( 0x7f );
+            RegisterF e = Convert<float>( i );
+
+            e += RegisterF( 1 );
+
+            auto mask = value < RegisterF( 0.707106781186547524f );
+            value = MaskedAdd( mask, value, value );
+            value -= RegisterF( 1 );
+            e = MaskedDecrement( mask, e );
+
+            RegisterF y = RegisterF( 7.0376836292E-2f );
+            y *= value;
+            y += RegisterF( -1.1514610310E-1f );
+            y *= value;
+            y += RegisterF( 1.1676998740E-1f );
+            y *= value;
+            y += RegisterF( -1.2420140846E-1f );
+            y *= value;
+            y += RegisterF( 1.4249322787E-1f );
+            y *= value;
+            y += RegisterF( -1.6668057665E-1f );
+            y *= value;
+            y += RegisterF( 2.0000714765E-1f );
+            y *= value;
+            y += RegisterF( -2.4999993993E-1f );
+            y *= value;
+            y += RegisterF( 3.3333331174E-1f );
+            y *= value;
+
+            RegisterF xx = value * value;
+            y *= xx;
+            y *= e * RegisterF( -2.12194440e-4f );
+            y -= xx * RegisterF( 0.5f );
+
+            value += y;
+            value += e * RegisterF( 0.693359375f );
+
+            return Masked( validMask, value );
+        }
+        else
+        {   
+            return Register<float, N, SIMD>{ Log( a.v0 ), Log( a.v1 ) };
+        }
+    }
+    
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> Pow( const Register<T, N, SIMD>& value, const Register<T, N, SIMD>& pow )
+    {
+        return Exp( pow * Log( value ) );
+    }
+    
+    // Any Mask
+    // returns true if any mask bits are set
+    template<std::size_t S, bool F, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE bool AnyMask( const Register<Mask<S, F>, N, SIMD>& a )
+    {
+        static_assert( !IsNativeV<Register<Mask<S, F>, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        return AnyMask( a.v0 ) || AnyMask( a.v1 );
     }
 }

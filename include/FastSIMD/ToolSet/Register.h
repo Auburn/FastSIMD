@@ -259,10 +259,10 @@ namespace FS
     struct IsNative : std::false_type { };
 
     template<typename T>
-    struct IsNative<T, std::void_t<decltype( T::native )>> : std::true_type { };
+    struct IsNative<T, std::void_t<typename T::NativeType>> : std::true_type { };
     
     template<typename T>
-    using EnableIfNative = decltype( T::native );
+    using EnableIfNative = typename T::NativeType;
 
     template<typename T>
     using EnableIfNotNative = decltype( T::v0 );
