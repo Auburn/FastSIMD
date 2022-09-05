@@ -63,7 +63,11 @@ function(fastsimd_create_simd_library simd_library_name simd_inl)
     target_link_libraries(${simd_library_name} PRIVATE FastSIMD)
         
     if(BUILD_SHARED_LIBS)
-        set_property(TARGET ${simd_library_name} PROPERTY POSITION_INDEPENDENT_CODE ON)
+        set_target_properties(${simd_library_name} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    endif()
+
+    if(CMAKE_COMPILER_IS_GNUCC)
+        set_target_properties(${simd_library_name} PROPERTIES COMPILE_FLAGS "-Wno-ignored-attributes")
     endif()
 
     set(simd_library_source_dir "${CMAKE_CURRENT_BINARY_DIR}/fastsimd/${simd_library_name}")
