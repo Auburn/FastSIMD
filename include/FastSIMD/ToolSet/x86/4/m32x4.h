@@ -110,7 +110,7 @@ namespace FS
         FS_FORCEINLINE Register operator ~() const
         {
             const __m128i neg1 = _mm_set1_epi32( -1 );
-            return _mm_castsi128_ps( _mm_xor_si128( _mm_castps_si128( this->native ), neg1 ) );        
+            return _mm_xor_si128( _mm_castps_si128( this->native ), neg1 );        
         }        
     };
 
