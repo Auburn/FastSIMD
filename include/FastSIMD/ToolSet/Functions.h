@@ -17,6 +17,15 @@ namespace FS
         return Register<T, N, SIMD>( a );
     }
 
+
+    // impl
+    namespace impl { template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> Load( TypeWrapper<const T*, N, SIMD> ptr )
+    {
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        return Register<T, N, SIMD>{ Load( ptr.AsHalf() ), Load( ptr.AsHalf( N / 2 ) ) };
+    } }
+
     // Load values
     template<std::size_t N, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET, typename T>
     FS_FORCEINLINE Register<T, N, SIMD> Load( const T* ptr )
@@ -29,13 +38,6 @@ namespace FS
     {
         return Load( TypeWrapper<const typename R::ElementType*, R::ElementCount, R::FeatureFlags>( ptr ) );
     }
-
-    namespace impl { template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE Register<T, N, SIMD> Load( TypeWrapper<const T*, N, SIMD> ptr )
-    {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
-        return Register<T, N, SIMD>{ Load( ptr.AsHalf() ), Load( ptr.AsHalf( N / 2 ) ) };
-    } }
 
 
     // Store values
@@ -77,13 +79,7 @@ namespace FS
         return Constant<typename R::ElementType, R::FeatureFlags>( std::make_integer_sequence<std::int64_t, R::ElementCount>{} );
     }
 
-    // Convert values
-    template<typename U, typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE Register<U, N, SIMD> Convert( const Register<T, N, SIMD>& a )
-    {
-        return Convert( a, TypeDummy<U>{} );
-    }
-
+    // impl
     namespace impl { template<typename U, typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<U, N, SIMD> Convert( const Register<T, N, SIMD>& a, TypeDummy<U> )
     {
@@ -91,6 +87,21 @@ namespace FS
         return Register<U, N, SIMD>{ Convert( a.v0, TypeDummy<U>{} ), Convert( a.v1, TypeDummy<U>{} ) };
     } }
 
+    // Convert values
+    template<typename U, typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<U, N, SIMD> Convert( const Register<T, N, SIMD>& a )
+    {
+        return Convert( a, TypeDummy<U>{} );
+    }
+
+
+    // impl
+    namespace impl { template<typename U, typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<U, N, SIMD> Cast( const Register<T, N, SIMD>& a, TypeDummy<U> )
+    {
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        return Register<U, N, SIMD>{ Cast( a.v0, TypeDummy<U>{} ), Cast( a.v1, TypeDummy<U>{} ) };
+    } }
 
     // Cast values
     template<typename U, typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
@@ -98,13 +109,6 @@ namespace FS
     {
         return Cast( a, TypeDummy<U>{} );
     }
-
-    namespace impl { template<typename U, typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE Register<U, N, SIMD> Cast( const Register<T, N, SIMD>& a, TypeDummy<U> )
-    {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
-        return Register<U, N, SIMD>{ Cast( a.v0, TypeDummy<U>{} ), Cast( a.v1, TypeDummy<U>{} ) };
-    } }
 
 
     // Abs value
