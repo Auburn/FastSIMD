@@ -58,9 +58,13 @@ function(fastsimd_create_simd_library simd_library_name simd_inl)
         AVX512_Baseline_FMA)
 
     add_library(${simd_library_name} OBJECT)
-    target_compile_definitions(${simd_library_name} PRIVATE FASTSIMD_EXPORT)
 
+    target_compile_definitions(${simd_library_name} PRIVATE FASTSIMD_EXPORT)
     target_link_libraries(${simd_library_name} PRIVATE FastSIMD)
+        
+    if(BUILD_SHARED_LIBS)
+        set_property(TARGET ${simd_library_name} PROPERTY POSITION_INDEPENDENT_CODE ON)
+    endif()
 
     set(simd_library_source_dir "${CMAKE_CURRENT_BINARY_DIR}/fastsimd/${simd_library_name}")
     set(feature_set_list "")

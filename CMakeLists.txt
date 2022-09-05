@@ -20,7 +20,9 @@ option(FASTSIMD_TESTS "Build FastSIMD tests" ${FASTSIMD_STANDALONE_PROJECT})
 add_library(FastSIMD OBJECT "src/FastSIMD.cpp")
 target_compile_definitions(FastSIMD PRIVATE FASTSIMD_EXPORT)
 
-if(NOT BUILD_SHARED_LIBS)
+if(BUILD_SHARED_LIBS)
+    set_property(TARGET FastSIMD PROPERTY POSITION_INDEPENDENT_CODE ON)
+else()
     target_compile_definitions(FastSIMD PUBLIC FASTSIMD_STATIC_LIB)
 endif()
 
