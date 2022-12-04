@@ -1,5 +1,5 @@
 #pragma once
-#include <FastSIMD/ToolSet/Functions.h>
+#include <FastSIMD/ToolSet/Generic/Functions.h>
 #include <FastSIMD/DispatchClass.h>
 
 #include <new>
@@ -13,13 +13,13 @@ namespace FastSIMD
     struct DispatchClassFactory 
     {
         template<typename T>
-        static T* New( FastSIMD::MemoryAllocator allocator );
+        FS_NEVERINLINE static T* New( FastSIMD::MemoryAllocator allocator );
     };
 
     // Make sure we only instantiate DispatchClass<T, SIMD> for the current feature set
     template<>
     template<typename T>
-    T* DispatchClassFactory<FASTSIMD_DEFAULT_FEATURE_SET>::New( FastSIMD::MemoryAllocator allocator )
+    FS_NEVERINLINE T* DispatchClassFactory<FASTSIMD_DEFAULT_FEATURE_SET>::New( FastSIMD::MemoryAllocator allocator )
     {
         constexpr auto SIMD = FASTSIMD_DEFAULT_FEATURE_SET;
 
@@ -46,7 +46,7 @@ namespace FastSIMD
 
     // Compile FastSIMD::NewDispatchClass<T> in minimum feature set compilation unit to avoid illegal instructions
     template<typename T>
-    class RegisterDispatchClass<T, FastSIMD::CompiledFeatureSets::Minimum>
+    class RegisterDispatchClass<T, FastSIMD::FASTSIMD_LIBRARY_NAME::CompiledFeatureSets::Minimum>
     {
         // Never called, used to instantiate NewDispatchClass<T>()
         static auto Instantiate()
@@ -64,7 +64,7 @@ namespace FastSIMD
             return nullptr;
         }
 
-        constexpr auto NextCompiled = FastSIMD::CompiledFeatureSets::NextAfter<SIMD>;
+        constexpr auto NextCompiled = FastSIMD::FASTSIMD_LIBRARY_NAME::CompiledFeatureSets::NextAfter<SIMD>;
 
         if constexpr( NextCompiled != FastSIMD::FeatureSet::Max )
         {
@@ -85,7 +85,7 @@ namespace FastSIMD
             maxFeatureSet = DetectCpuMaxFeatureSet();
         }
 
-        return DispatchClassFactoryIterator<T, FastSIMD::CompiledFeatureSets::Minimum>( maxFeatureSet, allocator );
+        return DispatchClassFactoryIterator<T, FastSIMD::FASTSIMD_LIBRARY_NAME::CompiledFeatureSets::Minimum>( maxFeatureSet, allocator );
     }
 
 

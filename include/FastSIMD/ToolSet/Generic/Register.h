@@ -7,9 +7,11 @@
 
 #ifdef _MSC_VER
 #define FS_FORCEINLINE __forceinline
+#define FS_NEVERINLINE __declspec(noinline)
 #define FS_VECTORCALL __vectorcall
 #else
 #define FS_FORCEINLINE __attribute__( ( always_inline ) ) inline
+#define FS_NEVERINLINE __attribute__( ( noinline ) )
 #define FS_VECTORCALL
 #endif
 
@@ -24,7 +26,7 @@ namespace FS
     struct Register
     {
         static_assert( SIMD != FastSIMD::FeatureSet::Null, "Invalid FeatureSet" );
-        static_assert( N > 1, "Below minimum vector size" );
+        static_assert( N > 0, "Zero vector size" );
         static_assert( ( N & ( N - 1 ) ) == 0, "Vector size must be power of 2" );
 
         static constexpr std::size_t ElementCount = N;
@@ -217,6 +219,18 @@ namespace FS
 
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE static Register<T, N, SIMD> operator >>( Register<T, N, SIMD> lhs, int rhs )
+    {
+        return lhs >>= rhs;
+    }
+
+    template<typename T, typename U, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE static Register<T, N, SIMD> operator<<( Register<T, N, SIMD> lhs, Register<U, N, SIMD> rhs )
+    {
+        return lhs <<= rhs;
+    }
+
+    template<typename T, typename U, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE static Register<T, N, SIMD> operator>>( Register<T, N, SIMD> lhs, Register<U, N, SIMD> rhs )
     {
         return lhs >>= rhs;
     }

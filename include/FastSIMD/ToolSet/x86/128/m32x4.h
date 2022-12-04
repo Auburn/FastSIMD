@@ -1,13 +1,8 @@
 #pragma once
 
-#include <FastSIMD/ToolSet/Register.h>
+#include <FastSIMD/ToolSet/Generic/Register.h>
 
-#ifdef __GNUG__
-#include <x86intrin.h>
-#else
-#include <intrin.h>
-#endif
-
+#include <nmmintrin.h>
 
 namespace FS
 {

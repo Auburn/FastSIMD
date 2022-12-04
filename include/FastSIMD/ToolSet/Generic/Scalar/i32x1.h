@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Register.h"
+#include <FastSIMD/ToolSet/Generic/Register.h>
 
 #include <algorithm>
 
@@ -12,14 +12,20 @@ namespace FS
     {
         static constexpr size_t ElementCount = 1;
         static constexpr auto FeatureFlags = SIMD;
-
+        
+        using NativeType = std::int32_t;
         using ElementType = std::int32_t;
         using MaskType = m32<ElementCount, false, SIMD>;
         using MaskTypeArg = m32<ElementCount, true, SIMD>;
 
 
         FS_FORCEINLINE Register() = default;
-        FS_FORCEINLINE Register( std::int32_t v ) : native( v ) { }
+        FS_FORCEINLINE Register( NativeType v ) : native( v ) { }
+        
+        FS_FORCEINLINE NativeType GetNative() const
+        {
+            return native;
+        }
 
         FS_FORCEINLINE Register& operator +=( const Register& rhs )
         {
@@ -54,18 +60,6 @@ namespace FS
         FS_FORCEINLINE Register& operator ^=( const Register& rhs )
         {
             native = native ^ rhs.native;
-            return *this;
-        }
-        
-        FS_FORCEINLINE Register& operator >>=( const Register& rhs )
-        {
-            native = native >> rhs.native;
-            return *this;
-        }
-        
-        FS_FORCEINLINE Register& operator <<=( const Register& rhs )
-        {
-            native = native << rhs.native;
             return *this;
         }
         
@@ -122,8 +116,20 @@ namespace FS
             return native < rhs.native;
         }
 
-        std::int32_t native;
+        NativeType native;
     };
+    
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<1, SIMD>>>
+    FS_FORCEINLINE i32<1, SIMD> Load( TypeWrapper<const int*, 1, SIMD> ptr )
+    {
+        return *ptr.value;
+    }
+    
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<1, SIMD>>>
+    FS_FORCEINLINE void Store( typename i32<1, SIMD>::ElementType* ptr, const i32<1, SIMD>& a )
+    {
+        *ptr = a.native;
+    }
     
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<1, SIMD>>>
     FS_FORCEINLINE i32<1, SIMD> Abs( const i32<1, SIMD>& a )

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <FastSIMD/ToolSet/Register.h>
+#include <FastSIMD/ToolSet/Generic/Register.h>
 
 #include <nmmintrin.h>
 

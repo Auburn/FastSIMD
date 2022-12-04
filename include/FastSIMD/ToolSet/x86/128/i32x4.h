@@ -1,6 +1,6 @@
 #pragma once
 
-#include <FastSIMD/ToolSet/Register.h>
+#include <FastSIMD/ToolSet/Generic/Register.h>
 #include <nmmintrin.h>
 
 namespace FS
@@ -67,18 +67,6 @@ namespace FS
         FS_FORCEINLINE Register& operator ^=( const Register& rhs )
         {
             native = _mm_xor_si128( native, rhs.native );
-            return *this;
-        }
-        
-        FS_FORCEINLINE Register& operator >>=( const Register& rhs )
-        {
-            native = _mm_sra_epi32( native, rhs.native );
-            return *this;
-        }
-        
-        FS_FORCEINLINE Register& operator <<=( const Register& rhs )
-        {
-            native = _mm_sll_epi32( native, rhs.native );
             return *this;
         }
         

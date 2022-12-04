@@ -49,32 +49,35 @@ function(fastsimd_add_feature_set_source simd_inl feature_set)
     
 endfunction()
 
-function(fastsimd_create_simd_library simd_library_name)
+function(fastsimd_create_dispatch_library simd_library_name)
     
-    cmake_parse_arguments(PARSE_ARGV 0 fastsimd_create_simd_library "" "" "SOURCES;FEATURE_SETS")
+    cmake_parse_arguments(PARSE_ARGV 0 fastsimd_create_dispatch_library "" "" "SOURCES;FEATURE_SETS")
 
-    list(LENGTH fastsimd_create_simd_library_FEATURE_SETS FEATURE_SET_COUNT)
-    list(LENGTH fastsimd_create_simd_library_SOURCES SOURCES_COUNT)
+    list(LENGTH fastsimd_create_dispatch_library_FEATURE_SETS FEATURE_SET_COUNT)
+    list(LENGTH fastsimd_create_dispatch_library_SOURCES SOURCES_COUNT)
 
     if(SOURCES_COUNT EQUAL 0)
-        message(FATAL_ERROR "FastSIMD: \"${simd_library_name}\" No SOURCES specified, example usage: fastsimd_create_simd_library(example_simd SOURCES \"example.inl\")")
+        message(FATAL_ERROR "FastSIMD: \"${simd_library_name}\" No SOURCES specified, example usage: fastsimd_create_dispatch_library(example_simd SOURCES \"example.inl\")")
     endif()
 
     if(FEATURE_SET_COUNT EQUAL 0)
         message("FastSIMD: \"${simd_library_name}\" No FEATURE_SETS specified, using default feature sets")
-        set(fastsimd_create_simd_library_FEATURE_SETS
+        set(fastsimd_create_dispatch_library_FEATURE_SETS
             SSE2
             SSE41
             AVX2_FMA
             AVX512_Baseline_FMA)
     endif()
 
-    message(STATUS "FastSIMD: Created SIMD library \"${simd_library_name}\" ${fastsimd_create_simd_library_FEATURE_SETS}")
+    message(STATUS "FastSIMD: Created dispatch library \"${simd_library_name}\" with Feature Sets: ${fastsimd_create_dispatch_library_FEATURE_SETS}")
 
     add_library(${simd_library_name} OBJECT)
 
-    target_compile_definitions(${simd_library_name} PRIVATE FASTSIMD_EXPORT)
+    set(simd_library_source_dir "${CMAKE_CURRENT_BINARY_DIR}/fastsimd/${simd_library_name}")
+
+    target_compile_definitions(${simd_library_name} PRIVATE FASTSIMD_EXPORT FASTSIMD_LIBRARY_NAME=${simd_library_name})
     target_link_libraries(${simd_library_name} PRIVATE FastSIMD)
+    target_include_directories(${simd_library_name} PUBLIC "${simd_library_source_dir}/include")
         
     if(BUILD_SHARED_LIBS)
         set_target_properties(${simd_library_name} PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -84,11 +87,10 @@ function(fastsimd_create_simd_library simd_library_name)
         set_target_properties(${simd_library_name} PROPERTIES COMPILE_FLAGS "-Wno-ignored-attributes")
     endif()
 
-    set(simd_library_source_dir "${CMAKE_CURRENT_BINARY_DIR}/fastsimd/${simd_library_name}")
     set(feature_set_list "")
 
-    foreach(simd_inl ${fastsimd_create_simd_library_SOURCES})
-        foreach(feature_set ${fastsimd_create_simd_library_FEATURE_SETS})
+    foreach(simd_inl ${fastsimd_create_dispatch_library_SOURCES})
+        foreach(feature_set ${fastsimd_create_dispatch_library_FEATURE_SETS})
             list(APPEND feature_set_list "FastSIMD::FeatureSet::${feature_set}")      
             fastsimd_add_feature_set_source(${simd_inl} ${feature_set})
         endforeach()  
@@ -96,6 +98,6 @@ function(fastsimd_create_simd_library simd_library_name)
 
     # Create array of compiled feature sets for lookup in FastSIMD::New()
     string(REPLACE ";" ",\n" feature_set_list "${feature_set_list}")
-    configure_file("${FastSIMD_SOURCE_DIR}/DispatchClass/cmake/simd_lib_config.h.in" "${simd_library_source_dir}/simd_lib_config.h")
+    configure_file("${FastSIMD_SOURCE_DIR}/DispatchClass/cmake/simd_lib_config.h.in" "${simd_library_source_dir}/include/FastSIMD/${simd_library_name}_config.h")
 
 endfunction()

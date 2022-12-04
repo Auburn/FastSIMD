@@ -2,8 +2,10 @@
 
 #include <algorithm>
 
-#include "Register.h"
-#include "x86/SSE.h"
+// To remove
+#include <FastSIMD/ToolSet/Generic/Register.h>
+#include <FastSIMD/ToolSet/Generic/Scalar.h>
+#include <FastSIMD/ToolSet/x86/SSE.h>
 
 namespace FS
 {

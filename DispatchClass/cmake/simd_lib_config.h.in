@@ -1,9 +1,12 @@
 #pragma once
 
-#include "${FastSIMD_SOURCE_DIR}/DispatchClass/impl/FeatureSetList.h"
+#include <FastSIMD/Utility/FeatureSetList.h>
 
 namespace FastSIMD
 {
+namespace ${simd_library_name}
+{
 using CompiledFeatureSets = FeatureSetList<
 ${feature_set_list}>;
+}
 }

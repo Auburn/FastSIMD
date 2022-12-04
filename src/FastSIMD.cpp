@@ -234,4 +234,29 @@ namespace FastSIMD
         return cache;
     }
 
+    FASTSIMD_API const char* FastSIMD::GetFeatureSetString( FeatureSet featureSet )
+    {
+        switch( featureSet )
+        {
+            case FeatureSet::Null: return "Null";
+            case FeatureSet::Scalar: return "Scalar";
+            case FeatureSet::SSE: return "SSE";
+            case FeatureSet::SSE2: return "SSE2";
+            case FeatureSet::SSE3: return "SSE3";
+            case FeatureSet::SSSE3: return "SSSE3";
+            case FeatureSet::SSE41: return "SSE4.1";
+            case FeatureSet::SSE42: return "SSE4.2";
+            case FeatureSet::AVX: return "AVX";
+            case FeatureSet::AVX_FMA: return "AVX_FMA";
+            case FeatureSet::AVX2: return "AVX2";
+            case FeatureSet::AVX2_FMA: return "AVX2_FMA";
+            case FeatureSet::AVX512_Baseline: return "AVX512_Baseline";
+            case FeatureSet::AVX512_Baseline_FMA: return "AVX512_Baseline_FMA";
+            case FeatureSet::NEON: return "NEON";
+            case FeatureSet::NEON_FMA: return "NEON_FMA";
+            case FeatureSet::Max: return "Max";
+        }
+
+        return "INVALID";
+    }
 } // namespace FastSIMD

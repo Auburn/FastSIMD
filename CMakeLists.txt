@@ -10,14 +10,14 @@ if (NOT DEFINED FASTSIMD_STANDALONE_PROJECT)
         set(FASTSIMD_STANDALONE_PROJECT ON)
     else()
         set(FASTSIMD_STANDALONE_PROJECT OFF)
-    endif ()
+    endif()
 endif()
 
 option(FASTSIMD_DISPATCH_CLASS "Enable FastSIMD Dispatch Classes" ON)
 option(FASTSIMD_EXAMPLES "Build FastSIMD examples" ${FASTSIMD_STANDALONE_PROJECT})
 option(FASTSIMD_TESTS "Build FastSIMD tests" ${FASTSIMD_STANDALONE_PROJECT})
 
-add_library(FastSIMD OBJECT "src/FastSIMD.cpp")
+add_library(FastSIMD OBJECT "src/FastSIMD.cpp" "include/FastSIMD/FastSIMD.h")
 target_compile_definitions(FastSIMD PRIVATE FASTSIMD_EXPORT)
 
 if(BUILD_SHARED_LIBS)
@@ -33,6 +33,10 @@ target_include_directories(FastSIMD PUBLIC
 
 if(FASTSIMD_DISPATCH_CLASS)
     add_subdirectory(DispatchClass)
+endif()
+
+if(FASTSIMD_TESTS)
+    add_subdirectory(tests)
 endif()
 
 if(FASTSIMD_EXAMPLES)
