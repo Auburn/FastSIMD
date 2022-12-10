@@ -234,7 +234,7 @@ namespace FastSIMD
         return cache;
     }
 
-    FASTSIMD_API const char* FastSIMD::GetFeatureSetString( FeatureSet featureSet )
+    FASTSIMD_API const char* GetFeatureSetString( FeatureSet featureSet )
     {
         switch( featureSet )
         {

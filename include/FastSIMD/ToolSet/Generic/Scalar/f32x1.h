@@ -3,7 +3,7 @@
 #include <FastSIMD/ToolSet/Generic/Register.h>
 
 #include <algorithm>
-
+#include <cmath>
 
 namespace FS
 {
@@ -119,60 +119,6 @@ namespace FS
             std::int32_t i;
         }
         native;
-    };
-    
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>>
-    FS_FORCEINLINE f32<1, SIMD> Load( TypeWrapper<const float*, 1, SIMD> ptr )
-    {
-        return *ptr.value;
-    }
-    
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>>
-    FS_FORCEINLINE void Store( typename f32<1, SIMD>::ElementType* ptr, const f32<1, SIMD>& a )
-    {
-        *ptr = a.native.f;
-    }
-    
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>>
-    FS_FORCEINLINE f32<1, SIMD> Abs( const f32<1, SIMD>& a )
-    {
-        return std::abs( a.native.f );
-    }
-
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>>
-    FS_FORCEINLINE f32<1, SIMD> Round( const f32<1, SIMD>& a )
-    {
-        return std::round( a.native.f );
-    }
-
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>>
-    FS_FORCEINLINE f32<1, SIMD> Ceil( const f32<1, SIMD>& a )
-    {
-        return std::ceil( a.native.f );
-    }
-
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>>
-    FS_FORCEINLINE f32<1, SIMD> Floor( const f32<1, SIMD>& a )
-    {
-        return std::floor( a.native.f );
-    }
-    
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>>
-    FS_FORCEINLINE f32<1, SIMD> Min( const f32<1, SIMD>& a, const f32<1, SIMD>& b )
-    {
-        return std::min( a.native.f, b.native.f );        
-    }
-
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>>
-    FS_FORCEINLINE f32<1, SIMD> Max( const f32<1, SIMD>& a, const f32<1, SIMD>& b )
-    {
-        return std::max( a.native.f, b.native.f );        
-    }
-        
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>>
-    FS_FORCEINLINE f32<1, SIMD> Select( const typename f32<1, SIMD>::MaskTypeArg& mask, const f32<1, SIMD>& ifTrue, const f32<1, SIMD>& ifFalse )
-    {
-        return mask.native ? ifTrue : ifFalse;
-    }
+    };    
 
 }

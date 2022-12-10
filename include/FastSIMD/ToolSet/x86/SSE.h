@@ -17,7 +17,7 @@ namespace FS
         return _mm_cvtepi32_ps( a.native );
     }
 
-    template<typename U, typename T, FastSIMD::FeatureSet SIMD>
+    template<typename U, typename T, FastSIMD::FeatureSet SIMD, typename = EnableIfNative<Register<T, 4, SIMD>>>
     FS_FORCEINLINE Register<U, 4, SIMD> Cast( const Register<T, 4, SIMD>& a, TypeDummy<U> )
     {
         if constexpr( 

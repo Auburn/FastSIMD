@@ -179,8 +179,14 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Increment( const Register<T, N, SIMD>& a )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
-        return Register<T, N, SIMD>{ Increment( a.v0 ), Increment( a.v1 ) };
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return a - Register<T, N, SIMD>( -1 );
+        }
+        else
+        {
+            return Register<T, N, SIMD> { Increment( a.v0 ), Increment( a.v1 ) };
+        }
     }
     
     // FMulAdd (a * b) + c

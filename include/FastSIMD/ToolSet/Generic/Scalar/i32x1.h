@@ -3,7 +3,7 @@
 #include <FastSIMD/ToolSet/Generic/Register.h>
 
 #include <algorithm>
-
+#include <cmath>
 
 namespace FS
 {
@@ -118,41 +118,5 @@ namespace FS
 
         NativeType native;
     };
-    
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<1, SIMD>>>
-    FS_FORCEINLINE i32<1, SIMD> Load( TypeWrapper<const int*, 1, SIMD> ptr )
-    {
-        return *ptr.value;
-    }
-    
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<1, SIMD>>>
-    FS_FORCEINLINE void Store( typename i32<1, SIMD>::ElementType* ptr, const i32<1, SIMD>& a )
-    {
-        *ptr = a.native;
-    }
-    
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<1, SIMD>>>
-    FS_FORCEINLINE i32<1, SIMD> Abs( const i32<1, SIMD>& a )
-    {
-        return std::abs( a.native );
-    }
-    
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<1, SIMD>>>
-    FS_FORCEINLINE i32<1, SIMD> Min( const i32<1, SIMD>& a, const i32<1, SIMD>& b )
-    {
-        return std::min( a.native, b.native );        
-    }
-
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<1, SIMD>>>
-    FS_FORCEINLINE i32<1, SIMD> Max( const i32<1, SIMD>& a, const i32<1, SIMD>& b )
-    {
-        return std::max( a.native, b.native );        
-    }
-        
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<1, SIMD>>>
-    FS_FORCEINLINE i32<1, SIMD> Select( const typename i32<1, SIMD>::MaskTypeArg& mask, const i32<1, SIMD>& ifTrue, const i32<1, SIMD>& ifFalse )
-    {
-        return mask.native ? ifTrue : ifFalse;
-    }
 
 }

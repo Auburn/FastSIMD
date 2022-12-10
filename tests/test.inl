@@ -171,13 +171,13 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
         {
             return []( size_t inIdx, int32_t* rndInts, float* rndFloats ) -> std::string
             {
-                if( !sizeof...(ARGs) )
+                if( !sizeof...( ARGs ) )
                 {
                     return "No Inputs";
                 }
 
                 size_t argIdx = 0;
-                auto tuple = { AsString( GenArg<std::decay_t<ARGs>>::Load( inIdx, argIdx++, rndInts, rndFloats ) )... };
+                std::initializer_list<std::string> tuple = { AsString( GenArg<std::decay_t<ARGs>>::Load( inIdx, argIdx++, rndInts, rndFloats ) )... };
 
                 std::ostringstream inputsString;
 
@@ -214,6 +214,10 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
 
 
         RegisterTest( tests, "i32 load store", []( TestRegi32 a ) { return a; } );
+        RegisterTest( tests, "i32 load scalar", []( int32_t a ) { return TestRegi32( a ); } );
+        RegisterTest( tests, "i32 extract 0", []( TestRegi32 a ) { return FS::Extract0( a ); } );
+
+        RegisterTest( tests, "i32 incremented", []() { return FS::Incremented<TestRegi32>(); } );
 
         RegisterTest( tests, "i32 plus operator", std::plus<TestRegi32>() );
         RegisterTest( tests, "i32 minus operator", std::minus<TestRegi32>() );
@@ -225,7 +229,9 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
         RegisterTest( tests, "i32 bit not operator", std::bit_not<TestRegi32>() );
         RegisterTest( tests, "i32 negate operator", std::negate<TestRegi32>() );
 
-        RegisterTest( tests, "i32 Abs", []( TestRegi32 a ) { return FS::Abs( a ); } );
+        
+        RegisterTest( tests, "i32 increment", []( TestRegi32 a ) { return FS::Increment( a ); } );
+        RegisterTest( tests, "i32 abs", []( TestRegi32 a ) { return FS::Abs( a ); } );
         
         RegisterTest( tests, "i32 equals operator", []( TestRegi32 a, TestRegi32 b ) { return FS::Select( a == b, a, b ); } ); 
 
@@ -246,6 +252,9 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
 
 
         RegisterTest( tests, "f32 load store", []( TestRegf32 a ) { return a; } );
+        RegisterTest( tests, "i32 load scalar", []( float a ) { return TestRegf32( a ); } );
+        RegisterTest( tests, "f32 extract 0", []( TestRegf32 a ) { return FS::Extract0( a ); } );
+        RegisterTest( tests, "f32 incremented", []() { return FS::Incremented<TestRegf32>(); } );
 
         RegisterTest( tests, "f32 plus operator", std::plus<TestRegf32>() );
         RegisterTest( tests, "f32 minus operator", std::minus<TestRegf32>() );
@@ -265,10 +274,15 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
         RegisterTest( tests, "f32 less equal than operator", []( TestRegf32 a, TestRegf32 b ) { return FS::Select( a <= b, a, b ); } );
         RegisterTest( tests, "f32 greater equal than operator", []( TestRegf32 a, TestRegf32 b ) { return FS::Select( a >= b, a, b ); } );
 
-        RegisterTest( tests, "f32 Abs", []( TestRegf32 a ) { return FS::Abs( a ); } );
-        RegisterTest( tests, "f32 Round", []( TestRegf32 a ) { return FS::Round( a ); } );
-        RegisterTest( tests, "f32 Ceil", []( TestRegf32 a ) { return FS::Ceil( a ); } );
-        RegisterTest( tests, "f32 Floor", []( TestRegf32 a ) { return FS::Floor( a ); } );
+        RegisterTest( tests, "f32 abs", []( TestRegf32 a ) { return FS::Abs( a ); } );
+        RegisterTest( tests, "f32 round", []( TestRegf32 a ) { return FS::Round( a ); } );
+        RegisterTest( tests, "f32 ceil", []( TestRegf32 a ) { return FS::Ceil( a ); } );
+        RegisterTest( tests, "f32 floor", []( TestRegf32 a ) { return FS::Floor( a ); } );
+
+        RegisterTest( tests, "i32 convert to f32", []( TestRegi32 a ) { return FS::Convert<float>( a ); } );
+        RegisterTest( tests, "i32 cast to f32", []( TestRegi32 a ) { return FS::Cast<float>( a ); } );
+        RegisterTest( tests, "f32 convert to i32", []( TestRegf32 a ) { return FS::Convert<int32_t>( FS::Min( FS::Max( a, TestRegf32( INT32_MIN ) ), TestRegf32( -(int64_t)INT32_MIN ) ) ); } );
+        RegisterTest( tests, "f32 cast to i32", []( TestRegf32 a ) { return FS::Cast<int32_t>( a ); } );
 
         return tests;
     }

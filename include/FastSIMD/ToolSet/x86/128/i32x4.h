@@ -139,6 +139,12 @@ namespace FS
     {
         _mm_storeu_si128( (__m128i*)ptr, a.native );
     }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
+    FS_FORCEINLINE float Extract0( const i32<4, SIMD>& a )
+    {
+        return _mm_cvtsi128_si32( a.native );
+    }
         
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
     FS_FORCEINLINE i32<4, SIMD> Abs( const i32<4, SIMD>& a )
