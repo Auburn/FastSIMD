@@ -49,16 +49,22 @@ namespace FS
         NativeType native;
     };
 
-    template<FastSIMD::FeatureSet SIMD, size_t N, typename = EnableIfNative<Register<Mask<N, true>, 1, SIMD>>>
-    FS_FORCEINLINE Register<Mask<N, true>, 1, SIMD> BitwiseAndNot( const Register<Mask<N, true>, 1, SIMD>& a, const Register<Mask<N, true>, 1, SIMD>& b )
+    template<FastSIMD::FeatureSet SIMD, size_t N, bool B, typename = EnableIfNative<Register<Mask<N, B>, 1, SIMD>>>
+    FS_FORCEINLINE Register<Mask<N, B>, 1, SIMD> BitwiseAndNot( const Register<Mask<N, B>, 1, SIMD>& a, const Register<Mask<N, B>, 1, SIMD>& b )
     {
         return a.native && !b.native;        
     }
     
-    template<FastSIMD::FeatureSet SIMD, size_t N, typename = EnableIfNative<Register<Mask<N, true>, 1, SIMD>>>
-    FS_FORCEINLINE bool AnyMask( const Register<Mask<N, true>, 1, SIMD>& a )
+    template<FastSIMD::FeatureSet SIMD, size_t N, bool B, typename = EnableIfNative<Register<Mask<N, B>, 1, SIMD>>>
+    FS_FORCEINLINE bool AnyMask( const Register<Mask<N, B>, 1, SIMD>& a )
     {          
         return a.native;
+    }
+
+    template<FastSIMD::FeatureSet SIMD, size_t N, bool B, typename = EnableIfNative<Register<Mask<N, B>, 1, SIMD>>>
+    FS_FORCEINLINE BitStorage<1> BitMask( const Register<Mask<N, B>, 1, SIMD>& a )
+    {
+        return static_cast<BitStorage<1>>( a.native );
     }
 
     template<FastSIMD::FeatureSet SIMD, size_t N>
@@ -74,5 +80,10 @@ namespace FS
 
         FS_FORCEINLINE Register() = default;
         FS_FORCEINLINE Register( NativeType v ) : Register<Mask<N, true>, 1, SIMD>( v ) { }
+        
+        FS_FORCEINLINE Register operator ~() const
+        {
+            return !this->native;   
+        }
     };
 }

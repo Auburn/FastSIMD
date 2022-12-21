@@ -1,4 +1,6 @@
 #include "test.h"
+
+#include <iomanip>
 #include <vector>
 #include <iostream>
 #include <map>
@@ -12,7 +14,7 @@ static constexpr size_t TestCount = 4096 * 4096;
 int  * rndInts;
 float* rndFloats;
 
-float GenNormalFloat( std::mt19937& gen )
+float GenFiniteFloat( std::mt19937& gen )
 {
     union
     {
@@ -24,7 +26,7 @@ float GenNormalFloat( std::mt19937& gen )
     {
         u.i = (int)gen();
 
-    } while( !std::isnormal( u.f ) );
+    } while( !std::isfinite( u.f ) );
 
     return u.f;
 }
@@ -42,8 +44,10 @@ void GenerateRandomValues()
     for ( std::size_t i = 0; i < TestCount; i++ )
     {
         rndInts[i] = (int)gen();
-        rndFloats[i] = GenNormalFloat( gen );
+        rndFloats[i] = GenFiniteFloat( gen );
     }
+
+    //std::sort( rndFloats, rndFloats + TestCount + 1024, std::less() );
 }
 
 template<size_t RegisterBytes>
@@ -109,45 +113,68 @@ struct TestRunner
         }
     };
 
+    template<typename T>
+    static bool CompareTyped( std::string_view testName, FastSIMD::FeatureSet featureSet, TestData::ReturnType returnType, size_t outputCount, void* scalarResults, void* simdResults )
+    {
+        bool success = true;
+
+        T* typedScalar = reinterpret_cast<T*>( scalarResults );
+        T* typedSimd = reinterpret_cast<T*>( simdResults );
+
+        for( size_t idx = 0; idx < outputCount; idx++ )
+        {
+            if( typedScalar[idx] != typedSimd[idx] )
+            {
+                if constexpr( std::is_floating_point_v<T> )
+                {
+                    if( std::isnan( typedScalar[idx] ) && std::isnan( typedSimd[idx] ) )
+                    {
+                        continue;
+                    }
+                }
+                if( success )
+                {
+                    std::cerr << std::setprecision( 16 ) << std::boolalpha;
+                    std::cerr << "--- " << FastSIMD::GetFeatureSetString( featureSet ) << " FAILED ---" << std::endl;
+                }
+                std::cerr << "idx " << idx << ": " << testName << " Expected \"" << typedScalar[idx] << "\" Actual \"" << typedSimd[idx] << "\"" << std::endl;
+                success = false;
+            }
+        }
+
+        return success;
+    }
+
     static bool CompareOutputs( std::string_view testName, FastSIMD::FeatureSet featureSet, TestData::ReturnType returnType, size_t outputCount, void* scalarResults, void* simdResults )
     {
-        bool failed = false;
-
         switch( returnType )
         {
         case TestData::ReturnType::boolean:
-            break;
-        case TestData::ReturnType::f32:
-            break;
-        case TestData::ReturnType::i32:
-            int* intsScalar = reinterpret_cast<int*>( scalarResults );
-            int* intsSimd = reinterpret_cast<int*>( simdResults );
+            return CompareTyped<bool>( testName, featureSet, returnType, outputCount, scalarResults, simdResults );
 
-            for( size_t idx = 0; idx < RegisterBytes / sizeof(int); idx++ )
-            {
-                if( intsScalar[idx] != intsSimd[idx] )
-                {
-                    std::cerr << FastSIMD::GetFeatureSetString( featureSet ) << " FAILED idx " << idx << ": " << testName << " Expected \"" << intsScalar[idx] << "\" Actual \"" << intsSimd[idx] << "\"" << std::endl;
-                    failed = true;
-                }
-            }
-            break;
+        case TestData::ReturnType::f32:
+            return CompareTyped<float>( testName, featureSet, returnType, outputCount, scalarResults, simdResults );
+
+        case TestData::ReturnType::i32:
+            return CompareTyped<int32_t>( testName, featureSet, returnType, outputCount, scalarResults, simdResults );
         }
 
-        return !failed;
+        return false;
     }
 
     static void DoTest( std::string_view testName, std::vector<TestData>& tests )
     {
-        std::cout << "Running Test: " << testName << std::endl;
+        std::cout << "Testing: " << testName << std::endl;
 
         char* scalarResults = new char[RegisterBytes];
         char* simdResults   = new char[RegisterBytes];
 
         for( size_t idx = 0; idx < TestCount; idx += RegisterBytes / sizeof( int ) )
         {
+            bool failed = false;
+
             for( size_t testIdx = 0; testIdx < tests.size(); testIdx++ )
-            {
+            {               
                 TestData& test = tests[testIdx];
             
                 char* resultsOut = testIdx ? simdResults : scalarResults;
@@ -157,12 +184,28 @@ struct TestRunner
 
                 if( testIdx )
                 {
+                    if( test.returnType != tests[0].returnType )
+                    {
+                        std::cerr << "Tests do not match: " << testName; 
+                        throw std::exception();
+                    }
+                    else if( test.featureSet == FastSIMD::FeatureSet::Scalar )
+                    {
+                        std::cerr << "Multiple tests with same name: " << testName; 
+                        throw std::exception();
+                    }
+
                     if( !CompareOutputs( testName, test.featureSet, test.returnType, outputCount, scalarResults, simdResults ) )
                     {
                         std::cerr << "Inputs: " << test.inputsFunc( idx, rndInts, rndFloats ) << std::endl;
-                        std::cin.ignore();
+                        failed = true;
                     }
                 }
+            }
+
+            if( failed )
+            {
+                std::cin.ignore();
             }
         }
         

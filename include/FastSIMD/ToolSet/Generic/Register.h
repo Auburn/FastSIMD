@@ -294,6 +294,9 @@ namespace FS
     template<std::size_t N, bool OPTIMISE_FLOAT = true, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET>
     using m32 = Register<Mask<32, OPTIMISE_FLOAT>, N, SIMD>;
 
+    template<std::size_t N>
+    using BitStorage = std::tuple_element_t<( N > 8 ) + ( N > 16 ) + ( N > 32 ),
+                                            std::tuple<std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t>>;
     
     template<typename T>
     static constexpr std::size_t NativeRegisterCount( FastSIMD::FeatureSet featureSet = FASTSIMD_DEFAULT_FEATURE_SET );

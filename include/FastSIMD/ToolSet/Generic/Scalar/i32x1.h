@@ -119,4 +119,10 @@ namespace FS
         NativeType native;
     };
 
+    
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<1, SIMD>>>
+    FS_FORCEINLINE i32<1, SIMD> BitShiftRightZeroExtend( const i32<1, SIMD>& a, int b )
+    {
+        return static_cast<std::int32_t>( static_cast<std::uint32_t>( a.native ) >> b );
+    }
 }

@@ -66,19 +66,7 @@ namespace FS
         {
             native = _mm_xor_ps( native, rhs.native );
             return *this;
-        }
-        
-        /*FS_FORCEINLINE Register& operator >>=( const Register& rhs )
-        {
-            native = _mm_srai_epi32( native, rhs.native );
-            return *this;
-        }
-        
-        FS_FORCEINLINE Register& operator <<=( const Register& rhs )
-        {
-            native = _mm_slli_epi32( native, rhs.native );
-            return *this;
-        }*/
+        }        
 
         FS_FORCEINLINE Register operator~() const
         {
@@ -151,7 +139,7 @@ namespace FS
         const __m128i intMax = _mm_set1_epi32( 0x7FFFFFFF );
         return _mm_and_ps( a.native, _mm_castsi128_ps( intMax ) );
     }
-
+    
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Round( const f32<4, SIMD>& a )
     {
@@ -161,11 +149,10 @@ namespace FS
         }
         else
         {
-            __m128 aSign = _mm_and_ps( a.native, _mm_castsi128_ps( _mm_set1_epi32( 0x80000000 ) ) );
+            __m128i aInt = _mm_cvtps_epi32( a.native );
+            __m128 aIntF = _mm_cvtepi32_ps( aInt );
 
-            __m128 offset = _mm_or_ps( aSign, _mm_set1_ps( 0.5f ) );
-
-            return _mm_cvtepi32_ps( _mm_cvttps_epi32( _mm_add_ps( a.native, offset ) ) );
+            return _mm_xor_ps( aIntF, _mm_and_ps( _mm_cmpeq_epi32( aInt, _mm_set1_epi32( -2147483648 ) ), _mm_xor_ps( a.native, aIntF ) ) );
         }
     }
 
@@ -178,9 +165,9 @@ namespace FS
         }
         else
         {
-            __m128 ival = _mm_cvtepi32_ps( _mm_cvttps_epi32( a.native ) );
+            f32<4, SIMD> aRound = Round( a );
 
-            return _mm_add_ps( ival, _mm_cvtepi32_ps( _mm_castps_si128( _mm_cmplt_ps( a.native, ival ) ) ) );
+            return MaskedDecrement( aRound > a, aRound );
         }
     }
 
@@ -193,9 +180,9 @@ namespace FS
         }
         else
         {
-            __m128 ival = _mm_cvtepi32_ps( _mm_cvttps_epi32( a.native ) );
-        
-            return _mm_sub_ps( ival, _mm_cvtepi32_ps( _mm_castps_si128( _mm_cmplt_ps( ival, a.native ) ) ) );
+            f32<4, SIMD> aRound = Round( a );
+
+            return MaskedIncrement( aRound < a, aRound );
         }
     }
         
@@ -240,6 +227,19 @@ namespace FS
     FS_FORCEINLINE f32<4, SIMD> InvMasked( const typename f32<4, SIMD>::MaskTypeArg& mask, const f32<4, SIMD>& a )
     {
         return _mm_andnot_ps( mask.native, a.native );    
+    }
+
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE f32<4, SIMD> MaskedIncrement( const typename f32<4, SIMD>::MaskTypeArg& mask, const f32<4, SIMD>& a )
+    {
+        return _mm_sub_ps( a.native, _mm_cvtepi32_ps( _mm_castps_si128( mask.native ) ) );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE f32<4, SIMD> MaskedDecrement( const typename f32<4, SIMD>::MaskTypeArg& mask, const f32<4, SIMD>& a )
+    {
+        return _mm_add_ps( a.native, _mm_cvtepi32_ps( _mm_castps_si128( mask.native ) ) );
     }
 
     

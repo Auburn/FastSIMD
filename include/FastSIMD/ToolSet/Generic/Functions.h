@@ -51,6 +51,13 @@ namespace FS
         Store( ptr + N / 2, a.v1 );
     }
     
+    template<std::size_t S, bool F, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE BitStorage<N> BitMask( const Register<Mask<S, F>, N, SIMD>& a )
+    {
+        static_assert( !IsNativeV<Register<Mask<S, F>, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        return static_cast<BitStorage<N>>( BitMask( a.v0 ) ) | ( static_cast<BitStorage<N>>( BitMask( a.v1 ) ) << ( N / 2 ) );
+    }
+    
     // Load constant set of values into register
     template<typename T, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET, std::int64_t... VALUEs>
     FS_FORCEINLINE Register<T, sizeof...( VALUEs ), SIMD> Constant( std::integer_sequence<std::int64_t, VALUEs...> )

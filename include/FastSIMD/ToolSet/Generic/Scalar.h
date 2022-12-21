@@ -66,7 +66,7 @@ namespace FS
     template<typename T, FastSIMD::FeatureSet SIMD, typename = EnableIfNative<Register<T, 1, SIMD>>>
     FS_FORCEINLINE Register<T, 1, SIMD> Round( const Register<T, 1, SIMD>& a )
     {
-        return std::round( a.GetNative() );
+        return std::rint( a.GetNative() );
     }
 
     template<typename T, FastSIMD::FeatureSet SIMD, typename = EnableIfNative<Register<T, 1, SIMD>>>
@@ -97,5 +97,19 @@ namespace FS
     FS_FORCEINLINE Register<T, 1, SIMD> Select( const typename Register<T, 1, SIMD>::MaskTypeArg& mask, const Register<T, 1, SIMD>& ifTrue, const Register<T, 1, SIMD>& ifFalse )
     {
         return mask.GetNative() ? ifTrue : ifFalse;
+    }
+
+    
+    
+    template<typename T, FastSIMD::FeatureSet SIMD, typename = EnableIfNative<Register<T, 1, SIMD>>>
+    FS_FORCEINLINE Register<T, 1, SIMD> BitwiseAndNot( const Register<T, 1, SIMD>& a, const Register<T, 1, SIMD>& b )
+    {
+        return a & ~b;
+    }
+    
+    template<typename T, FastSIMD::FeatureSet SIMD, typename = EnableIfNative<Register<T, 1, SIMD>>>
+    FS_FORCEINLINE Register<T, 1, SIMD> Masked( const typename Register<T, 1, SIMD>::MaskTypeArg& mask, const Register<T, 1, SIMD>& a )
+    {
+        return mask.native ? a : 0;
     }
 }

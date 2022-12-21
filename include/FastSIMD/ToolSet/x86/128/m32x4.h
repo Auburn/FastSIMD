@@ -63,6 +63,12 @@ namespace FS
     {          
         return _mm_movemask_ps( a.native );        
     }
+    
+    template<FastSIMD::FeatureSet SIMD, bool B, typename = EnableIfNative<m32<4, B, SIMD>>>
+    FS_FORCEINLINE BitStorage<4> BitMask( const m32<4, B, SIMD>& a )
+    {          
+        return static_cast<BitStorage<4>>( _mm_movemask_ps( a.native ) );        
+    }
 
 
     template<FastSIMD::FeatureSet SIMD>

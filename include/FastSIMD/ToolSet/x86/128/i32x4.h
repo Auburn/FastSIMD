@@ -141,7 +141,7 @@ namespace FS
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
-    FS_FORCEINLINE float Extract0( const i32<4, SIMD>& a )
+    FS_FORCEINLINE int32_t Extract0( const i32<4, SIMD>& a )
     {
         return _mm_cvtsi128_si32( a.native );
     }
@@ -210,7 +210,8 @@ namespace FS
     {
         return _mm_srli_epi32( a.native, b );        
     }
-        
+
+
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
     FS_FORCEINLINE i32<4, SIMD> Masked( const typename i32<4, SIMD>::MaskTypeArg& mask, const i32<4, SIMD>& a )
     {
@@ -222,5 +223,16 @@ namespace FS
     {
         return _mm_andnot_si128( _mm_castps_si128( mask.native ), a.native );    
     }
-
+        
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
+    FS_FORCEINLINE i32<4, SIMD> MaskedIncrement( const typename i32<4, SIMD>::MaskTypeArg& mask, const i32<4, SIMD>& a )
+    {
+        return _mm_sub_epi32( a.native, _mm_castps_si128( mask.native ) );
+    }
+        
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
+    FS_FORCEINLINE i32<4, SIMD> MaskedDecrement( const typename i32<4, SIMD>::MaskTypeArg& mask, const i32<4, SIMD>& a )
+    {
+        return _mm_add_epi32( a.native, _mm_castps_si128( mask.native ) );    
+    }
 }
