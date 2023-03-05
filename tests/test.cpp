@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <vector>
 #include <iostream>
+#include <cstring>
 #include <map>
 #include <memory>
 #include <random>
@@ -100,7 +101,7 @@ struct TestRunner
                 {
                     if( collection.second.featureSet != FastSIMD::FeatureSet::Scalar )
                     {
-                        throw std::exception( "Scalar must be base test set" );
+                        throw std::runtime_error( "Scalar must be base test set" );
                     }
 
                     find = set.emplace( set.end(), testName, std::vector<TestData>{} );
@@ -178,7 +179,7 @@ struct TestRunner
                 TestData& test = tests[testIdx];
             
                 char* resultsOut = testIdx ? simdResults : scalarResults;
-                memset( resultsOut, (int)testIdx, RegisterBytes );
+                std::memset( resultsOut, (int)testIdx, RegisterBytes );
                 
                 size_t outputCount = test.testFunc( resultsOut, idx, rndInts, rndFloats );
 

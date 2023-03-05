@@ -77,13 +77,13 @@ namespace FS
 
     // Incremented elements in a register { 0, 1, 2, ..., N - 1 }
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET>
-    FS_FORCEINLINE Register<T, N, SIMD> Incremented()
+    FS_FORCEINLINE Register<T, N, SIMD> LoadIncremented()
     {
         return Constant<T, SIMD>( std::make_integer_sequence<std::int64_t, N>{} );
     }
 
     template<typename R>
-    FS_FORCEINLINE R Incremented()
+    FS_FORCEINLINE R LoadIncremented()
     {
         return Constant<typename R::ElementType, R::FeatureFlags>( std::make_integer_sequence<std::int64_t, R::ElementCount>{} );
     }
@@ -193,6 +193,20 @@ namespace FS
         else
         {
             return Register<T, N, SIMD> { Increment( a.v0 ), Increment( a.v1 ) };
+        }
+    }
+
+    // Decrement value
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> Decrement( const Register<T, N, SIMD>& a )
+    {
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return a + Register<T, N, SIMD>( -1 );
+        }
+        else
+        {
+            return Register<T, N, SIMD> { Decrement( a.v0 ), Decrement( a.v1 ) };
         }
     }
     
