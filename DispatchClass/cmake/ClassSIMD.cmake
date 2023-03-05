@@ -77,8 +77,11 @@ function(fastsimd_create_dispatch_library simd_library_name)
 
     target_compile_definitions(${simd_library_name} PRIVATE FASTSIMD_EXPORT FASTSIMD_LIBRARY_NAME=${simd_library_name})
     target_link_libraries(${simd_library_name} PRIVATE FastSIMD)
-    target_include_directories(${simd_library_name} PUBLIC "${simd_library_source_dir}/include")
-        
+
+    target_include_directories(${simd_library_name} PUBLIC 
+        $<BUILD_INTERFACE:${simd_library_source_dir}/include>
+        $<INSTALL_INTERFACE:include>)
+
     if(BUILD_SHARED_LIBS)
         set_target_properties(${simd_library_name} PROPERTIES POSITION_INDEPENDENT_CODE ON)
     endif()
