@@ -152,7 +152,7 @@ namespace FS
             __m128i aInt = _mm_cvtps_epi32( a.native );
             __m128 aIntF = _mm_cvtepi32_ps( aInt );
 
-            return _mm_xor_ps( aIntF, _mm_and_ps( _mm_castsi128_ps( _mm_cmpeq_epi32( aInt, _mm_set1_epi32( INT_MIN ) ) ), _mm_xor_ps( a.native, aIntF ) ) );
+            return _mm_xor_ps( aIntF, _mm_and_ps( _mm_castsi128_ps( _mm_cmpeq_epi32( aInt, _mm_set1_epi32( (-2147483647 - 1) ) ) ), _mm_xor_ps( a.native, aIntF ) ) );
         }
     }
 
