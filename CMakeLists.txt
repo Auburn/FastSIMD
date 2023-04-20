@@ -17,6 +17,10 @@ option(FASTSIMD_DISPATCH_CLASS "Enable FastSIMD Dispatch Classes" ON)
 option(FASTSIMD_EXAMPLES "Build FastSIMD examples" ${FASTSIMD_STANDALONE_PROJECT})
 option(FASTSIMD_TESTS "Build FastSIMD tests" ${FASTSIMD_STANDALONE_PROJECT})
 
+include(cmake/ArchDetect.cmake)
+
+target_architecture(FASTSIMD_ARCH_DETECT FASTSIMD_ARCHVER_DETECT)
+
 add_library(FastSIMD OBJECT "src/FastSIMD.cpp" "include/FastSIMD/FastSIMD.h")
 target_compile_definitions(FastSIMD PRIVATE FASTSIMD_EXPORT)
 
