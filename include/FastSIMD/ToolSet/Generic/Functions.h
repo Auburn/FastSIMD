@@ -24,7 +24,7 @@ namespace FS
     namespace impl { template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Load( TypeWrapper<const T*, N, SIMD> ptr )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::Load not supported with provided types" );
         return Register<T, N, SIMD>{ Load( ptr.AsHalf() ), Load( ptr.AsHalf( N / 2 ) ) };
     } }
 
@@ -46,7 +46,7 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE void Store( typename Register<T, N, SIMD>::ElementType* ptr, const Register<T, N, SIMD>& a )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::Store not supported with provided types" );
         Store( ptr, a.v0 );
         Store( ptr + N / 2, a.v1 );
     }
@@ -54,7 +54,7 @@ namespace FS
     template<std::size_t S, bool F, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE BitStorage<N> BitMask( const Register<Mask<S, F>, N, SIMD>& a )
     {
-        static_assert( !IsNativeV<Register<Mask<S, F>, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<Mask<S, F>, N, SIMD>>, "FastSIMD: FS::BitMask not supported with provided types" );
         return static_cast<BitStorage<N>>( BitMask( a.v0 ) ) | ( static_cast<BitStorage<N>>( BitMask( a.v1 ) ) << ( N / 2 ) );
     }
     
@@ -71,7 +71,7 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE T Extract0( const Register<T, N, SIMD>& a )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::Extract0 not supported with provided types" );
         return Extract0( a.v0 );
     }
 
@@ -92,7 +92,7 @@ namespace FS
     namespace impl { template<typename U, typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<U, N, SIMD> Convert( const Register<T, N, SIMD>& a, TypeDummy<U> )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS:Convert not supported with provided types" );
         return Register<U, N, SIMD>{ Convert( a.v0, TypeDummy<U>{} ), Convert( a.v1, TypeDummy<U>{} ) };
     } }
 
@@ -108,7 +108,7 @@ namespace FS
     namespace impl { template<typename U, typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<U, N, SIMD> Cast( const Register<T, N, SIMD>& a, TypeDummy<U> )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS:Cast not supported with provided types" );
         return Register<U, N, SIMD>{ Cast( a.v0, TypeDummy<U>{} ), Cast( a.v1, TypeDummy<U>{} ) };
     } }
 
@@ -124,7 +124,7 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Abs( const Register<T, N, SIMD>& a )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS:Abs not supported with provided types" );
         return Register<T, N, SIMD>{ Abs( a.v0 ), Abs( a.v1 ) };
     }
 
@@ -133,7 +133,7 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Round( const Register<T, N, SIMD>& a )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::Round not supported with provided types" );
         return Register<T, N, SIMD>{ Round( a.v0 ), Round( a.v1 ) };
     }
 
@@ -142,7 +142,7 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Floor( const Register<T, N, SIMD>& a )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::Floor not supported with provided types" );
         return Register<T, N, SIMD>{ Floor( a.v0 ), Floor( a.v1 ) };
     }
 
@@ -151,7 +151,7 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Ceil( const Register<T, N, SIMD>& a )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::Ceil not supported with provided types" );
         return Register<T, N, SIMD>{ Ceil( a.v0 ), Ceil( a.v1 ) };
     }
 
@@ -160,7 +160,7 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Min( const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::Min not supported with provided types" );
         return Register<T, N, SIMD>{ Min( a.v0, b.v0 ), Min( a.v1, b.v1 ) };
     }
 
@@ -169,7 +169,7 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Max( const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::Max not supported with provided types" );
         return Register<T, N, SIMD>{ Max( a.v0, b.v0 ), Max( a.v1, b.v1 ) };
     }
 
@@ -178,7 +178,7 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Select( const typename Register<T, N, SIMD>::MaskTypeArg& mask, const Register<T, N, SIMD>& ifTrue, const Register<T, N, SIMD>& ifFalse )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::Select not supported with provided types" );
         return Register<T, N, SIMD>{ Select( mask.v0, ifTrue.v0, ifFalse.v0 ), Select( mask.v1, ifTrue.v1, ifFalse.v1 ) };
     }
 
@@ -242,7 +242,7 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> BitwiseAndNot( const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::BitwiseAndNot not supported with provided types" );
         return Register<T, N, SIMD>{ BitwiseAndNot( a.v0, b.v0 ), BitwiseAndNot( a.v1, b.v1 ) };
     }    
 
@@ -250,7 +250,7 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> BitShiftRightZeroExtend( const Register<T, N, SIMD>& a, int b )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::BitShiftRightZeroExtend not supported with provided types" );
         return Register<T, N, SIMD>{ BitShiftRightZeroExtend( a.v0, b ), BitShiftRightZeroExtend( a.v1, b ) };
     }
     
@@ -258,7 +258,7 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Masked( const typename Register<T, N, SIMD>::MaskTypeArg& mask, const Register<T, N, SIMD>& a )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::Masked not supported with provided types" );
         return Register<T, N, SIMD>{ Masked( mask.v0, a.v0 ), Masked( mask.v1, a.v1 ) };
     }
 
@@ -548,7 +548,7 @@ namespace FS
     template<std::size_t S, bool F, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE bool AnyMask( const Register<Mask<S, F>, N, SIMD>& a )
     {
-        static_assert( !IsNativeV<Register<Mask<S, F>, N, SIMD>>, "FastSIMD: Function not supported with provided types" );
+        static_assert( !IsNativeV<Register<Mask<S, F>, N, SIMD>>, "FastSIMD: FS::AnyMask not supported with provided types" );
         return AnyMask( a.v0 ) || AnyMask( a.v1 );
     }
 }

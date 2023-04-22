@@ -11,7 +11,7 @@ class FastSIMD::DispatchClass<ExampleSIMD, SIMD> : public ExampleSIMD
             //static_assert( !(SIMD == FastSIMD::FeatureSet::SSE41));
         }
 
-        constexpr std::size_t N = 16;
+        constexpr std::size_t N = 32;
 
         auto vMultiplier = FS::f32<N>( multiplier );
         auto vCutoff     = FS::f32<N>( cutoff );
