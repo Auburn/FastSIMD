@@ -191,7 +191,7 @@ namespace FastSIMD
 
     FeatureSet FeatureSetValues[] =
     {
-        FeatureSet::Scalar,
+        FeatureSet::SCALAR,
         FeatureSet::SSE,
         FeatureSet::SSE2,
         FeatureSet::SSE3,
@@ -202,8 +202,8 @@ namespace FastSIMD
         FeatureSet::AVX_FMA,
         FeatureSet::AVX2,
         FeatureSet::AVX2_FMA,
-        FeatureSet::AVX512_Baseline,
-        FeatureSet::AVX512_Baseline_FMA,
+        FeatureSet::AVX512,
+        FeatureSet::AVX512_FMA,
 
         FeatureSet::NEON,
         FeatureSet::NEON_FMA,
@@ -215,7 +215,7 @@ namespace FastSIMD
         {
             std::uint32_t supportedFlags = DetectCpuSupportedFlags();
 
-            FeatureSet maxSupported = FeatureSet::Null;
+            FeatureSet maxSupported = FeatureSet::Invalid;
 
             for( FeatureSet featureSet: FeatureSetValues )
             {
@@ -238,8 +238,8 @@ namespace FastSIMD
     {
         switch( featureSet )
         {
-            case FeatureSet::Null: return "Null";
-            case FeatureSet::Scalar: return "Scalar";
+            case FeatureSet::Invalid: return "Invalid";
+            case FeatureSet::SCALAR: return "SCALAR";
             case FeatureSet::SSE: return "SSE";
             case FeatureSet::SSE2: return "SSE2";
             case FeatureSet::SSE3: return "SSE3";
@@ -250,13 +250,13 @@ namespace FastSIMD
             case FeatureSet::AVX_FMA: return "AVX_FMA";
             case FeatureSet::AVX2: return "AVX2";
             case FeatureSet::AVX2_FMA: return "AVX2_FMA";
-            case FeatureSet::AVX512_Baseline: return "AVX512_Baseline";
-            case FeatureSet::AVX512_Baseline_FMA: return "AVX512_Baseline_FMA";
+            case FeatureSet::AVX512: return "AVX512";
+            case FeatureSet::AVX512_FMA: return "AVX512_FMA";
             case FeatureSet::NEON: return "NEON";
             case FeatureSet::NEON_FMA: return "NEON_FMA";
             case FeatureSet::Max: return "Max";
         }
 
-        return "INVALID";
+        return "NAN";
     }
 } // namespace FastSIMD

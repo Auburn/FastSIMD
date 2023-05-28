@@ -66,7 +66,7 @@ function(fastsimd_create_dispatch_library simd_library_name)
             SSE2
             SSE41
             AVX2_FMA
-            AVX512_Baseline_FMA)
+            AVX512_FMA)
     endif()
 
     message(STATUS "FastSIMD: Created dispatch library \"${simd_library_name}\" with Feature Sets: ${fastsimd_create_dispatch_library_FEATURE_SETS}")

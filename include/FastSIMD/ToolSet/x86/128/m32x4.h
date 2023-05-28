@@ -2,8 +2,6 @@
 
 #include <FastSIMD/ToolSet/Generic/Register.h>
 
-#include <nmmintrin.h>
-
 namespace FS
 {
     template<FastSIMD::FeatureSet SIMD>

@@ -2,6 +2,7 @@
 
 #include <type_traits>
 #include <cstdint>
+#include <utility>
 
 #include <FastSIMD/Utility/FeatureEnums.h>
 
@@ -15,17 +16,13 @@
 #define FS_VECTORCALL
 #endif
 
-    
-#ifndef FASTSIMD_DEFAULT_FEATURE_SET
-#define FASTSIMD_DEFAULT_FEATURE_SET FastSIMD::FeatureSet::Scalar
-#endif
 
 namespace FS
 {
-    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET>
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault()>
     struct Register
     {
-        static_assert( SIMD != FastSIMD::FeatureSet::Null, "Invalid FeatureSet" );
+        static_assert( SIMD != FastSIMD::FeatureSet::Invalid, "Invalid FeatureSet" );
         static_assert( N > 0, "Zero vector size" );
         static_assert( ( N & ( N - 1 ) ) == 0, "Vector size must be power of 2" );
 
@@ -235,7 +232,7 @@ namespace FS
         return lhs >>= rhs;
     }
     
-    template<typename T, std::size_t N = 0, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET>
+    template<typename T, std::size_t N = 0, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault()>
     struct TypeWrapper
     {
         using Type = T;
@@ -285,13 +282,13 @@ namespace FS
     constexpr bool IsNativeV = IsNative<T>::value;
         
 
-    template<std::size_t N, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET>
+    template<std::size_t N, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault()>
     using i32 = Register<std::int32_t, N, SIMD>;
 
-    template<std::size_t N, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET>
+    template<std::size_t N, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault()>
     using f32 = Register<float, N, SIMD>;
 
-    template<std::size_t N, bool OPTIMISE_FLOAT = true, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET>
+    template<std::size_t N, bool OPTIMISE_FLOAT = true, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault()>
     using m32 = Register<Mask<32, OPTIMISE_FLOAT>, N, SIMD>;
 
     template<std::size_t N>
@@ -299,7 +296,7 @@ namespace FS
                                             std::tuple<std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t>>;
     
     template<typename T>
-    static constexpr std::size_t NativeRegisterCount( FastSIMD::FeatureSet featureSet = FASTSIMD_DEFAULT_FEATURE_SET );
+    static constexpr std::size_t NativeRegisterCount( FastSIMD::FeatureSet featureSet = FastSIMD::FeatureSetDefault() );
 
     template<>
     constexpr std::size_t NativeRegisterCount<float>( FastSIMD::FeatureSet featureSet )
@@ -358,7 +355,7 @@ namespace FS
         return 1;
     }
     
-    template<typename T, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET>
+    template<typename T, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault()>
     using NativeRegister = Register<T, NativeRegisterCount<T>( SIMD ), SIMD>;
 
 } // namespace FS

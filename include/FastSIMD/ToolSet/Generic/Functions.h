@@ -2,10 +2,7 @@
 
 #include <algorithm>
 
-// To remove
-#include <FastSIMD/ToolSet/Generic/Register.h>
-#include <FastSIMD/ToolSet/Generic/Scalar.h>
-#include <FastSIMD/ToolSet/x86/SSE.h>
+#include "Register.h"
 
 namespace FS
 {
@@ -13,7 +10,7 @@ namespace FS
     using namespace impl;
 
     // Splat value across whole register
-    template<std::size_t N, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET, typename T>
+    template<std::size_t N, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault(), typename T>
     FS_FORCEINLINE Register<T, N, SIMD> Splat( T a )
     {
         return Register<T, N, SIMD>( a );
@@ -29,7 +26,7 @@ namespace FS
     } }
 
     // Load values
-    template<std::size_t N, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET, typename T>
+    template<std::size_t N, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault(), typename T>
     FS_FORCEINLINE Register<T, N, SIMD> Load( const T* ptr )
     {
         return Load( TypeWrapper<const T*, N, SIMD>( ptr ) );
@@ -59,7 +56,7 @@ namespace FS
     }
     
     // Load constant set of values into register
-    template<typename T, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET, std::int64_t... VALUEs>
+    template<typename T, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault(), std::int64_t... VALUEs>
     FS_FORCEINLINE Register<T, sizeof...( VALUEs ), SIMD> Constant( std::integer_sequence<std::int64_t, VALUEs...> )
     {
         alignas( std::alignment_of_v<Register<T, sizeof...( VALUEs ), SIMD>> ) const T constArray[] = { T( VALUEs )... };
@@ -76,7 +73,7 @@ namespace FS
     }
 
     // Incremented elements in a register { 0, 1, 2, ..., N - 1 }
-    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET>
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault()>
     FS_FORCEINLINE Register<T, N, SIMD> LoadIncremented()
     {
         return Constant<T, SIMD>( std::make_integer_sequence<std::int64_t, N>{} );

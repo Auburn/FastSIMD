@@ -35,6 +35,46 @@ template<class T>
 decltype( lambda_pack_helper( &T::operator() ) ) pack_helper( T );
 
 
+template<typename F>
+struct GetReturn;
+
+template<>
+struct GetReturn<int32_t>
+{
+    static constexpr auto Type = TestData::ReturnType::i32;
+};
+
+template<>
+struct GetReturn<float>
+{
+    static constexpr auto Type = TestData::ReturnType::f32;
+};
+
+template<>
+struct GetReturn<bool>
+{
+    static constexpr auto Type = TestData::ReturnType::boolean;
+};
+
+template<size_t N, bool B>
+struct GetReturn<FS::Mask<N, B>>
+{
+    static constexpr auto Type = TestData::ReturnType::boolean;
+};
+
+template<typename T, size_t N, FastSIMD::FeatureSet S>
+struct GetReturn<FS::Register<T, N, S>>
+{
+    static constexpr auto Type = GetReturn<T>::Type;
+};
+
+template<typename F>
+static const size_t GetReturnCount = 1;
+
+template<typename T, size_t N, FastSIMD::FeatureSet S>
+static const size_t GetReturnCount<FS::Register<T, N, S>> = N;
+
+
 template<FastSIMD::FeatureSet SIMD, size_t RegisterBytes>
 class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFastSIMD<RegisterBytes>
 {
@@ -48,46 +88,6 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
     template<typename F, size_t I>
     using GetArg = std::tuple_element_t<I, decltype( GetArg_Helper( &F::operator() ) )>;
 
-
-    template<typename F>
-    struct GetReturn;
-
-    template<>
-    struct GetReturn<int32_t>
-    {
-        static constexpr auto Type = TestData::ReturnType::i32;
-    };
-
-    template<>
-    struct GetReturn<float>
-    {
-        static constexpr auto Type = TestData::ReturnType::f32;
-    };
-
-    template<>
-    struct GetReturn<bool>
-    {
-        static constexpr auto Type = TestData::ReturnType::boolean;
-    };
-
-    template<size_t N, bool B>
-    struct GetReturn<FS::Mask<N, B>>
-    {
-        static constexpr auto Type = TestData::ReturnType::boolean;
-    };
-
-    template<typename T, size_t N, FastSIMD::FeatureSet S>
-    struct GetReturn<FS::Register<T, N, S>>
-    {
-        static constexpr auto Type = GetReturn<T>::Type;
-    };
-
-
-    template<typename F>
-    static const size_t GetReturnCount = 1;
-
-    template<typename T, size_t N, FastSIMD::FeatureSet S>
-    static const size_t GetReturnCount<FS::Register<T, N, S>> = N;
 
 
     template<typename T>
@@ -402,11 +402,11 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
 
         RegisterTest( tests, "i32 convert to f32", []( TestRegi32 a ) { return FS::Convert<float>( a ); } );
         RegisterTest( tests, "i32 cast to f32", []( TestRegi32 a ) { return FS::Cast<float>( a ); } );
-        RegisterTest( tests, "f32 convert to i32", []( TestRegf32 a ) { return FS::Convert<int32_t>( FS::Min( FS::Max( a, TestRegf32( INT32_MIN ) ), TestRegf32( -(int64_t)INT32_MIN ) ) ); } );
+        RegisterTest( tests, "f32 convert to i32", []( TestRegf32 a ) { return FS::Convert<int32_t>( FS::Min( FS::Max( a, TestRegf32( INT32_MIN ) ), TestRegf32( -(float)INT32_MIN ) ) ); } );
         RegisterTest( tests, "f32 cast to i32", []( TestRegf32 a ) { return FS::Cast<int32_t>( a ); } );
 
         return tests;
     }
 };
 
-template class FastSIMD::RegisterDispatchClass<TestFastSIMD<128 / 8>>;
+template class FastSIMD::RegisterDispatchClass<TestFastSIMD<256 / 8>>;

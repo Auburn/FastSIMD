@@ -1,5 +1,5 @@
 #pragma once
-#include <FastSIMD/ToolSet/Generic/Functions.h>
+#include <FastSIMD/ToolSet.h>
 #include <FastSIMD/DispatchClass.h>
 
 #include <new>
@@ -19,9 +19,9 @@ namespace FastSIMD
     // Make sure we only instantiate DispatchClass<T, SIMD> for the current feature set
     template<>
     template<typename T>
-    FS_NEVERINLINE T* DispatchClassFactory<FASTSIMD_DEFAULT_FEATURE_SET>::New( FastSIMD::MemoryAllocator allocator )
+    FS_NEVERINLINE T* DispatchClassFactory<FeatureSetDefault()>::New( FastSIMD::MemoryAllocator allocator )
     {
-        constexpr auto SIMD = FASTSIMD_DEFAULT_FEATURE_SET;
+        constexpr auto SIMD = FeatureSetDefault();
 
         if( allocator )
         {
@@ -34,7 +34,7 @@ namespace FastSIMD
     }
 
 
-    template<typename T, FastSIMD::FeatureSet SIMD = FASTSIMD_DEFAULT_FEATURE_SET>
+    template<typename T, FastSIMD::FeatureSet SIMD = FeatureSetDefault()>
     class RegisterDispatchClass
     {
         // Never called, used to instantiate DispatchClassFactory<SIMD>::New<T>()

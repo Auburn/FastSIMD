@@ -21,7 +21,7 @@ include(cmake/ArchDetect.cmake)
 
 target_architecture(FASTSIMD_ARCH_DETECT FASTSIMD_ARCHVER_DETECT)
 
-add_library(FastSIMD OBJECT "src/FastSIMD.cpp" "include/FastSIMD/FastSIMD.h")
+add_library(FastSIMD OBJECT "src/FastSIMD.cpp" "include/FastSIMD/ToolSet.h")
 target_compile_definitions(FastSIMD PRIVATE FASTSIMD_EXPORT)
 
 if(BUILD_SHARED_LIBS)

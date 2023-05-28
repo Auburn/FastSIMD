@@ -1,7 +1,6 @@
 #pragma once
 
 #include <FastSIMD/ToolSet/Generic/Register.h>
-#include <nmmintrin.h>
 
 namespace FS
 {

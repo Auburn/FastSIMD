@@ -99,7 +99,7 @@ struct TestRunner
 
                 if( find == set.end() )
                 {
-                    if( collection.second.featureSet != FastSIMD::FeatureSet::Scalar )
+                    if( collection.second.featureSet != FastSIMD::FeatureSet::SCALAR )
                     {
                         throw std::runtime_error( "Scalar must be base test set" );
                     }
@@ -190,7 +190,7 @@ struct TestRunner
                         std::cerr << "Tests do not match: " << testName; 
                         throw std::exception();
                     }
-                    else if( test.featureSet == FastSIMD::FeatureSet::Scalar )
+                    else if( test.featureSet == FastSIMD::FeatureSet::SCALAR )
                     {
                         std::cerr << "Multiple tests with same name: " << testName; 
                         throw std::exception();
@@ -231,7 +231,7 @@ int main()
 {
     GenerateRandomValues();
 
-    TestRunner<128 / 8>::Run();
+    TestRunner<256 / 8>::Run();
 
     return 0;
 }

@@ -1,4 +1,4 @@
-#define FASTSIMD_DEFAULT_FEATURE_SET FastSIMD::FeatureSet::${feature_set}
+#define FASTSIMD_MAX_FEATURE_SET ${feature_set}
 
 #include <FastSIMD/${simd_library_name}_config.h>
 

@@ -41,24 +41,25 @@ namespace FastSIMD
 
     enum class FeatureSet : std::uint32_t
     {
-        Null,
-        Scalar              =             Null | FeatureFlag::Scalar,
-                              
-        SSE                 = FeatureFlag::x86 | FeatureFlag::SSE,
-        SSE2                =              SSE | FeatureFlag::SSE2,
-        SSE3                =             SSE2 | FeatureFlag::SSE3,
-        SSSE3               =             SSE3 | FeatureFlag::SSSE3,
-        SSE41               =            SSSE3 | FeatureFlag::SSE41,
-        SSE42               =            SSE41 | FeatureFlag::SSE42,
-        AVX                 =            SSE42 | FeatureFlag::AVX,
-        AVX_FMA             =              AVX | FeatureFlag::FMA,
-        AVX2                =              AVX | FeatureFlag::AVX2,
-        AVX2_FMA            =             AVX2 | FeatureFlag::FMA,
-        AVX512_Baseline     =             AVX2 | FeatureFlag::AVX512_F | FeatureFlag::AVX512_VL | FeatureFlag::AVX512_DQ | FeatureFlag::AVX512_BW,
-        AVX512_Baseline_FMA =  AVX512_Baseline | FeatureFlag::FMA,
+        Invalid,
+
+        SCALAR     =          Invalid | FeatureFlag::Scalar,
+                     
+        SSE        = FeatureFlag::x86 | FeatureFlag::SSE,
+        SSE2       =              SSE | FeatureFlag::SSE2,
+        SSE3       =             SSE2 | FeatureFlag::SSE3,
+        SSSE3      =             SSE3 | FeatureFlag::SSSE3,
+        SSE41      =            SSSE3 | FeatureFlag::SSE41,
+        SSE42      =            SSE41 | FeatureFlag::SSE42,
+        AVX        =            SSE42 | FeatureFlag::AVX,
+        AVX_FMA    =              AVX | FeatureFlag::FMA,
+        AVX2       =              AVX | FeatureFlag::AVX2,
+        AVX2_FMA   =             AVX2 | FeatureFlag::FMA,
+        AVX512     =             AVX2 | FeatureFlag::AVX512_F | FeatureFlag::AVX512_VL | FeatureFlag::AVX512_DQ | FeatureFlag::AVX512_BW,
+        AVX512_FMA =           AVX512 | FeatureFlag::FMA,
         
-        NEON                = FeatureFlag::ARM | FeatureFlag::NEON,
-        NEON_FMA            =             NEON | FeatureFlag::FMA,
+        NEON       = FeatureFlag::ARM | FeatureFlag::NEON,
+        NEON_FMA   =             NEON | FeatureFlag::FMA,
 
         Max = ~0U
     };

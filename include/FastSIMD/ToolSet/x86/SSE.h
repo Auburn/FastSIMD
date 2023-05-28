@@ -1,4 +1,10 @@
 #pragma once
+#include <nmmintrin.h>
+
+#if FASTSIMD_MAX_FEATURE_VALUE() >= FASTSIMD_FEATURE_VALUE( AVX )
+#include "AVX.h"
+#endif
+
 #include "128/f32x4.h"
 #include "128/i32x4.h"
 #include "128/m32x4.h"
