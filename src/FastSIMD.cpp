@@ -46,7 +46,7 @@ static void cpuid( int output[4], int functionnumber )
 }
 
 // Define interface to xgetbv instruction
-static int64_t xgetbv( int ctr )
+static uint64_t xgetbv( uint32_t ctr )
 {
 #if( defined( _MSC_FULL_VER ) && _MSC_FULL_VER >= 160040000 ) || ( defined( __INTEL_COMPILER ) && __INTEL_COMPILER >= 1200 ) // Microsoft or Intel compiler supporting _xgetbv intrinsic
 
@@ -81,7 +81,7 @@ static int64_t xgetbv( int ctr )
 namespace FastSIMD
 {
 
-    std::uint32_t DetectCpuSupportedFlags()
+    static std::uint32_t DetectCpuSupportedFlags()
     {
         std::uint32_t supportedFlags = FastSIMD::FeatureFlag::x86 | FastSIMD::FeatureFlag::Scalar;
 
@@ -189,7 +189,7 @@ namespace FastSIMD
         return supportedFlags;
     }
 
-    FeatureSet FeatureSetValues[] =
+    static FeatureSet FeatureSetValues[] =
     {
         FeatureSet::SCALAR,
         FeatureSet::SSE,

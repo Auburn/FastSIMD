@@ -73,7 +73,7 @@ function(target_architecture output_arch output_arch_ver)
         endif()
     endif()
     
-    message(STATUS "FastSIMD: Detected arch \"${ARCH} ${ARCH_VER}\"")
+    message(STATUS "FastSIMD: Detected arch \"${ARCH}\" \"${ARCH_VER}\"")
     set(${output_arch} "${ARCH}" PARENT_SCOPE)
     set(${output_arch_ver} "${ARCH_VER}" PARENT_SCOPE)
 endfunction()

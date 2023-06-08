@@ -217,4 +217,16 @@ namespace FS
     {            
         return _mm256_rsqrt_ps( a.native );
     }
+    
+    template<FastSIMD::FeatureSet SIMD, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
+    FS_FORCEINLINE f32<8, SIMD> FMulAdd( const f32<8, SIMD>& a, const f32<8, SIMD>& b, const f32<8, SIMD>& c )
+    {            
+        return _mm256_fmadd_ps( a.native, b.native, c.native );
+    }
+    
+    template<FastSIMD::FeatureSet SIMD, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
+    FS_FORCEINLINE f32<8, SIMD> FNMulAdd( const f32<8, SIMD>& a, const f32<8, SIMD>& b, const f32<8, SIMD>& c )
+    {            
+        return _mm256_fnmadd_ps( a.native, b.native, c.native );
+    }
 }

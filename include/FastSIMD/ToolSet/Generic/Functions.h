@@ -239,8 +239,14 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> BitwiseAndNot( const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::BitwiseAndNot not supported with provided types" );
-        return Register<T, N, SIMD>{ BitwiseAndNot( a.v0, b.v0 ), BitwiseAndNot( a.v1, b.v1 ) };
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return a & (~b);
+        }
+        else
+        {
+            return Register<T, N, SIMD> { BitwiseAndNot( a.v0, b.v0 ), BitwiseAndNot( a.v1, b.v1 ) };
+        }
     }    
 
     // BitShift Right Zero Extend
@@ -372,14 +378,8 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> InvSqrt( const Register<T, N, SIMD>& a )
     {
-        if constexpr( IsNativeV<Register<T, N, SIMD>> )
-        {
-            return a; //TODO
-        }
-        else
-        {        
-            return Register<T, N, SIMD>{ InvSqrt( a.v0 ), InvSqrt( a.v1 ) };
-        }
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::InvSqrt not supported with provided types" ); 
+        return Register<T, N, SIMD>{ InvSqrt( a.v0 ), InvSqrt( a.v1 ) };        
     }
 
     template<std::size_t N, FastSIMD::FeatureSet SIMD>

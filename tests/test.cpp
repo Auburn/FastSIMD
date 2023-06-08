@@ -114,21 +114,55 @@ struct TestRunner
         }
     };
 
+    // get value of least significant bit
+    static float DeltaUnit( float x )
+    {
+        union
+        {
+            float f;
+            uint32_t i;
+        } u;
+        x = std::fabs( x );
+
+        if( !std::isfinite( x ) )
+        {
+            return 1.f;
+        }
+        if( x == 0.f || !std::isnormal( x ) )
+        {
+            u.i = 0x00800000; // smallest positive normal number
+            return u.f;
+        }
+        float x1 = x;
+        u.f = x;
+        u.i++;
+        return u.f - x1;
+    }
+
     template<typename T>
-    static bool CompareTyped( std::string_view testName, FastSIMD::FeatureSet featureSet, TestData::ReturnType returnType, size_t outputCount, void* scalarResults, void* simdResults )
+    static bool CompareTyped( std::string_view testName, FastSIMD::FeatureSet featureSet, float accuracy, size_t outputCount, void* scalarResults, void* simdResults )
     {
         bool success = true;
 
-        T* typedScalar = reinterpret_cast<T*>( scalarResults );
-        T* typedSimd = reinterpret_cast<T*>( simdResults );
+        const T* typedScalar = reinterpret_cast<T*>( scalarResults );
+        const T* typedSimd = reinterpret_cast<T*>( simdResults );
 
         for( size_t idx = 0; idx < outputCount; idx++ )
         {
             if( typedScalar[idx] != typedSimd[idx] )
             {
+                float relativeDif = 0;
+
                 if constexpr( std::is_floating_point_v<T> )
                 {
                     if( std::isnan( typedScalar[idx] ) && std::isnan( typedSimd[idx] ) )
+                    {
+                        continue;
+                    }
+
+                    relativeDif = std::abs( typedScalar[idx] - typedSimd[idx] ) / DeltaUnit( typedScalar[idx] );
+
+                    if( relativeDif <= accuracy )
                     {
                         continue;
                     }
@@ -138,7 +172,16 @@ struct TestRunner
                     std::cerr << std::setprecision( 16 ) << std::boolalpha;
                     std::cerr << "--- " << FastSIMD::GetFeatureSetString( featureSet ) << " FAILED ---" << std::endl;
                 }
-                std::cerr << "idx " << idx << ": " << testName << " Expected \"" << typedScalar[idx] << "\" Actual \"" << typedSimd[idx] << "\"" << std::endl;
+                std::cerr << "idx " << idx << ": " << testName
+                          << " Expected \"" << typedScalar[idx]
+                          << "\" Actual \"" << typedSimd[idx] << "\""
+                          << "\" Diff \"" << std::abs( typedScalar[idx] - typedSimd[idx] ) << "\"";
+
+                if( relativeDif != 0.0f )
+                {
+                    std::cerr << " (" << relativeDif << ")";
+                }
+                std::cerr << std::endl;
                 success = false;
             }
         }
@@ -146,18 +189,18 @@ struct TestRunner
         return success;
     }
 
-    static bool CompareOutputs( std::string_view testName, FastSIMD::FeatureSet featureSet, TestData::ReturnType returnType, size_t outputCount, void* scalarResults, void* simdResults )
+    static bool CompareOutputs( std::string_view testName, FastSIMD::FeatureSet featureSet, TestData::ReturnType returnType, float accuracy, size_t outputCount, void* scalarResults, void* simdResults )
     {
         switch( returnType )
         {
         case TestData::ReturnType::boolean:
-            return CompareTyped<bool>( testName, featureSet, returnType, outputCount, scalarResults, simdResults );
+            return CompareTyped<bool>( testName, featureSet, accuracy, outputCount, scalarResults, simdResults );
 
         case TestData::ReturnType::f32:
-            return CompareTyped<float>( testName, featureSet, returnType, outputCount, scalarResults, simdResults );
+            return CompareTyped<float>( testName, featureSet, accuracy, outputCount, scalarResults, simdResults );
 
         case TestData::ReturnType::i32:
-            return CompareTyped<int32_t>( testName, featureSet, returnType, outputCount, scalarResults, simdResults );
+            return CompareTyped<int32_t>( testName, featureSet, accuracy, outputCount, scalarResults, simdResults );
         }
 
         return false;
@@ -196,7 +239,7 @@ struct TestRunner
                         throw std::exception();
                     }
 
-                    if( !CompareOutputs( testName, test.featureSet, test.returnType, outputCount, scalarResults, simdResults ) )
+                    if( !CompareOutputs( testName, test.featureSet, test.returnType, test.accuracy, outputCount, scalarResults, simdResults ) )
                     {
                         std::cerr << "Inputs: " << test.inputsFunc( idx, rndInts, rndFloats ) << std::endl;
                         failed = true;
@@ -222,7 +265,10 @@ struct TestRunner
 
         for( auto& test : testSet )
         {
-            DoTest( test.first, test.second );
+            //if( test.first.find( "sqrt" ) != std::string_view::npos )
+            {
+                DoTest( test.first, test.second );
+            }
         }
     }
 };

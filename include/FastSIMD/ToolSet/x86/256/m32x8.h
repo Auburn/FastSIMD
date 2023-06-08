@@ -5,7 +5,7 @@
 namespace FS
 {
     template<FastSIMD::FeatureSet SIMD>
-    struct Register<std::enable_if_t<SIMD & FastSIMD::FeatureFlag::SSE, Mask<32, true>>, 8, SIMD>
+    struct Register<std::enable_if_t<SIMD & FastSIMD::FeatureFlag::AVX, Mask<32, true>>, 8, SIMD>
     {
         static constexpr size_t ElementCount = 8;
         static constexpr auto FeatureFlags = SIMD;
@@ -70,7 +70,7 @@ namespace FS
 
 
     template<FastSIMD::FeatureSet SIMD>
-    struct Register<std::enable_if_t<SIMD & FastSIMD::FeatureFlag::SSE2, Mask<32, false>>, 8, SIMD> : Register<Mask<32, true>, 8, SIMD>
+    struct Register<std::enable_if_t<SIMD & FastSIMD::FeatureFlag::AVX2, Mask<32, false>>, 8, SIMD> : Register<Mask<32, true>, 8, SIMD>
     {
         static constexpr size_t ElementCount = 8;
         static constexpr auto FeatureFlags = SIMD;

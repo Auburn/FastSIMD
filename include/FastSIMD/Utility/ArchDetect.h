@@ -91,13 +91,14 @@
 #define FASTSIMD_FEATURE_VALUE_IMPL( feature ) FASTSIMD_FEATURE_VALUE_##feature()
 
 #define FASTSIMD_MAX_FEATURE_VALUE() FASTSIMD_FEATURE_VALUE( FASTSIMD_MAX_FEATURE_SET )
-#define FASTSIMD_ARCH_NAME() FASTSIMD_ARCH_DETECT() = FASTSIMD_MAX_FEATURE_SET
+#define FASTSIMD_ARCH_NAME() FASTSIMD_ARCH_DETECT()=FASTSIMD_MAX_FEATURE_SET
 
-static_assert( FASTSIMD_FEATURE_VALUE( FASTSIMD_DEFAULT_FEATURE_SET ) <= FASTSIMD_FEATURE_VALUE( FASTSIMD_MAX_FEATURE_SET ),
-    "Default feature set must be <= to max feature set" );
 
 namespace FastSIMD
 {
+    static_assert( FASTSIMD_FEATURE_VALUE( FASTSIMD_DEFAULT_FEATURE_SET ) <= FASTSIMD_FEATURE_VALUE( FASTSIMD_MAX_FEATURE_SET ),
+        "Default feature set must be <= to max feature set" );
+
     template<FeatureSet SIMD = FastSIMD::FeatureSet::FASTSIMD_DEFAULT_FEATURE_SET>
     static constexpr FeatureSet FeatureSetDefault()
     {

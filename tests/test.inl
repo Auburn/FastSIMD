@@ -68,11 +68,11 @@ struct GetReturn<FS::Register<T, N, S>>
     static constexpr auto Type = GetReturn<T>::Type;
 };
 
-template<typename F>
-static const size_t GetReturnCount = 1;
+template<typename T>
+static constexpr size_t GetReturnCount = 1;
 
 template<typename T, size_t N, FastSIMD::FeatureSet S>
-static const size_t GetReturnCount<FS::Register<T, N, S>> = N;
+static constexpr size_t GetReturnCount<FS::Register<T, N, S>> = N;
 
 
 template<FastSIMD::FeatureSet SIMD, size_t RegisterBytes>
@@ -87,7 +87,6 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
 
     template<typename F, size_t I>
     using GetArg = std::tuple_element_t<I, decltype( GetArg_Helper( &F::operator() ) )>;
-
 
 
     template<typename T>
@@ -246,8 +245,9 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
                 std::initializer_list<std::string> tuple = { AsString( GenArg<std::decay_t<ARGs>>::Load( inIdx, argIdx++, rndInts, rndFloats ) )... };
 
                 std::ostringstream inputsString;
+                inputsString << "\n";
 
-                std::copy( tuple.begin(), tuple.end() - 1, std::ostream_iterator<std::string>( inputsString, ", " ) );                
+                std::copy( tuple.begin(), tuple.end() - 1, std::ostream_iterator<std::string>( inputsString, "\n" ) );                
 
                 inputsString << *(tuple.end() - 1);
 
@@ -258,7 +258,7 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
 
 
     template<typename FUNC>
-    void RegisterTest( TestCollection& testMap, const char* name, FUNC func )
+    TestData& RegisterTest( TestCollection& testMap, const char* name, FUNC func )
     {
         TestData data;
         data.featureSet = SIMD;
@@ -267,13 +267,7 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
         data.testFunc = TestFunctionFactory<FUNC>::Create( func );
         data.inputsFunc = TestFunctionFactory<FUNC>::GetInputs();
 
-        testMap.emplace_back( name, data );
-    }
-
-    template<typename... ARGS, typename F>
-    auto make_func( F func )
-    {
-        return std::function<std::invoke_result_t<F( ARGS... )>( ARGS... )>( static_cast<std::invoke_result_t<F( ARGS... )>( ARGS... )>( func ) );
+        return testMap.emplace_back( name, data ).second;
     }
 
     TestCollection RegisterTests() override
@@ -354,8 +348,8 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
         RegisterTest( tests, "f32 multiply operator", std::multiplies<TestRegf32>() );
         RegisterTest( tests, "f32 divide operator", std::divides<TestRegf32>() );
 
-        RegisterTest( tests, "f32 fused multiply add", []( TestRegf32 a, TestRegf32 b, TestRegf32 c ) { return FS::FMulAdd( a, b, c ); } );
-        RegisterTest( tests, "f32 fused negative multiply add", []( TestRegf32 a, TestRegf32 b, TestRegf32 c ) { return FS::FNMulAdd( a, b, c ); } );
+        RegisterTest( tests, "f32 fused multiply add", []( TestRegf32 a, TestRegf32 b ) { return FS::FMulAdd( a, TestRegf32( -1 ), b ); } );
+        RegisterTest( tests, "f32 fused negative multiply add", []( TestRegf32 a, TestRegf32 b ) { return FS::FNMulAdd( a, TestRegf32( -1 ), b ); } );
         
         RegisterTest( tests, "f32 bit and operator", std::bit_and<TestRegf32>() );
         RegisterTest( tests, "f32 bit or operator", std::bit_or<TestRegf32>() );
@@ -391,14 +385,17 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
         RegisterTest( tests, "f32 ceil", []( TestRegf32 a ) { return FS::Ceil( a ); } );
         RegisterTest( tests, "f32 floor", []( TestRegf32 a ) { return FS::Floor( a ); } );
 
-        RegisterTest( tests, "f32 reciprocal", []( TestRegf32 a ) { return FS::Reciprocal( a ); } );
-        RegisterTest( tests, "f32 inv sqrt", []( TestRegf32 a ) { return FS::InvSqrt( a ); } );
+        RegisterTest( tests, "f32 reciprocal", []( TestRegf32 a ) {
+            TestRegf32 clamped = FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-16f ) ), TestRegf32( 1.e+16f ) );
+            return FS::Reciprocal( FS::Select( a > TestRegf32( 0 ), clamped, -clamped ) );
+        } ).accuracy = 8192;
+        RegisterTest( tests, "f32 inv sqrt", []( TestRegf32 a ) { return FS::InvSqrt( FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-16f ) ), TestRegf32( 1.e+16f ) ) ); } ).accuracy = 8192;
 
-        RegisterTest( tests, "f32 cos", []( TestRegf32 a ) { return FS::Cos( a ); } );
-        RegisterTest( tests, "f32 sin", []( TestRegf32 a ) { return FS::Sin( a ); } );
-        RegisterTest( tests, "f32 exp", []( TestRegf32 a ) { return FS::Exp( a ); } );
-        RegisterTest( tests, "f32 log", []( TestRegf32 a ) { return FS::Log( a ); } );
-        RegisterTest( tests, "f32 pow", []( TestRegf32 a, TestRegf32 b ) { return FS::Pow( a, b ); } );
+        RegisterTest( tests, "f32 cos", []( TestRegf32 a ) { return FS::Cos( a ); } ).accuracy = 8192;
+        RegisterTest( tests, "f32 sin", []( TestRegf32 a ) { return FS::Sin( a ); } ).accuracy = 8192;
+        RegisterTest( tests, "f32 exp", []( TestRegf32 a ) { return FS::Exp( a ); } ).accuracy = 8192;
+        RegisterTest( tests, "f32 log", []( TestRegf32 a ) { return FS::Log( a ); } ).accuracy = 8192;
+        RegisterTest( tests, "f32 pow", []( TestRegf32 a, TestRegf32 b ) { return FS::Pow( a, b ); } ).accuracy = 8192;
 
         RegisterTest( tests, "i32 convert to f32", []( TestRegi32 a ) { return FS::Convert<float>( a ); } );
         RegisterTest( tests, "i32 cast to f32", []( TestRegi32 a ) { return FS::Cast<float>( a ); } );

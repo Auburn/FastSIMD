@@ -22,6 +22,7 @@ struct TestData
     
     FastSIMD::FeatureSet featureSet;
     ReturnType returnType;
+    float accuracy = 0;
     std::function<TestFunction> testFunc;
     std::function<InputsFunction> inputsFunc;
 };
