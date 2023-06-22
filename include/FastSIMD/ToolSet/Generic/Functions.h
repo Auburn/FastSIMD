@@ -52,7 +52,7 @@ namespace FS
     FS_FORCEINLINE BitStorage<N> BitMask( const Register<Mask<S, F>, N, SIMD>& a )
     {
         static_assert( !IsNativeV<Register<Mask<S, F>, N, SIMD>>, "FastSIMD: FS::BitMask not supported with provided types" );
-        return static_cast<BitStorage<N>>( BitMask( a.v0 ) ) | ( static_cast<BitStorage<N>>( BitMask( a.v1 ) ) << ( N / 2 ) );
+        return static_cast<BitStorage<N>>( BitMask( a.v0 ) ) | static_cast<BitStorage<N>>( BitMask( a.v1 ) << ( N / 2 ) );
     }
     
     // Load constant set of values into register
@@ -357,6 +357,33 @@ namespace FS
         else
         {        
             return Register<T, N, SIMD>{ InvMaskedSub( mask.v0, a.v0, b.v0 ), InvMaskedSub( mask.v1, a.v1, b.v1 ) };
+        }
+    }
+    
+    // Masked Mul
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> MaskedMul( const typename Register<T, N, SIMD>::MaskTypeArg& mask, const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b )
+    {
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return Select( mask, a * b, a );
+        }
+        else
+        {        
+            return Register<T, N, SIMD> { MaskedMul( mask.v0, a.v0, b.v0 ), MaskedMul( mask.v1, a.v1, b.v1 ) };
+        }
+    }
+    
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> InvMaskedMul( const typename Register<T, N, SIMD>::MaskTypeArg& mask, const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b )
+    {
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return Select( mask, a, a * b );
+        }
+        else
+        {        
+            return Register<T, N, SIMD> { InvMaskedMul( mask.v0, a.v0, b.v0 ), InvMaskedMul( mask.v1, a.v1, b.v1 ) };
         }
     }
     

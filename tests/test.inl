@@ -334,8 +334,10 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
         RegisterTest( tests, "i32 masked decrement", []( TestRegm32 m, TestRegi32 a ) { return FS::MaskedDecrement( m, a ); } );
         RegisterTest( tests, "i32 masked add", []( TestRegm32 m, TestRegi32 a, TestRegi32 b ) { return FS::MaskedAdd( m, a, b ); } );
         RegisterTest( tests, "i32 masked sub", []( TestRegm32 m, TestRegi32 a, TestRegi32 b ) { return FS::MaskedSub( m, a, b ); } );
+        RegisterTest( tests, "i32 masked mul", []( TestRegm32 m, TestRegi32 a, TestRegi32 b ) { return FS::MaskedMul( m, a, b ); } );
         RegisterTest( tests, "i32 inv masked add", []( TestRegm32 m, TestRegi32 a, TestRegi32 b ) { return FS::InvMaskedAdd( m, a, b ); } );
         RegisterTest( tests, "i32 inv masked sub", []( TestRegm32 m, TestRegi32 a, TestRegi32 b ) { return FS::InvMaskedSub( m, a, b ); } );
+        RegisterTest( tests, "i32 inv masked mul", []( TestRegm32 m, TestRegi32 a, TestRegi32 b ) { return FS::InvMaskedMul( m, a, b ); } );
         
         RegisterTest( tests, "f32 load store", []( TestRegf32 a ) { return a; } );
         RegisterTest( tests, "f32 load scalar", []( float a ) { return TestRegf32( a ); } );
@@ -378,18 +380,20 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
         RegisterTest( tests, "f32 masked decrement", []( TestRegm32 m, TestRegf32 a ) { return FS::MaskedDecrement( m, a ); } );
         RegisterTest( tests, "f32 masked add", []( TestRegm32 m, TestRegf32 a, TestRegf32 b ) { return FS::MaskedAdd( m, a, b ); } );
         RegisterTest( tests, "f32 masked sub", []( TestRegm32 m, TestRegf32 a, TestRegf32 b ) { return FS::MaskedSub( m, a, b ); } );
+        RegisterTest( tests, "f32 masked mul", []( TestRegm32 m, TestRegf32 a, TestRegf32 b ) { return FS::MaskedMul( m, a, b ); } );
         RegisterTest( tests, "f32 inv masked add", []( TestRegm32 m, TestRegf32 a, TestRegf32 b ) { return FS::InvMaskedAdd( m, a, b ); } );
         RegisterTest( tests, "f32 inv masked sub", []( TestRegm32 m, TestRegf32 a, TestRegf32 b ) { return FS::InvMaskedSub( m, a, b ); } );
+        RegisterTest( tests, "f32 inv masked mul", []( TestRegm32 m, TestRegf32 a, TestRegf32 b ) { return FS::InvMaskedMul( m, a, b ); } );
         
         RegisterTest( tests, "f32 round", []( TestRegf32 a ) { return FS::Round( a ); } );
         RegisterTest( tests, "f32 ceil", []( TestRegf32 a ) { return FS::Ceil( a ); } );
         RegisterTest( tests, "f32 floor", []( TestRegf32 a ) { return FS::Floor( a ); } );
 
+        RegisterTest( tests, "f32 inv sqrt", []( TestRegf32 a ) { return FS::InvSqrt( FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-16f ) ), TestRegf32( 1.e+16f ) ) ); } ).accuracy = 8192;
         RegisterTest( tests, "f32 reciprocal", []( TestRegf32 a ) {
             TestRegf32 clamped = FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-16f ) ), TestRegf32( 1.e+16f ) );
             return FS::Reciprocal( FS::Select( a > TestRegf32( 0 ), clamped, -clamped ) );
         } ).accuracy = 8192;
-        RegisterTest( tests, "f32 inv sqrt", []( TestRegf32 a ) { return FS::InvSqrt( FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-16f ) ), TestRegf32( 1.e+16f ) ) ); } ).accuracy = 8192;
 
         RegisterTest( tests, "f32 cos", []( TestRegf32 a ) { return FS::Cos( a ); } ).accuracy = 8192;
         RegisterTest( tests, "f32 sin", []( TestRegf32 a ) { return FS::Sin( a ); } ).accuracy = 8192;
@@ -406,4 +410,4 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
     }
 };
 
-template class FastSIMD::RegisterDispatchClass<TestFastSIMD<256 / 8>>;
+template class FastSIMD::RegisterDispatchClass<TestFastSIMD<512 / 8>>;

@@ -1,6 +1,10 @@
 #pragma once
 #include <immintrin.h>
 
+#if FASTSIMD_MAX_FEATURE_VALUE() >= FASTSIMD_FEATURE_VALUE( AVX512 )
+#include "AVX512.h"
+#endif
+
 #include "256/f32x8.h"
 #include "256/i32x8.h"
 #include "256/m32x8.h"

@@ -130,7 +130,7 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
     FS_FORCEINLINE i32<4, SIMD> Load( TypeWrapper<const int*, 4, SIMD> ptr )
     {
-        return _mm_loadu_si128( (const __m128i*)ptr.value );
+        return _mm_loadu_si128( (__m128i*)ptr.value );
     }
     
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>

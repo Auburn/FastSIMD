@@ -12,10 +12,10 @@
 
 static constexpr size_t TestCount = 4096 * 4096;
 
-int  * rndInts;
-float* rndFloats;
+static int  * rndInts;
+static float* rndFloats;
 
-float GenFiniteFloat( std::mt19937& gen )
+static float GenFiniteFloat( std::mt19937& gen )
 {
     union
     {
@@ -25,14 +25,14 @@ float GenFiniteFloat( std::mt19937& gen )
 
     do
     {
-        u.i = (int)gen();
+        u.i = static_cast<int>( gen() );
 
     } while( !std::isfinite( u.f ) );
 
     return u.f;
 }
 
-void GenerateRandomValues()
+static void GenerateRandomValues()
 {
     std::cout << "Generating random values..." << std::endl;
 
@@ -277,7 +277,7 @@ int main()
 {
     GenerateRandomValues();
 
-    TestRunner<256 / 8>::Run();
+    TestRunner<512 / 8>::Run();
 
     return 0;
 }

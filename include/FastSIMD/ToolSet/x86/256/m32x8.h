@@ -47,7 +47,7 @@ namespace FS
             return _mm256_xor_ps( native, _mm256_castsi256_ps( neg1 ) );        
         }
 
-        __m256 native;
+        NativeType native;
     };
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<m32<8, true, SIMD>>>
