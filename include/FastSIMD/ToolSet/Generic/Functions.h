@@ -4,6 +4,12 @@
 
 #include "Register.h"
 
+#if defined( __clang__ )
+#define FS_BIND_INTRINSIC( FUNC ) FUNC
+#else
+#define FS_BIND_INTRINSIC( FUNC ) []( auto... ARGS ){ return FUNC( ARGS... ); }
+#endif
+
 namespace FS
 {
     namespace impl {}
@@ -574,5 +580,54 @@ namespace FS
     {
         static_assert( !IsNativeV<Register<Mask<S, F>, N, SIMD>>, "FastSIMD: FS::AnyMask not supported with provided types" );
         return AnyMask( a.v0 ) || AnyMask( a.v1 );
+    }
+
+    namespace impl
+    {
+        template<bool ZERO, typename T>
+        FS_FORCEINLINE constexpr auto NativeExecSplitOrNative( const T& v )
+        {
+            return v;
+        }
+
+        template<bool ZERO, typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+        FS_FORCEINLINE auto NativeExecSplitOrNative( const Register<T, N, SIMD>& v )
+        {
+            if constexpr( IsNativeV<Register<T, N, SIMD>> )
+            {
+                return v.GetNative();
+            }
+            else
+            {
+                return ZERO ? v.v0 : v.v1;
+            }
+        }
+
+        template<typename T>
+        struct NativeExecIsNative : std::true_type {};
+
+        template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+        struct NativeExecIsNative<Register<T, N, SIMD>> : std::bool_constant<IsNativeV<Register<T, N, SIMD>>> {};
+    }
+
+    template<typename R, typename FUNC, typename... ARGS>
+    FS_FORCEINLINE R NativeExec( FUNC f, const ARGS&... args )
+    {
+        using T = typename R::ElementType;
+        constexpr std::size_t N = R::ElementCount;
+        constexpr FastSIMD::FeatureSet SIMD = R::FeatureFlags;
+
+        //if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        if constexpr(( IsNativeV<Register<T, N, SIMD>> && ... && impl::NativeExecIsNative<ARGS>::value ))
+        {
+            return Register<T, N, SIMD> { f( impl::NativeExecSplitOrNative<true>( args )... ) };
+        }
+        else
+        {
+            return Register<T, N, SIMD> {
+                NativeExec<Register<T, N / 2, SIMD>>( f, impl::NativeExecSplitOrNative<true>( args )... ),
+                NativeExec<Register<T, N / 2, SIMD>>( f, impl::NativeExecSplitOrNative<false>( args )... )
+            };
+        }
     }
 }

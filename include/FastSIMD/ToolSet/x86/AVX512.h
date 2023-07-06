@@ -3,7 +3,7 @@
 
 #include "512/f32x16.h"
 #include "512/i32x16.h"
-#include "512/m32x16.h"
+#include "512/mNx16.h"
 
 namespace FS
 {

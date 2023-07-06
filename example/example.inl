@@ -6,12 +6,18 @@ class FastSIMD::DispatchClass<ExampleSIMD, SIMD> : public ExampleSIMD
 {
     void SimpleData( const float* in, float* out, std::size_t dataSize, float multiplier, float cutoff ) override
     {
-        if constexpr( SIMD == FastSIMD::FeatureSet::SSE41 )
+        constexpr std::size_t N = 32;
+
+        if constexpr( !(SIMD & FastSIMD::FeatureFlag::AVX) )
         {
-            //static_assert( !(SIMD == FastSIMD::FeatureSet::SSE41));
+            auto vMultiplier = FS::f32<N>( multiplier );
+            auto test = FS::NativeExec<FS::f32<N>>( FS_BIND_INTRINSIC( _mm_rcp_ps ), vMultiplier );
+
+            FS::Store( out, test );
         }
 
-        constexpr std::size_t N = 32;
+                
+        //auto vInt = FS::i32<N>( 1 ) + 2_i32;
 
         auto vMultiplier = FS::f32<N>( multiplier );
         auto vCutoff     = FS::f32<N>( cutoff );
