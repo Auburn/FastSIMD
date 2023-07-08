@@ -62,6 +62,14 @@ namespace FS
     }
     
     // Load constant set of values into register
+    template<typename T, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault(), typename... Ts>
+    FS_FORCEINLINE Register<T, sizeof...( Ts ) + 1, SIMD> Constant( T value, Ts... values )
+    {
+        alignas( std::alignment_of_v<Register<T, sizeof...( Ts ) + 1, SIMD>> ) const T constArray[] = { value, T( values )... };
+
+        return Load<sizeof...( Ts ) + 1, SIMD>( constArray );
+    }
+    
     template<typename T, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault(), std::int64_t... VALUEs>
     FS_FORCEINLINE Register<T, sizeof...( VALUEs ), SIMD> Constant( std::integer_sequence<std::int64_t, VALUEs...> )
     {

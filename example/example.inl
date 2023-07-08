@@ -11,7 +11,7 @@ class FastSIMD::DispatchClass<ExampleSIMD, SIMD> : public ExampleSIMD
         if constexpr( !(SIMD & FastSIMD::FeatureFlag::AVX) )
         {
             auto vMultiplier = FS::f32<N>( multiplier );
-            auto test = FS::NativeExec<FS::f32<N>>( FS_BIND_INTRINSIC( _mm_rcp_ps ), vMultiplier );
+            auto test = FS::NativeExec<FS::f32<N>>( FS_BIND_INTRINSIC( _mm_mul_ps ), vMultiplier, FS::Constant<float>(2,3,4,5) );
 
             FS::Store( out, test );
         }
