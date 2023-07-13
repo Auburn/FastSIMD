@@ -5,6 +5,7 @@
 int main()
 {
     FastSIMD::FeatureSet featureSet = FastSIMD::DetectCpuMaxFeatureSet();
+    std::cout << FastSIMD::GetFeatureSetString( featureSet ) << std::endl;
 
     std::vector<float> data;
     for( int i = 0; i < 32; i++ )

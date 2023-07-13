@@ -8,14 +8,13 @@ class FastSIMD::DispatchClass<ExampleSIMD, SIMD> : public ExampleSIMD
     {
         constexpr std::size_t N = 32;
 
-        if constexpr( !(SIMD & FastSIMD::FeatureFlag::AVX) )
+        if constexpr( (SIMD & FastSIMD::FeatureFlag::AVX512_F) )
         {
             auto vMultiplier = FS::f32<N>( multiplier );
-            auto test = FS::NativeExec<FS::f32<N>>( FS_BIND_INTRINSIC( _mm_mul_ps ), vMultiplier, FS::Constant<float>(2,3,4,5) );
+            auto test = FS::NativeExec<FS::f32<N>>( FS_BIND_INTRINSIC( _mm512_mul_ps ), vMultiplier, FS::LoadIncremented<float, N>() );
 
             FS::Store( out, test );
         }
-
                 
         //auto vInt = FS::i32<N>( 1 ) + 2_i32;
 

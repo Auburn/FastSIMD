@@ -4,11 +4,7 @@
 
 #include "Register.h"
 
-#if defined( __clang__ )
-#define FS_BIND_INTRINSIC( FUNC ) FUNC
-#else
 #define FS_BIND_INTRINSIC( FUNC ) []( auto... ARGS ){ return FUNC( ARGS... ); }
-#endif
 
 namespace FS
 {
