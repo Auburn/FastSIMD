@@ -15,7 +15,7 @@ namespace FS
         
         using NativeType = float;
         using ElementType = float;
-        using MaskType = m32<ElementCount, false, SIMD>;
+        using MaskType = m32<ElementCount, true, SIMD>;
         using MaskTypeArg = m32<ElementCount, true, SIMD>;
 
 
