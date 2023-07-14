@@ -105,12 +105,12 @@ namespace FS
         
         FS_FORCEINLINE MaskType operator >=( const Register& rhs ) const
         {
-            return *this > rhs | *this == rhs;
+            return ~(*this < rhs);
         }
         
         FS_FORCEINLINE MaskType operator <=( const Register& rhs ) const
         {
-            return *this < rhs | *this == rhs;
+            return ~(*this > rhs);
         }
         
         FS_FORCEINLINE MaskType operator >( const Register& rhs ) const
