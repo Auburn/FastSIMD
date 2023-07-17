@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <iterator>
 #include <sstream>
+#include <tuple>
 
 template<typename... Ts>
 struct pack {};
