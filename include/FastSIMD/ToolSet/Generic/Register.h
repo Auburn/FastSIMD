@@ -14,7 +14,10 @@
 #else
 #define FS_FORCEINLINE __attribute__( ( always_inline ) ) inline
 #define FS_NEVERINLINE __attribute__( ( noinline ) )
+#ifdef __clang__
 #define FS_VECTORCALL __regcall
+#else
+#define FS_VECTORCALL 
 #endif
 
 
