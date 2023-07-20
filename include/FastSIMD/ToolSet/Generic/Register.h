@@ -19,6 +19,7 @@
 #else
 #define FS_VECTORCALL 
 #endif
+#endif
 
 
 namespace FS
