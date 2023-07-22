@@ -61,6 +61,8 @@ function(target_architecture output_arch output_arch_ver)
             COMPILE_OUTPUT_VARIABLE COMPILE_OUTPUT
             CMAKE_FLAGS CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
         )
+    
+        #message(STATUS ${COMPILE_OUTPUT})
 
         # Parse the architecture name from the compiler output
         if ("${COMPILE_OUTPUT}" MATCHES "FASTSIMD_ARCH<([^\"=]+)=([^>]+)")
@@ -69,7 +71,7 @@ function(target_architecture output_arch output_arch_ver)
 
         else()       
             set(ARCH unknown)
-            set(ARCH_VER 0)   
+            set(ARCH_VER SCALAR)   
         endif()
     endif()
     
