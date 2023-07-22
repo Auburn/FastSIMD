@@ -10,17 +10,18 @@
 #ifdef _MSC_VER
 #define FS_FORCEINLINE __forceinline
 #define FS_NEVERINLINE __declspec(noinline)
-#define FS_VECTORCALL __vectorcall
 #else
 #define FS_FORCEINLINE __attribute__( ( always_inline ) ) inline
 #define FS_NEVERINLINE __attribute__( ( noinline ) )
+#endif
+
 #ifdef __clang__
 #define FS_VECTORCALL __regcall
+#elif defined( _MSC_VER )
+#define FS_VECTORCALL __vectorcall
 #else
 #define FS_VECTORCALL 
 #endif
-#endif
-
 
 namespace FS
 {
