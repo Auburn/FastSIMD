@@ -15,9 +15,10 @@
 #elif defined( __arm__ ) || defined( __TARGET_ARCH_ARM ) || defined( _M_ARM ) || defined( _M_ARM64 ) || defined( __aarch64__ ) || defined( __ARM64__ )
 
 #define FASTSIMD_FEATURE_VALUE_NEON() 1
+#define FASTSIMD_FEATURE_VALUE_AARCH64() 2
 
 #if defined( __ARM64_ARCH_8__ ) || defined( __aarch64__ ) || defined( __ARMv8__ ) || defined( __ARMv8_A__ ) || defined( _M_ARM64 ) || defined( __ARM_NEON__ )
-#define FASTSIMD_FEATURE_DETECT() NEON
+#define FASTSIMD_FEATURE_DETECT() AARCH64
 //#elif defined( __ARM_ARCH_7__ ) || defined( __ARM_ARCH_7A__ ) || defined( __ARM_ARCH_7R__ ) || defined( __ARM_ARCH_7M__ ) || defined( __ARM_ARCH_7S__ ) || defined( _ARM_ARCH_7 ) || defined( __CORE_CORTEXA__ )
 //#define FASTSIMD_ARCH_ARM() 7
 //#elif defined( __ARM_ARCH_6__ ) || defined( __ARM_ARCH_6J__ ) || defined( __ARM_ARCH_6T2__ ) || defined( __ARM_ARCH_6Z__ ) || defined( __ARM_ARCH_6K__ ) || defined( __ARM_ARCH_6ZK__ ) || defined( __ARM_ARCH_6M__ )

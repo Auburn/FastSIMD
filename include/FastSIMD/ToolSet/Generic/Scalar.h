@@ -8,7 +8,7 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>>
     FS_FORCEINLINE i32<1, SIMD> Convert( const f32<1, SIMD>& a, TypeDummy<int32_t> )
     {
-        return static_cast<std::int32_t>( std::lrintf( a.GetNative() ) );
+        return static_cast<std::int32_t>( std::rintf( a.GetNative() ) );
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<1, SIMD>>>

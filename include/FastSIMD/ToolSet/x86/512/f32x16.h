@@ -5,7 +5,7 @@
 namespace FS
 {
     template<FastSIMD::FeatureSet SIMD>
-    struct Register<std::enable_if_t<SIMD & FastSIMD::FeatureFlag::AVX512_F, float>, 16, SIMD>
+    struct Register<float, 16, SIMD, std::enable_if_t<SIMD & FastSIMD::FeatureFlag::AVX512_F>>
     {
         static constexpr size_t ElementCount = 16;
         static constexpr auto FeatureFlags = SIMD;

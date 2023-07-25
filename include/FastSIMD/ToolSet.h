@@ -18,7 +18,9 @@ namespace FastSIMD
 #include "ToolSet/Generic/Scalar.h"
 
 #if FASTSIMD_CURRENT_ARCH_IS( X86 )
-#include "ToolSet/x86/SSE.h"
+#include "ToolSet/x86/x86.h"
+#elif FASTSIMD_CURRENT_ARCH_IS( ARM )
+#include "ToolSet/ARM/ARM.h"
 #endif
 
 #include "ToolSet/Generic/Functions.h"

@@ -8,7 +8,7 @@
 namespace FS
 {
     template<FastSIMD::FeatureSet SIMD>
-    struct Register<std::enable_if_t<SIMD & FastSIMD::FeatureFlag::Scalar, std::int32_t>, 1, SIMD>
+    struct Register<std::int32_t, 1, SIMD, std::enable_if_t<SIMD & FastSIMD::FeatureFlag::Scalar>>
     {
         static constexpr size_t ElementCount = 1;
         static constexpr auto FeatureFlags = SIMD;

@@ -174,7 +174,7 @@ struct TestRunner
                 }
                 std::cerr << "idx " << idx << ": " << testName
                           << " Expected \"" << typedScalar[idx]
-                          << "\" Actual \"" << typedSimd[idx] << "\""
+                          << "\" Actual \"" << typedSimd[idx]
                           << "\" Diff \"" << std::abs( typedScalar[idx] - typedSimd[idx] ) << "\"";
 
                 if( relativeDif != 0.0f )
@@ -241,7 +241,7 @@ struct TestRunner
 
                     if( !CompareOutputs( testName, test.featureSet, test.returnType, test.accuracy, outputCount, scalarResults, simdResults ) )
                     {
-                        std::cerr << "Inputs: " << test.inputsFunc( idx, rndInts, rndFloats ) << std::endl;
+                        std::cerr << "Inputs: " << tests[0].inputsFunc( idx, rndInts, rndFloats ) << std::endl;
                         failed = true;
                     }
                 }
@@ -270,6 +270,8 @@ struct TestRunner
                 DoTest( test.first, test.second );
             }
         }
+
+        std::cout << "Testing Complete!" << std::endl;
     }
 };
 

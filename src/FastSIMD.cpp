@@ -1,6 +1,7 @@
+#include <FastSIMD/Utility/ArchDetect.h>
 #include <FastSIMD/Utility/FeatureEnums.h>
 
-#if 1 // FASTSIMD_x86
+#if FASTSIMD_CURRENT_ARCH_IS( X86 )
 #ifdef __GNUG__
 #include <x86intrin.h>
 #else
@@ -80,7 +81,7 @@ static uint64_t xgetbv( uint32_t ctr )
 
 namespace FastSIMD
 {
-
+#if FASTSIMD_CURRENT_ARCH_IS( X86 )
     static std::uint32_t DetectCpuSupportedFlags()
     {
         std::uint32_t supportedFlags = FastSIMD::FeatureFlag::x86 | FastSIMD::FeatureFlag::Scalar;
@@ -189,9 +190,25 @@ namespace FastSIMD
         return supportedFlags;
     }
 
+#elif FASTSIMD_CURRENT_ARCH_IS( ARM )
+    static std::uint32_t DetectCpuSupportedFlags()
+    {
+        std::uint32_t supportedFlags = 
+            FastSIMD::FeatureFlag::ARM |
+            FastSIMD::FeatureFlag::Scalar |
+            FastSIMD::FeatureFlag::NEON |
+            FastSIMD::FeatureFlag::AARCH64 |
+            FastSIMD::FeatureFlag::FMA;
+        
+        return supportedFlags;
+    }
+#endif
+
     static FeatureSet FeatureSetValues[] =
     {
         FeatureSet::SCALAR,
+
+#if FASTSIMD_CURRENT_ARCH_IS( X86 )
         FeatureSet::SSE,
         FeatureSet::SSE2,
         FeatureSet::SSE3,
@@ -205,8 +222,12 @@ namespace FastSIMD
         FeatureSet::AVX512,
         FeatureSet::AVX512_FMA,
 
+#elif FASTSIMD_CURRENT_ARCH_IS( ARM )
         FeatureSet::NEON,
         FeatureSet::NEON_FMA,
+        FeatureSet::AARCH64,
+        FeatureSet::AARCH64_FMA,
+#endif
     };
 
     FASTSIMD_API FastSIMD::FeatureSet DetectCpuMaxFeatureSet()
@@ -254,6 +275,8 @@ namespace FastSIMD
             case FeatureSet::AVX512_FMA: return "AVX512_FMA";
             case FeatureSet::NEON: return "NEON";
             case FeatureSet::NEON_FMA: return "NEON_FMA";
+            case FeatureSet::AARCH64: return "AARCH64";
+            case FeatureSet::AARCH64_FMA: return "AARCH64_FMA";
             case FeatureSet::Max: return "Max";
         }
 

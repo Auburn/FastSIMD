@@ -25,11 +25,11 @@
 
 namespace FS
 {
-    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault()>
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault(), typename = void>
     struct Register
     {
         static_assert( SIMD != FastSIMD::FeatureSet::Invalid, "Invalid FeatureSet" );
-        static_assert( N > 0, "Zero vector size" );
+        static_assert( N > 1, "Unknown Vector Type" );
         static_assert( ( N & ( N - 1 ) ) == 0, "Vector size must be power of 2" );
 
         static constexpr std::size_t ElementCount = N;
