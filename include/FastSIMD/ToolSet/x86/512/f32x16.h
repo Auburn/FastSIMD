@@ -239,13 +239,13 @@ namespace FS
         return _mm512_rsqrt14_ps( a.native );
     }
 
-    template<FastSIMD::FeatureSet SIMD, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
     FS_FORCEINLINE f32<16, SIMD> FMulAdd( const f32<16, SIMD>& a, const f32<16, SIMD>& b, const f32<16, SIMD>& c )
     {
         return _mm512_fmadd_ps( a.native, b.native, c.native );
     }
 
-    template<FastSIMD::FeatureSet SIMD, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
     FS_FORCEINLINE f32<16, SIMD> FNMulAdd( const f32<16, SIMD>& a, const f32<16, SIMD>& b, const f32<16, SIMD>& c )
     {
         return _mm512_fnmadd_ps( a.native, b.native, c.native );
