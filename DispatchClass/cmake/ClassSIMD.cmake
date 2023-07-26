@@ -66,10 +66,10 @@ function(fastsimd_create_dispatch_library simd_library_name)
             SSE2
             SSE41
             AVX2_FMA
-            AVX512_FMA)
+            AVX512_FMA
+            NEON_FMA
+            AARCH64_FMA)
     endif()
-
-    message(STATUS "FastSIMD: Created dispatch library \"${simd_library_name}\" with Feature Sets: ${fastsimd_create_dispatch_library_FEATURE_SETS}")
 
     add_library(${simd_library_name} OBJECT)
 
@@ -91,16 +91,32 @@ function(fastsimd_create_dispatch_library simd_library_name)
     endif()
 
     set(feature_set_list "")
+    set(feature_set_list_debug "")
 
     foreach(simd_inl ${fastsimd_create_dispatch_library_SOURCES})
         foreach(feature_set ${fastsimd_create_dispatch_library_FEATURE_SETS})
-            list(APPEND feature_set_list "FastSIMD::FeatureSet::${feature_set}")      
-            fastsimd_add_feature_set_source(${simd_inl} ${feature_set})
+            try_run(
+                run_result_unused
+                compile_result_unused
+                "${CMAKE_BINARY_DIR}"
+                "${FastSIMD_SOURCE_DIR}/cmake/ArchDetect.cpp"
+                COMPILE_OUTPUT_VARIABLE COMPILE_OUTPUT
+                CMAKE_FLAGS CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES} 
+                COMPILE_DEFINITIONS -DTEST_FEATURE_SET_ACTIVE=${feature_set}
+            )
+
+            if ("${COMPILE_OUTPUT}" MATCHES "TEST_FEATURE_SET_ACTIVE_SUCCESS")
+                list(APPEND feature_set_list "FastSIMD::FeatureSet::${feature_set}")   
+                list(APPEND feature_set_list_debug "${feature_set}")     
+                fastsimd_add_feature_set_source(${simd_inl} ${feature_set})
+            endif()
         endforeach()  
     endforeach()  
 
     # Create array of compiled feature sets for lookup in FastSIMD::New()
     string(REPLACE ";" ",\n" feature_set_list "${feature_set_list}")
     configure_file("${FastSIMD_SOURCE_DIR}/DispatchClass/cmake/simd_lib_config.h.in" "${simd_library_source_dir}/include/FastSIMD/${simd_library_name}_config.h")
+    
+    message(STATUS "FastSIMD: Created dispatch library \"${simd_library_name}\" with Feature Sets: ${feature_set_list_debug}")
 
 endfunction()

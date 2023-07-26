@@ -4,7 +4,7 @@
 #define FASTSIMD_ARCH_VALUE_X86() 1
 #define FASTSIMD_ARCH_VALUE_ARM() 2
 
-#define FASTSIMD_FEATURE_VALUE_SCALAR() 0
+#define FASTSIMD_FEATURE_VALUE_SCALAR() 1
 
 // -- Web Assembly --
 #if defined( __EMSCRIPTEN__ )
@@ -14,8 +14,10 @@
 // -- ARM --
 #elif defined( __arm__ ) || defined( __TARGET_ARCH_ARM ) || defined( _M_ARM ) || defined( _M_ARM64 ) || defined( __aarch64__ ) || defined( __ARM64__ )
 
-#define FASTSIMD_FEATURE_VALUE_NEON() 1
-#define FASTSIMD_FEATURE_VALUE_AARCH64() 2
+#define FASTSIMD_FEATURE_VALUE_NEON() 2
+#define FASTSIMD_FEATURE_VALUE_NEON_FMA() 3
+#define FASTSIMD_FEATURE_VALUE_AARCH64() 4
+#define FASTSIMD_FEATURE_VALUE_AARCH64_FMA() 5 
 
 #if defined( __ARM64_ARCH_8__ ) || defined( __aarch64__ ) || defined( __ARMv8__ ) || defined( __ARMv8_A__ ) || defined( _M_ARM64 ) || defined( __ARM_NEON__ )
 #define FASTSIMD_FEATURE_DETECT() AARCH64
@@ -26,7 +28,7 @@
 //#elif defined( __ARM_ARCH_5TEJ__ ) || defined( __ARM_ARCH_5TE__ )
 //#define FASTSIMD_ARCH_ARM() 5
 #else
-#define FASTSIMD_FEATURE_DETECT() SCALAR
+#define FASTSIMD_FEATURE_DETECT() NEON
 #endif
 
 #define FASTSIMD_ARCH_DETECT() ARM
@@ -34,18 +36,18 @@
 // -- x86 --
 #elif defined( __i386 ) || defined( __i386__ ) || defined( _M_IX86 ) || defined( __x86_64 ) || defined( __x86_64__ ) || defined( __amd64 ) || defined( _M_X64 )
 
-#define FASTSIMD_FEATURE_VALUE_SSE() 1
-#define FASTSIMD_FEATURE_VALUE_SSE2() 2
-#define FASTSIMD_FEATURE_VALUE_SSE3() 3
-#define FASTSIMD_FEATURE_VALUE_SSSE3() 4             
-#define FASTSIMD_FEATURE_VALUE_SSE41() 5
-#define FASTSIMD_FEATURE_VALUE_SSE42() 6
-#define FASTSIMD_FEATURE_VALUE_AVX() 7
-#define FASTSIMD_FEATURE_VALUE_AVX_FMA() 8
-#define FASTSIMD_FEATURE_VALUE_AVX2() 9
-#define FASTSIMD_FEATURE_VALUE_AVX2_FMA() 10
-#define FASTSIMD_FEATURE_VALUE_AVX512() 11
-#define FASTSIMD_FEATURE_VALUE_AVX512_FMA() 12
+#define FASTSIMD_FEATURE_VALUE_SSE() 2
+#define FASTSIMD_FEATURE_VALUE_SSE2() 3
+#define FASTSIMD_FEATURE_VALUE_SSE3() 4
+#define FASTSIMD_FEATURE_VALUE_SSSE3() 5             
+#define FASTSIMD_FEATURE_VALUE_SSE41() 6
+#define FASTSIMD_FEATURE_VALUE_SSE42() 7
+#define FASTSIMD_FEATURE_VALUE_AVX() 8
+#define FASTSIMD_FEATURE_VALUE_AVX_FMA() 9
+#define FASTSIMD_FEATURE_VALUE_AVX2() 10
+#define FASTSIMD_FEATURE_VALUE_AVX2_FMA() 11
+#define FASTSIMD_FEATURE_VALUE_AVX512() 12
+#define FASTSIMD_FEATURE_VALUE_AVX512_FMA() 13
 
 #if defined( __AVX512F__ ) && defined( __AVX512VL__ ) && defined( __AVX512BW__ ) && defined( __AVX512DQ__ )
 #define FASTSIMD_FEATURE_DETECT() AVX512
