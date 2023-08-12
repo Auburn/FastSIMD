@@ -160,6 +160,12 @@ namespace FS
         return _mm256_blendv_epi8( ifFalse.native, ifTrue.native, _mm256_castps_si256( mask.native ) );
     }
 
+    template<typename U, FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<8, SIMD>>>
+    FS_FORCEINLINE i32<8, SIMD> SelectHighBit( const Register<U, 8, SIMD>& mask, const i32<8, SIMD>& ifTrue, const i32<8, SIMD>& ifFalse )
+    {
+        return _mm256_castps_si256( _mm256_blendv_ps( _mm256_castsi256_ps( ifFalse.native ), _mm256_castsi256_ps( ifTrue.native ), FS::Cast<float>( mask ).native ) );
+    }
+
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<8, SIMD>>>
     FS_FORCEINLINE i32<8, SIMD> BitwiseAndNot( const i32<8, SIMD>& a, const i32<8, SIMD>& b )
     {

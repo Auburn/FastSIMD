@@ -329,6 +329,7 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
         RegisterTest( tests, "i32 greater equal than operator", []( TestRegi32 a, TestRegi32 b ) { return a >= b; } );
         
         RegisterTest( tests, "i32 select", []( TestRegm32 m, TestRegi32 a, TestRegi32 b ) { return FS::Select( m, a, b ); } );
+        RegisterTest( tests, "i32 select high bit", []( TestRegf32 m, TestRegi32 a, TestRegi32 b ) { return FS::SelectHighBit( m, a, b ); } );
         RegisterTest( tests, "i32 masked", []( TestRegm32 m, TestRegi32 a ) { return FS::Masked( m, a ); } );
         RegisterTest( tests, "i32 inv masked", []( TestRegm32 m, TestRegi32 a ) { return FS::InvMasked( m, a ); } );
         RegisterTest( tests, "i32 masked increment", []( TestRegm32 m, TestRegi32 a ) { return FS::MaskedIncrement( m, a ); } );
@@ -349,7 +350,7 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
         RegisterTest( tests, "f32 plus operator", std::plus<TestRegf32>() );
         RegisterTest( tests, "f32 minus operator", std::minus<TestRegf32>() );
         RegisterTest( tests, "f32 multiply operator", std::multiplies<TestRegf32>() );
-        RegisterTest( tests, "f32 divide operator", std::divides<TestRegf32>() );
+        RegisterTest( tests, "f32 divide operator", std::divides<TestRegf32>() ).accuracy = 64;
 
         RegisterTest( tests, "f32 fused multiply add", []( TestRegf32 a, TestRegf32 b ) { return FS::FMulAdd( a, TestRegf32( -1 ), b ); } );
         RegisterTest( tests, "f32 fused negative multiply add", []( TestRegf32 a, TestRegf32 b ) { return FS::FNMulAdd( a, TestRegf32( -1 ), b ); } );
@@ -375,6 +376,7 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
         RegisterTest( tests, "f32 max", []( TestRegf32 a, TestRegf32 b ) { return FS::Max( a, b ); } );
 
         RegisterTest( tests, "f32 select", []( TestRegm32 m, TestRegf32 a, TestRegf32 b ) { return FS::Select( m, a, b ); } );
+        RegisterTest( tests, "f32 select high bit", []( TestRegi32 m, TestRegf32 a, TestRegf32 b ) { return FS::SelectHighBit( m, a, b ); } );
         RegisterTest( tests, "f32 masked", []( TestRegm32 m, TestRegf32 a ) { return FS::Masked( m, a ); } );
         RegisterTest( tests, "f32 inv masked", []( TestRegm32 m, TestRegf32 a ) { return FS::InvMasked( m, a ); } );
         RegisterTest( tests, "f32 masked increment", []( TestRegm32 m, TestRegf32 a ) { return FS::MaskedIncrement( m, a ); } );

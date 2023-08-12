@@ -197,6 +197,12 @@ namespace FS
             return _mm_xor_si128( ifFalse.native, _mm_and_si128( _mm_castps_si128( mask.native ), _mm_xor_si128( ifTrue.native, ifFalse.native ) ) );
         }
     }
+        
+    template<typename U, FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::SSE41>>
+    FS_FORCEINLINE i32<4, SIMD> SelectHighBit( const Register<U, 4, SIMD>& mask, const i32<4, SIMD>& ifTrue, const i32<4, SIMD>& ifFalse )
+    {
+        return _mm_castps_si128( _mm_blendv_ps( _mm_castsi128_ps( ifFalse.native ), _mm_castsi128_ps( ifTrue.native ), FS::Cast<float>( mask ).native ) );  
+    }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
     FS_FORCEINLINE i32<4, SIMD> BitwiseAndNot( const i32<4, SIMD>& a, const i32<4, SIMD>& b )

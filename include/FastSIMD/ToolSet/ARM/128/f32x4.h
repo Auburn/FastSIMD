@@ -53,6 +53,7 @@ namespace FS
                 float32x4_t reciprocal = vrecpeq_f32( rhs.native );
                 // Additional Netwon-Raphson iteration for accuracy
                 reciprocal = vmulq_f32( vrecpsq_f32( rhs.native, reciprocal ), reciprocal );
+                reciprocal = vmulq_f32( vrecpsq_f32( rhs.native, reciprocal ), reciprocal );
 
                 native = vmulq_f32( native, reciprocal );
             }

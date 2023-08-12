@@ -209,6 +209,12 @@ namespace FS
         }
     }
 
+    template<typename U, FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::SSE41>>
+    FS_FORCEINLINE f32<4, SIMD> SelectHighBit( const Register<U, 4, SIMD>& mask, const f32<4, SIMD>& ifTrue, const f32<4, SIMD>& ifFalse )
+    {
+        return _mm_blendv_ps( ifFalse.native, ifTrue.native, FS::Cast<float>( mask ).native );
+    }
+
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> BitwiseAndNot( const f32<4, SIMD>& a, const f32<4, SIMD>& b )
     {

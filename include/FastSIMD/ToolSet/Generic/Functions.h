@@ -189,6 +189,27 @@ namespace FS
         return Register<T, N, SIMD>{ Select( mask.v0, ifTrue.v0, ifFalse.v0 ), Select( mask.v1, ifTrue.v1, ifFalse.v1 ) };
     }
 
+    // Select element from 2 registers using most significant bit from int or float
+    template<typename T, typename U, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> SelectHighBit( const Register<U, N, SIMD>& mask, const Register<T, N, SIMD>& ifTrue, const Register<T, N, SIMD>& ifFalse )
+    {
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            if constexpr( std::is_same_v<typename Register<U, N, SIMD>::NativeType, typename Register<U, N, SIMD>::MaskType::NativeType> )
+        {
+                return Select( FS::Cast<typename Register<U, N, SIMD>::MaskType::ElementType>( FS::Cast<std::int32_t>( mask ) >> 31 ), ifTrue, ifFalse );                
+            }
+            else
+            {
+                return Select( FS::Cast<std::int32_t>( mask ) < Register<std::int32_t, N, SIMD>( 0 ), ifTrue, ifFalse );
+            }
+        }
+        else
+        {
+            return Register<T, N, SIMD> { SelectHighBit( mask.v0, ifTrue.v0, ifFalse.v0 ), SelectHighBit( mask.v1, ifTrue.v1, ifFalse.v1 ) };
+        }
+    }
+
     // Increment value
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Increment( const Register<T, N, SIMD>& a )
