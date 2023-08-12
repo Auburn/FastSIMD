@@ -37,6 +37,8 @@ namespace FastSIMD
     template<typename T, FastSIMD::FeatureSet SIMD = FeatureSetDefault()>
     class RegisterDispatchClass
     {
+        static_assert( SIMD == FeatureSetDefault() );
+
         // Never called, used to instantiate DispatchClassFactory<SIMD>::New<T>()
         static auto Instantiate()
         {

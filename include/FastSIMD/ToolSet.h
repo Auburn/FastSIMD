@@ -14,6 +14,7 @@ namespace FastSIMD
     }
 } // namespace FastSIMD
 
+#include "ToolSet/Generic/Functions.h"
 
 #include "ToolSet/Generic/Scalar.h"
 
@@ -23,4 +24,3 @@ namespace FastSIMD
 #include "ToolSet/ARM/ARM.h"
 #endif
 
-#include "ToolSet/Generic/Functions.h"
