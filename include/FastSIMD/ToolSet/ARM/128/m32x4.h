@@ -17,8 +17,7 @@ namespace FS
 
         FS_FORCEINLINE Register() = default;
 
-        template<typename T = NativeType>
-        FS_FORCEINLINE Register( std::enable_if_t<OPTIMISE_FLOAT, T> v ) : native( v ) { }
+        FS_FORCEINLINE Register( NativeType v ) : native( v ) { }
 
         template<typename T = Register<Mask<32, false>, 4, SIMD>>
         FS_FORCEINLINE Register( const std::enable_if_t<OPTIMISE_FLOAT, T>& v ) : native( v.native ) { }
