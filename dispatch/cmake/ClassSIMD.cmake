@@ -3,7 +3,7 @@ function(fastsimd_add_feature_set_source simd_inl feature_set)
     set(feature_set_source "${simd_library_source_dir}/${simd_library_name}_${feature_set}.cpp")
     set(simd_inl_full "${CMAKE_CURRENT_LIST_DIR}/${simd_inl}")
     
-    configure_file("${FastSIMD_SOURCE_DIR}/DispatchClass/cmake/feature_set_source.cpp.in" ${feature_set_source})
+    configure_file("${FastSIMD_SOURCE_DIR}/dispatch/cmake/feature_set_source.cpp.in" ${feature_set_source})
     target_sources(${simd_library_name} PRIVATE ${feature_set_source})
             
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -115,7 +115,7 @@ function(fastsimd_create_dispatch_library simd_library_name)
 
     # Create array of compiled feature sets for lookup in FastSIMD::New()
     string(REPLACE ";" ",\n" feature_set_list "${feature_set_list}")
-    configure_file("${FastSIMD_SOURCE_DIR}/DispatchClass/cmake/simd_lib_config.h.in" "${simd_library_source_dir}/include/FastSIMD/${simd_library_name}_config.h")
+    configure_file("${FastSIMD_SOURCE_DIR}/dispatch/cmake/simd_lib_config.h.in" "${simd_library_source_dir}/include/FastSIMD/${simd_library_name}_config.h")
     
     message(STATUS "FastSIMD: Created dispatch library \"${simd_library_name}\" with Feature Sets: ${feature_set_list_debug}")
 

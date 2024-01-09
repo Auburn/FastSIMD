@@ -21,7 +21,7 @@ include(cmake/ArchDetect.cmake)
 
 target_architecture(FASTSIMD_ARCH_DETECT FASTSIMD_ARCHVER_DETECT)
 
-add_library(FastSIMD OBJECT "src/FastSIMD.cpp" "include/FastSIMD/ToolSet.h")
+add_library(FastSIMD OBJECT "src/FastSIMD.cpp")
 target_compile_definitions(FastSIMD PRIVATE FASTSIMD_EXPORT)
 
 if(BUILD_SHARED_LIBS)
@@ -36,7 +36,7 @@ target_include_directories(FastSIMD PUBLIC
 )
 
 if(FASTSIMD_DISPATCH_CLASS)
-    add_subdirectory(DispatchClass)
+    add_subdirectory(dispatch)
 endif()
 
 if(FASTSIMD_TESTS)
@@ -44,5 +44,5 @@ if(FASTSIMD_TESTS)
 endif()
 
 if(FASTSIMD_EXAMPLES)
-    add_subdirectory(example)
+    add_subdirectory(examples)
 endif()
