@@ -68,7 +68,7 @@ namespace FS
 
         FS_FORCEINLINE Register& operator <<=( int rhs )
         {
-            native = wasm_i32x4_shl(*this, rhs);
+            native = wasm_i32x4_shl( native, rhs );
             return *this;
         }
 
@@ -175,12 +175,12 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
     FS_FORCEINLINE i32<4, SIMD> MaskedIncrement( const typename i32<4, SIMD>::MaskTypeArg& mask, const i32<4, SIMD>& a )
     {
-        return wasm_i32x4_sub( a.native, mask.native );
+        return wasm_i32x4_sub( mask.native, a.native );
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
     FS_FORCEINLINE i32<4, SIMD> MaskedDecrement( const typename i32<4, SIMD>::MaskTypeArg& mask, const i32<4, SIMD>& a )
     {
-        return wasm_i32x4_add( a.native, mask.native );
+        return wasm_i32x4_add( mask.native, a.native );
     }
 }

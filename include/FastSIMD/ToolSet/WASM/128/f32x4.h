@@ -175,32 +175,32 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Masked( const typename f32<4, SIMD>::MaskTypeArg& mask, const f32<4, SIMD>& a )
     {
-        return vreinterpretq_f32_u32( vandq_u32( vreinterpretq_u32_f32( a.native ), mask.native ) );
+        return wasm_v128_and( mask.native, a.native );
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> MaskedIncrement( const typename f32<4, SIMD>::MaskTypeArg& mask, const f32<4, SIMD>& a )
     {
-        return vsubq_f32( a.native, vcvtq_f32_s32( vreinterpretq_s32_u32( mask.native ) ) );
+        return wasm_f32x4_sub( mask.native, a.native );
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> MaskedDecrement( const typename f32<4, SIMD>::MaskTypeArg& mask, const f32<4, SIMD>& a )
     {
-        return vaddq_f32( a.native, vcvtq_f32_s32( vreinterpretq_s32_u32( mask.native ) ) );
+        return wasm_f32x4_add( mask.native, a.native );
     }
 
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Reciprocal( const f32<4, SIMD>& a )
     {
-        return wasm_f32x4_div( f32<4, SIMD>{1.0f}, a.native );
+        return wasm_f32x4_div( f32<4, SIMD>{1.0f}.native, a.native );
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> InvSqrt( const f32<4, SIMD>& a )
     {
-        return wasm_f32x4_div( f32<4, SIMD>{1.0f}, wasm_f32x4_sqrt( a ) );
+        return wasm_f32x4_div( f32<4, SIMD>{1.0f}.native, wasm_f32x4_sqrt( a.native ) );
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
