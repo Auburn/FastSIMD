@@ -20,7 +20,7 @@
 #elif defined( _MSC_VER )
 #define FS_VECTORCALL __vectorcall
 #else
-#define FS_VECTORCALL 
+#define FS_VECTORCALL
 #endif
 
 namespace FS
@@ -137,7 +137,7 @@ namespace FS
         {
             return Register{ ~this->v0, ~this->v1 };
         }
-               
+
 
         FS_FORCEINLINE MaskType operator ==( const Register& rhs ) const
         {
@@ -237,7 +237,7 @@ namespace FS
     {
         return lhs >>= rhs;
     }
-    
+
     template<typename T, std::size_t N = 0, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault()>
     struct TypeWrapper
     {
@@ -263,7 +263,7 @@ namespace FS
     template<typename T>
     struct TypeDummy
     {
-        using Type = T;        
+        using Type = T;
     };
 
     template<std::size_t N, bool OPTIMISE_FLOAT = true>
@@ -277,7 +277,7 @@ namespace FS
 
     template<typename T>
     struct IsNative<T, std::void_t<typename T::NativeType>> : std::true_type { };
-    
+
     template<typename T>
     using EnableIfNative = typename T::NativeType;
 
@@ -286,7 +286,7 @@ namespace FS
 
     template<typename T>
     constexpr bool IsNativeV = IsNative<T>::value;
-        
+
 
     template<std::size_t N, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault()>
     using i32 = Register<std::int32_t, N, SIMD>;
@@ -300,7 +300,7 @@ namespace FS
     template<std::size_t N>
     using BitStorage = std::tuple_element_t<( N > 8 ) + ( N > 16 ) + ( N > 32 ),
                                             std::tuple<std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t>>;
-    
+
     template<typename T>
     static constexpr std::size_t NativeRegisterCount( FastSIMD::FeatureSet featureSet = FastSIMD::FeatureSetDefault() );
 
@@ -315,7 +315,8 @@ namespace FS
         {
             return 8;
         }
-        if( featureSet & (FastSIMD::FeatureFlag::SSE | FastSIMD::FeatureFlag::NEON) )
+        if( featureSet & (FastSIMD::FeatureFlag::SSE |
+            FastSIMD::FeatureFlag::NEON | FastSIMD::FeatureFlag::WASM) )
         {
             return 4;
         }
@@ -334,7 +335,8 @@ namespace FS
         {
             return 8;
         }
-        if( featureSet & (FastSIMD::FeatureFlag::SSE2 | FastSIMD::FeatureFlag::NEON) )
+        if( featureSet & (FastSIMD::FeatureFlag::SSE2 |
+            FastSIMD::FeatureFlag::NEON | FastSIMD::FeatureFlag::WASM) )
         {
             return 4;
         }
@@ -353,14 +355,15 @@ namespace FS
         {
             return 8;
         }
-        if( featureSet & (FastSIMD::FeatureFlag::SSE2 | FastSIMD::FeatureFlag::NEON) )
+        if( featureSet & (FastSIMD::FeatureFlag::SSE2 |
+            FastSIMD::FeatureFlag::NEON | FastSIMD::FeatureFlag::WASM) )
         {
             return 4;
         }
 
         return 1;
     }
-    
+
     template<typename T, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault()>
     using NativeRegister = Register<T, NativeRegisterCount<T>( SIMD ), SIMD>;
 

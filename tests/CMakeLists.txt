@@ -4,6 +4,9 @@ fastsimd_create_dispatch_library(test_simd SOURCES "test.inl" FEATURE_SETS SCALA
 add_executable(test "test.cpp")
 target_link_libraries(test PRIVATE FastSIMD test_simd)
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+  target_link_options(test PRIVATE -sALLOW_MEMORY_GROWTH=1)
+endif()
 
 # Enable Warnings
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")

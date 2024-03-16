@@ -181,13 +181,15 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> MaskedIncrement( const typename f32<4, SIMD>::MaskTypeArg& mask, const f32<4, SIMD>& a )
     {
-        return wasm_f32x4_sub( mask.native, a.native );
+        return wasm_f32x4_sub( a.native,
+            wasm_f32x4_convert_i32x4(static_cast<v128_t>(mask.native)) );
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> MaskedDecrement( const typename f32<4, SIMD>::MaskTypeArg& mask, const f32<4, SIMD>& a )
     {
-        return wasm_f32x4_add( mask.native, a.native );
+        return wasm_f32x4_add( a.native,
+            wasm_f32x4_convert_i32x4(static_cast<v128_t>(mask.native)) );
     }
 
 
