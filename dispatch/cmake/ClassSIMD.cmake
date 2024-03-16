@@ -46,7 +46,7 @@ function(fastsimd_add_feature_set_source simd_inl feature_set)
             set_source_files_properties(${feature_set_source} PROPERTIES COMPILE_FLAGS "-mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma")
 
         elseif(${feature_set} MATCHES WASM)
-            set_source_files_properties(${feature_set_source} PROPERTIES COMPILE_FLAGS "-msimd128")
+            set_source_files_properties(${feature_set_source} PROPERTIES COMPILE_FLAGS "-msimd128 -mrelaxed-simd")
         endif()
     endif()
 
