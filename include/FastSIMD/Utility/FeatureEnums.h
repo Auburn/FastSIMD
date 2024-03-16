@@ -27,7 +27,9 @@ namespace FastSIMD
 
         ARM,
         NEON,
-        AARCH64
+        AARCH64,
+
+        WASM
     };
 
     constexpr std::uint32_t operator |( FeatureFlag a, FeatureFlag b )
@@ -45,7 +47,7 @@ namespace FastSIMD
         Invalid,
 
         SCALAR      =          Invalid | FeatureFlag::Scalar,
-                      
+
         SSE         = FeatureFlag::x86 | FeatureFlag::SSE,
         SSE2        =              SSE | FeatureFlag::SSE2,
         SSE3        =             SSE2 | FeatureFlag::SSE3,
@@ -58,24 +60,26 @@ namespace FastSIMD
         AVX2_FMA    =             AVX2 | FeatureFlag::FMA,
         AVX512      =             AVX2 | FeatureFlag::AVX512_F | FeatureFlag::AVX512_VL | FeatureFlag::AVX512_DQ | FeatureFlag::AVX512_BW,
         AVX512_FMA  =           AVX512 | FeatureFlag::FMA,
-                    
+
         NEON        = FeatureFlag::ARM | FeatureFlag::NEON,
         NEON_FMA    =             NEON | FeatureFlag::FMA,
         AARCH64     =             NEON | FeatureFlag::AARCH64,
         AARCH64_FMA =          AARCH64 | FeatureFlag::FMA,
 
+        WASM        =          Invalid | FeatureFlag::WASM,
+
         Max = ~0U
     };
-    
+
     constexpr bool operator &( FeatureSet a, FeatureFlag b )
     {
         return static_cast<std::uint32_t>(a) & 1U << static_cast<std::uint32_t>(b);
     }
-    
+
     constexpr bool operator &( FeatureSet a, std::uint32_t b )
     {
         return static_cast<std::uint32_t>(a) & b;
-    }    
+    }
 
     FASTSIMD_API FeatureSet DetectCpuMaxFeatureSet();
 

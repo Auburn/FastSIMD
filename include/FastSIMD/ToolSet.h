@@ -22,5 +22,7 @@ namespace FastSIMD
 #include "ToolSet/x86/x86.h"
 #elif FASTSIMD_CURRENT_ARCH_IS( ARM )
 #include "ToolSet/ARM/ARM.h"
+#elif FASTSIMD_CURRENT_ARCH_IS( WASM )
+#include "ToolSet/WASM/WASM.h"
 #endif
 

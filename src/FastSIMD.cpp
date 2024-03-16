@@ -193,13 +193,23 @@ namespace FastSIMD
 #elif FASTSIMD_CURRENT_ARCH_IS( ARM )
     static std::uint32_t DetectCpuSupportedFlags()
     {
-        std::uint32_t supportedFlags = 
+        std::uint32_t supportedFlags =
             FastSIMD::FeatureFlag::ARM |
             FastSIMD::FeatureFlag::Scalar |
             FastSIMD::FeatureFlag::NEON |
             FastSIMD::FeatureFlag::AARCH64 |
             FastSIMD::FeatureFlag::FMA;
-        
+
+        return supportedFlags;
+    }
+
+#elif FASTSIMD_CURRENT_ARCH_IS( WASM )
+    static std::uint32_t DetectCpuSupportedFlags()
+    {
+        std::uint32_t supportedFlags =
+            FastSIMD::FeatureFlag::WASM |
+            FastSIMD::FeatureFlag::Scalar;
+
         return supportedFlags;
     }
 #endif
@@ -227,6 +237,9 @@ namespace FastSIMD
         FeatureSet::NEON_FMA,
         FeatureSet::AARCH64,
         FeatureSet::AARCH64_FMA,
+
+#elif FASTSIMD_CURRENT_ARCH_IS( WASM )
+        FeatureSet::WASM,
 #endif
     };
 
@@ -277,6 +290,7 @@ namespace FastSIMD
             case FeatureSet::NEON_FMA: return "NEON_FMA";
             case FeatureSet::AARCH64: return "AARCH64";
             case FeatureSet::AARCH64_FMA: return "AARCH64_FMA";
+            case FeatureSet::WASM: return "WASM";
             case FeatureSet::Max: return "Max";
         }
 
