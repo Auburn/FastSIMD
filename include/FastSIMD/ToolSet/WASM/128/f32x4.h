@@ -5,12 +5,12 @@
 namespace FS
 {
     template<FastSIMD::FeatureSet SIMD>
-    struct Register<float, 4, SIMD, std::enable_if_t<SIMD & FastSIMD::FeatureFlag::NEON>>
+    struct Register<float, 4, SIMD, std::enable_if_t<SIMD & FastSIMD::FeatureFlag::WASM>>
     {
         static constexpr size_t ElementCount = 4;
         static constexpr auto FeatureFlags = SIMD;
-        
-        using NativeType = float32x4_t;
+
+        using NativeType = __f32x4;
         using ElementType = float;
         using MaskType = m32<ElementCount, true, SIMD>;
         using MaskTypeArg = m32<ElementCount, true, SIMD>;
@@ -18,7 +18,7 @@ namespace FS
         FS_FORCEINLINE Register() = default;
         FS_FORCEINLINE Register( NativeType v ) : native( v ) { }
         FS_FORCEINLINE Register( float v ) : native( vdupq_n_f32( v ) ) { }
-        
+
         FS_FORCEINLINE NativeType GetNative() const
         {
             return native;
@@ -35,13 +35,13 @@ namespace FS
             native = vsubq_f32( native, rhs.native );
             return *this;
         }
-        
+
         FS_FORCEINLINE Register& operator *=( const Register& rhs )
         {
             native = vmulq_f32( native, rhs.native );
-            return *this;           
+            return *this;
         }
-        
+
         FS_FORCEINLINE Register& operator /=( const Register& rhs )
         {
             if constexpr( SIMD & FastSIMD::FeatureFlag::AARCH64 )
@@ -58,63 +58,63 @@ namespace FS
                 native = vmulq_f32( native, reciprocal );
             }
 
-            return *this;           
+            return *this;
         }
-            
+
         FS_FORCEINLINE Register& operator &=( const Register& rhs )
         {
             native = vreinterpretq_f32_u32( vandq_u32( vreinterpretq_u32_f32( native ), vreinterpretq_u32_f32( rhs.native ) ) );
             return *this;
         }
-        
+
         FS_FORCEINLINE Register& operator |=( const Register& rhs )
         {
             native = vreinterpretq_f32_u32( vorrq_u32( vreinterpretq_u32_f32( native ), vreinterpretq_u32_f32( rhs.native ) ) );
             return *this;
         }
-        
+
         FS_FORCEINLINE Register& operator ^=( const Register& rhs )
         {
             native = vreinterpretq_f32_u32( veorq_u32( vreinterpretq_u32_f32( native ), vreinterpretq_u32_f32( rhs.native ) ) );
             return *this;
-        }        
+        }
 
         FS_FORCEINLINE Register operator~() const
         {
-            return vreinterpretq_f32_u32( vmvnq_u32( vreinterpretq_u32_f32( native ) ) );        
+            return vreinterpretq_f32_u32( vmvnq_u32( vreinterpretq_u32_f32( native ) ) );
         }
 
         FS_FORCEINLINE Register operator-() const
         {
             return vnegq_f32( native );
         }
-        
-        
+
+
         FS_FORCEINLINE MaskType operator ==( const Register& rhs ) const
         {
             return vceqq_f32( native, rhs.native );
         }
-        
+
         FS_FORCEINLINE MaskType operator !=( const Register& rhs ) const
         {
             return ~( *this == rhs );
         }
-        
+
         FS_FORCEINLINE MaskType operator >=( const Register& rhs ) const
         {
             return vcgeq_f32( native, rhs.native );
         }
-        
+
         FS_FORCEINLINE MaskType operator <=( const Register& rhs ) const
         {
             return vcleq_f32( native, rhs.native );
         }
-        
+
         FS_FORCEINLINE MaskType operator >( const Register& rhs ) const
         {
             return vcgtq_f32( native, rhs.native );
         }
-        
+
         FS_FORCEINLINE MaskType operator <( const Register& rhs ) const
         {
             return vcltq_f32( native, rhs.native );
@@ -122,14 +122,14 @@ namespace FS
 
         NativeType native;
     };
-    
-    
+
+
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Load( TypeWrapper<const float*, 4, SIMD> ptr )
     {
         return vld1q_f32( ptr.value );
     }
-    
+
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE void Store( typename f32<4, SIMD>::ElementType* ptr, const f32<4, SIMD>& a )
     {
@@ -147,7 +147,7 @@ namespace FS
     {
         return vabsq_f32( a.native );
     }
-    
+
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Round( const f32<4, SIMD>& a )
     {
@@ -176,19 +176,19 @@ namespace FS
     {
         return vrndpq_f32( a.native );
     }
-        
+
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Min( const f32<4, SIMD>& a, const f32<4, SIMD>& b )
     {
         return vminq_f32( a.native, b.native );
     }
-        
+
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Max( const f32<4, SIMD>& a, const f32<4, SIMD>& b )
     {
         return vmaxq_f32( a.native, b.native );
     }
-        
+
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Select( const typename f32<4, SIMD>::MaskTypeArg& mask, const f32<4, SIMD>& ifTrue, const f32<4, SIMD>& ifFalse )
     {
@@ -199,7 +199,7 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Masked( const typename f32<4, SIMD>::MaskTypeArg& mask, const f32<4, SIMD>& a )
     {
-        return vreinterpretq_f32_u32( vandq_u32( vreinterpretq_u32_f32( a.native ), mask.native ) );  
+        return vreinterpretq_f32_u32( vandq_u32( vreinterpretq_u32_f32( a.native ), mask.native ) );
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
@@ -214,18 +214,18 @@ namespace FS
         return vaddq_f32( a.native, vcvtq_f32_s32( vreinterpretq_s32_u32( mask.native ) ) );
     }
 
-    
+
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Reciprocal( const f32<4, SIMD>& a )
     {
         float32x4_t recip = vrecpeq_f32( a.native );
         return vmulq_f32( recip, vrecpsq_f32( recip, a.native ) );
     }
-    
+
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> InvSqrt( const f32<4, SIMD>& a )
     {
-        float32x4_t rsqrt = vrsqrteq_f32( a.native );      
+        float32x4_t rsqrt = vrsqrteq_f32( a.native );
         return vmulq_f32( rsqrt, vrsqrtsq_f32( vmulq_f32( a.native, rsqrt ), rsqrt ) );
     }
 
