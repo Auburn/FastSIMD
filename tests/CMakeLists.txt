@@ -5,7 +5,8 @@ add_executable(test "test.cpp")
 target_link_libraries(test PRIVATE FastSIMD test_simd)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
-  target_link_options(test PRIVATE -sALLOW_MEMORY_GROWTH=1)
+  set(CMAKE_EXECUTABLE_SUFFIX ".html")
+  target_link_options(test PRIVATE -sALLOW_MEMORY_GROWTH=1 -sSINGLE_FILE)
 endif()
 
 # Enable Warnings
