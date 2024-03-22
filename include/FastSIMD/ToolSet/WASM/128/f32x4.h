@@ -156,13 +156,13 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Min( const f32<4, SIMD>& a, const f32<4, SIMD>& b )
     {
-        return wasm_f32x4_min( a.native, b.native );
+        return wasm_f32x4_pmin( a.native, b.native );
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Max( const f32<4, SIMD>& a, const f32<4, SIMD>& b )
     {
-        return wasm_f32x4_max( a.native, b.native );
+        return wasm_f32x4_pmax( a.native, b.native );
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
