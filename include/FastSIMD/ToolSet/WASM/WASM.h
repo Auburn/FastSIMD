@@ -13,22 +13,7 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE i32<4, SIMD> Convert( const f32<4, SIMD>& a, TypeDummy<int32_t> )
     {
-        // no direct alternative in WASM, cannot be vectorized
-        // https://emscripten.org/docs/porting/simd.html
-        // TODO: optimize
-        union {
-            int32_t x[4];
-            v128_t m;
-        } u;
-        for(int i = 0; i < 4; ++i)
-        {
-            int x = lrint(a.native[i]);
-            if (x != 0 || fabs(a.native[i]) < 2.0)
-                u.x[i] = x;
-            else
-                u.x[i] = (int)0x80000000;
-        }
-        return u.m;
+        return wasm_i32x4_trunc_sat_f32x4( Round( a ).native );
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
