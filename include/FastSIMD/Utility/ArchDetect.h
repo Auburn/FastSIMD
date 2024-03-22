@@ -3,13 +3,16 @@
 
 #define FASTSIMD_ARCH_VALUE_X86() 1
 #define FASTSIMD_ARCH_VALUE_ARM() 2
+#define FASTSIMD_ARCH_VALUE_WASM() 3
 
 #define FASTSIMD_FEATURE_VALUE_SCALAR() 1
 
 // -- Web Assembly --
-#if defined( __EMSCRIPTEN__ )
+#if defined( __EMSCRIPTEN__ ) || defined(EMSCRIPTEN)
 #define FASTSIMD_ARCH_WASM() 1
-#define FASTSIMD_ARCH_NAME() WASM=FASTSIMD_ARCH_WASM()
+#define FASTSIMD_ARCH_DETECT() WASM
+#define FASTSIMD_FEATURE_DETECT() FASTSIMD_ARCH_WASM()
+#define FASTSIMD_FEATURE_VALUE_WASM() 2
 
 // -- ARM --
 #elif defined( __arm__ ) || defined( __TARGET_ARCH_ARM ) || defined( _M_ARM ) || defined( _M_ARM64 ) || defined( __aarch64__ ) || defined( __ARM64__ )
@@ -17,7 +20,7 @@
 #define FASTSIMD_FEATURE_VALUE_NEON() 2
 #define FASTSIMD_FEATURE_VALUE_NEON_FMA() 3
 #define FASTSIMD_FEATURE_VALUE_AARCH64() 4
-#define FASTSIMD_FEATURE_VALUE_AARCH64_FMA() 5 
+#define FASTSIMD_FEATURE_VALUE_AARCH64_FMA() 5
 
 #if defined( __ARM64_ARCH_8__ ) || defined( __aarch64__ ) || defined( __ARMv8__ ) || defined( __ARMv8_A__ ) || defined( _M_ARM64 ) || defined( __ARM_NEON__ )
 #define FASTSIMD_FEATURE_DETECT() AARCH64
@@ -39,7 +42,7 @@
 #define FASTSIMD_FEATURE_VALUE_SSE() 2
 #define FASTSIMD_FEATURE_VALUE_SSE2() 3
 #define FASTSIMD_FEATURE_VALUE_SSE3() 4
-#define FASTSIMD_FEATURE_VALUE_SSSE3() 5             
+#define FASTSIMD_FEATURE_VALUE_SSSE3() 5
 #define FASTSIMD_FEATURE_VALUE_SSE41() 6
 #define FASTSIMD_FEATURE_VALUE_SSE42() 7
 #define FASTSIMD_FEATURE_VALUE_AVX() 8
