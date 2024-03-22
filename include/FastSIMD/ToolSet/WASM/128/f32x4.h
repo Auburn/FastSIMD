@@ -212,8 +212,20 @@ namespace FS
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
+    FS_FORCEINLINE f32<4, SIMD> FMulSub( const f32<4, SIMD>& a, const f32<4, SIMD>& b, const f32<4, SIMD>& c )
+    {
+        return wasm_f32x4_relaxed_msub( c.native, a.native, b.native );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
     FS_FORCEINLINE f32<4, SIMD> FNMulAdd( const f32<4, SIMD>& a, const f32<4, SIMD>& b, const f32<4, SIMD>& c )
     {
         return wasm_f32x4_relaxed_nmadd( c.native, a.native, b.native );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
+    FS_FORCEINLINE f32<4, SIMD> FNMulSub( const f32<4, SIMD>& a, const f32<4, SIMD>& b, const f32<4, SIMD>& c )
+    {
+        return wasm_f32x4_relaxed_nmsub( c.native, a.native, b.native );
     }
 }

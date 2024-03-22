@@ -406,11 +406,11 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
 
         RegisterTest( tests, "i32 convert to f32", []( TestRegi32 a ) { return FS::Convert<float>( a ); } );
         RegisterTest( tests, "i32 cast to f32", []( TestRegi32 a ) { return FS::Cast<float>( a ); } );
-        RegisterTest( tests, "f32 convert to i32", []( TestRegf32 a ) { return FS::Convert<int32_t>( FS::Min( FS::Max( a, TestRegf32( INT32_MIN ) ), TestRegf32( -(float)INT32_MIN ) ) ); } );
+        RegisterTest( tests, "f32 convert to i32", []( TestRegf32 a ) { return FS::Convert<int32_t>( FS::Min( FS::Max( a, TestRegf32( 2147483648 ) ), TestRegf32( 2147483520 ) ) ); } );
         RegisterTest( tests, "f32 cast to i32", []( TestRegf32 a ) { return FS::Cast<int32_t>( a ); } );
 
         return tests;
     }
 };
 
-template class FastSIMD::RegisterDispatchClass<TestFastSIMD<512 / 8>>;
+template class FastSIMD::RegisterDispatchClass<TestFastSIMD<kTestBytes>>;

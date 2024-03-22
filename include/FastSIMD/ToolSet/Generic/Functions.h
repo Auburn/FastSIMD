@@ -238,7 +238,7 @@ namespace FS
         }
     }
     
-    // FMulAdd (a * b) + c
+    // FMulAdd: (a * b) + c
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> FMulAdd( const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b, const Register<T, N, SIMD>& c )
     {
@@ -252,7 +252,21 @@ namespace FS
         }
     }
     
-    // FNMulAdd -(a * b) + c
+    // FMulSub: (a * b) - c
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> FMulSub( const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b, const Register<T, N, SIMD>& c )
+    {
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return (a * b) - c;
+        }
+        else
+        {        
+            return Register<T, N, SIMD>{ FMulSub( a.v0, b.v0, c.v0 ), FMulSub( a.v1, b.v1, c.v1 ) };
+        }
+    }
+    
+    // FNMulAdd: -(a * b) + c
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> FNMulAdd( const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b, const Register<T, N, SIMD>& c )
     {
@@ -263,6 +277,20 @@ namespace FS
         else
         {        
             return Register<T, N, SIMD>{ FNMulAdd( a.v0, b.v0, c.v0 ), FNMulAdd( a.v1, b.v1, c.v1 ) };
+        }
+    }
+    
+    // FNMulSub: -(a * b) - c
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> FNMulSub( const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b, const Register<T, N, SIMD>& c )
+    {
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return -c - (a * b);
+        }
+        else
+        {        
+            return Register<T, N, SIMD> { FNMulSub( a.v0, b.v0, c.v0 ), FNMulSub( a.v1, b.v1, c.v1 ) };
         }
     }
     
@@ -418,7 +446,7 @@ namespace FS
         }
     }
     
-    // Reciprocal
+    // Reciprocal: 1 / a
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Reciprocal( const Register<T, N, SIMD>& a )
     {
@@ -432,7 +460,7 @@ namespace FS
         }
     }
     
-    // Inv Sqrt
+    // Inv Sqrt: 1 / sqrt( a )
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> InvSqrt( const Register<T, N, SIMD>& a )
     {

@@ -279,7 +279,7 @@ int main()
 {
     GenerateRandomValues();
 
-    TestRunner<512 / 8>::Run();
+    TestRunner<kTestBytes>::Run();
 
     return 0;
 }

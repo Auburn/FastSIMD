@@ -6,6 +6,8 @@
 #include <string_view>
 #include <vector>
 
+constexpr size_t kTestBytes = 512 / 8;
+
 struct TestResult
 {
     uint8_t returnCount;
