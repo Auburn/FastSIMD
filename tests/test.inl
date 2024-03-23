@@ -353,7 +353,9 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
         RegisterTest( tests, "f32 divide operator", std::divides<TestRegf32>() ).accuracy = 64;
 
         RegisterTest( tests, "f32 fused multiply add", []( TestRegf32 a, TestRegf32 b ) { return FS::FMulAdd( a, TestRegf32( -1 ), b ); } );
+        RegisterTest( tests, "f32 fused multiply sub", []( TestRegf32 a, TestRegf32 b ) { return FS::FMulSub( a, TestRegf32( -1 ), b ); } );
         RegisterTest( tests, "f32 fused negative multiply add", []( TestRegf32 a, TestRegf32 b ) { return FS::FNMulAdd( a, TestRegf32( -1 ), b ); } );
+        RegisterTest( tests, "f32 fused negative multiply sub", []( TestRegf32 a, TestRegf32 b ) { return FS::FNMulSub( a, TestRegf32( -1 ), b ); } );
         
         RegisterTest( tests, "f32 bit and operator", std::bit_and<TestRegf32>() );
         RegisterTest( tests, "f32 bit or operator", std::bit_or<TestRegf32>() );
