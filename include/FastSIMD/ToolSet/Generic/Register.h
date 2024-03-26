@@ -287,6 +287,9 @@ namespace FS
     template<typename T>
     constexpr bool IsNativeV = IsNative<T>::value;
 
+    template<auto T = 0>
+    using EnableIfRelaxed = std::enable_if_t<FastSIMD::IsRelaxed<T>()>;
+
 
     template<std::size_t N, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault()>
     using i32 = Register<std::int32_t, N, SIMD>;

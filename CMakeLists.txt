@@ -30,6 +30,10 @@ else()
     target_compile_definitions(FastSIMD PUBLIC FASTSIMD_STATIC_LIB)
 endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    target_compile_options(FastSIMD PUBLIC "-msimd128")
+endif()
+
 target_include_directories(FastSIMD PUBLIC 
     $<BUILD_INTERFACE:${FastSIMD_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>

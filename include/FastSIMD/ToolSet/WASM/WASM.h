@@ -13,7 +13,14 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE i32<4, SIMD> Convert( const f32<4, SIMD>& a, TypeDummy<int32_t> )
     {
-        return wasm_i32x4_trunc_sat_f32x4( Round( a ).native );
+        if constexpr( FastSIMD::IsRelaxed() )
+        {
+            return wasm_i32x4_relaxed_trunc_f32x4( Round( a ).native );
+        }
+        else
+        {
+            return wasm_i32x4_trunc_sat_f32x4( Round( a ).native );
+        }
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>

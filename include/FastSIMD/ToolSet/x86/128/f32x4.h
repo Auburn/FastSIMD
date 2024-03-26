@@ -247,15 +247,21 @@ namespace FS
     }
 
     
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = EnableIfRelaxed<SIMD>()>
     FS_FORCEINLINE f32<4, SIMD> Reciprocal( const f32<4, SIMD>& a )
     {            
         return _mm_rcp_ps( a.native );
     }
     
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = EnableIfRelaxed<SIMD>()>
     FS_FORCEINLINE f32<4, SIMD> InvSqrt( const f32<4, SIMD>& a )
     {            
         return _mm_rsqrt_ps( a.native );
+    }
+    
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE f32<4, SIMD> Sqrt( const f32<4, SIMD>& a )
+    {            
+        return _mm_sqrt_ps( a.native );
     }
 }

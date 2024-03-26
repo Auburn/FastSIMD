@@ -7,8 +7,6 @@ namespace FastSIMD
 {
     enum class FeatureFlag
     {
-        FMA,
-
         Scalar,
 
         x86,
@@ -29,7 +27,7 @@ namespace FastSIMD
         NEON,
         AARCH64,
 
-        WASM
+        WASM,
     };
 
     constexpr std::uint32_t operator |( FeatureFlag a, FeatureFlag b )
@@ -55,16 +53,11 @@ namespace FastSIMD
         SSE41       =            SSSE3 | FeatureFlag::SSE41,
         SSE42       =            SSE41 | FeatureFlag::SSE42,
         AVX         =            SSE42 | FeatureFlag::AVX,
-        AVX_FMA     =              AVX | FeatureFlag::FMA,
         AVX2        =              AVX | FeatureFlag::AVX2,
-        AVX2_FMA    =             AVX2 | FeatureFlag::FMA,
         AVX512      =             AVX2 | FeatureFlag::AVX512_F | FeatureFlag::AVX512_VL | FeatureFlag::AVX512_DQ | FeatureFlag::AVX512_BW,
-        AVX512_FMA  =           AVX512 | FeatureFlag::FMA,
 
         NEON        = FeatureFlag::ARM | FeatureFlag::NEON,
-        NEON_FMA    =             NEON | FeatureFlag::FMA,
         AARCH64     =             NEON | FeatureFlag::AARCH64,
-        AARCH64_FMA =          AARCH64 | FeatureFlag::FMA,
 
         WASM        =          Invalid | FeatureFlag::WASM,
 

@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 #include <random>
+#include <string>
 
 #include <FastSIMD/test_simd_config.h>
 
@@ -75,12 +76,20 @@ struct TestRunner
             if( HEAD <= FastSIMD::DetectCpuMaxFeatureSet() )
             {
                 std::cout << "Generating Tests: " << FastSIMD::GetFeatureSetString( HEAD ) << std::endl;
+                {
+                    std::unique_ptr<TestFastSIMD<RegisterBytes, true>> testSimd( FastSIMD::NewDispatchClass<TestFastSIMD<RegisterBytes, true>>( HEAD ) );
 
-                std::unique_ptr<TestFastSIMD<RegisterBytes>> testSimd( FastSIMD::NewDispatchClass<TestFastSIMD<RegisterBytes>>( HEAD ) );
+                    TestCollection simdCollection = testSimd->RegisterTests();
 
-                TestCollection simdCollection = testSimd->RegisterTests();
+                    collections.insert( collections.begin(), simdCollection.begin(), simdCollection.end() );
+                }
+                {
+                    std::unique_ptr<TestFastSIMD<RegisterBytes, false>> testSimd( FastSIMD::NewDispatchClass<TestFastSIMD<RegisterBytes, false>>( HEAD ) );
 
-                collections.insert( collections.begin(), simdCollection.begin(), simdCollection.end() );
+                    TestCollection simdCollection = testSimd->RegisterTests();
+
+                    collections.insert( collections.begin(), simdCollection.begin(), simdCollection.end() );
+                }
             }
 
             return collections;
@@ -233,13 +242,22 @@ struct TestRunner
                         std::cerr << "Tests do not match: " << testName; 
                         throw std::exception();
                     }
-                    else if( test.featureSet == FastSIMD::FeatureSet::SCALAR )
+                    if( test.featureSet == FastSIMD::FeatureSet::SCALAR && !test.relaxed )
                     {
                         std::cerr << "Multiple tests with same name: " << testName; 
                         throw std::exception();
                     }
 
-                    if( !CompareOutputs( testName, test.featureSet, test.returnType, test.accuracy, outputCount, scalarResults, simdResults ) )
+                    std::string testNameRelaxed = testName.data();
+                    float accuracy = 0;
+
+                    if( test.relaxed )
+                    {
+                        testNameRelaxed += " RELAXED";
+                        accuracy = test.relaxedAccuracy;
+                    }
+
+                    if( !CompareOutputs( testNameRelaxed, test.featureSet, test.returnType, accuracy, outputCount, scalarResults, simdResults ) )
                     {
                         std::cerr << "Inputs: " << tests[0].inputsFunc( idx, rndInts, rndFloats ) << std::endl;
                         failed = true;
@@ -259,7 +277,7 @@ struct TestRunner
 
     static void Run()
     {
-        std::cout << "Starting Tests Register Size: " << RegisterBytes * 8 << " (" << RegisterBytes << "b)" << std::endl;
+        std::cout << "Starting Tests - Register Size: " << RegisterBytes * 8 << " (" << RegisterBytes << "b)" << std::endl;
 
         TestSet testSet = TestOrganiser<FastSIMD::test_simd::CompiledFeatureSets>::GetSet();
 

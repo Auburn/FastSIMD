@@ -76,8 +76,8 @@ template<typename T, size_t N, FastSIMD::FeatureSet S>
 static constexpr size_t GetReturnCount<FS::Register<T, N, S>> = N;
 
 
-template<FastSIMD::FeatureSet SIMD, size_t RegisterBytes>
-class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFastSIMD<RegisterBytes>
+template<FastSIMD::FeatureSet SIMD, size_t RegisterBytes, bool Relaxed>
+class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : public TestFastSIMD<RegisterBytes, Relaxed>
 {
     template<typename T>
     using TestReg = FS::Register<T, RegisterBytes / sizeof( T )>;
@@ -263,6 +263,7 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
     {
         TestData data;
         data.featureSet = SIMD;
+        data.relaxed = FastSIMD::IsRelaxed();
         data.returnType = GetReturn<typename TestFunctionFactory<FUNC>::ReturnType>::Type;
 
         data.testFunc = TestFunctionFactory<FUNC>::Create( func );
@@ -350,7 +351,7 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
         RegisterTest( tests, "f32 plus operator", std::plus<TestRegf32>() );
         RegisterTest( tests, "f32 minus operator", std::minus<TestRegf32>() );
         RegisterTest( tests, "f32 multiply operator", std::multiplies<TestRegf32>() );
-        RegisterTest( tests, "f32 divide operator", std::divides<TestRegf32>() ).accuracy = 64;
+        RegisterTest( tests, "f32 divide operator", std::divides<TestRegf32>() ).relaxedAccuracy = 64;
 
         RegisterTest( tests, "f32 fused multiply add", []( TestRegf32 a, TestRegf32 b ) { return FS::FMulAdd( a, TestRegf32( -1 ), b ); } );
         RegisterTest( tests, "f32 fused multiply sub", []( TestRegf32 a, TestRegf32 b ) { return FS::FMulSub( a, TestRegf32( -1 ), b ); } );
@@ -394,17 +395,18 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
         RegisterTest( tests, "f32 ceil", []( TestRegf32 a ) { return FS::Ceil( a ); } );
         RegisterTest( tests, "f32 floor", []( TestRegf32 a ) { return FS::Floor( a ); } );
 
-        RegisterTest( tests, "f32 inv sqrt", []( TestRegf32 a ) { return FS::InvSqrt( FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-16f ) ), TestRegf32( 1.e+16f ) ) ); } ).accuracy = 8192;
+        RegisterTest( tests, "f32 sqrt", []( TestRegf32 a ) { return FS::Sqrt( FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-16f ) ), TestRegf32( 1.e+16f ) ) ); } );
+        RegisterTest( tests, "f32 inv sqrt", []( TestRegf32 a ) { return FS::InvSqrt( FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-16f ) ), TestRegf32( 1.e+16f ) ) ); } ).relaxedAccuracy = 8192;
         RegisterTest( tests, "f32 reciprocal", []( TestRegf32 a ) {
             TestRegf32 clamped = FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-16f ) ), TestRegf32( 1.e+16f ) );
             return FS::Reciprocal( FS::Select( a > TestRegf32( 0 ), clamped, -clamped ) );
-        } ).accuracy = 8192;
+        } ).relaxedAccuracy = 8192;
 
-        RegisterTest( tests, "f32 cos", []( TestRegf32 a ) { return FS::Cos( a ); } ).accuracy = 8192;
-        RegisterTest( tests, "f32 sin", []( TestRegf32 a ) { return FS::Sin( a ); } ).accuracy = 8192;
-        RegisterTest( tests, "f32 exp", []( TestRegf32 a ) { return FS::Exp( a ); } ).accuracy = 8192;
-        RegisterTest( tests, "f32 log", []( TestRegf32 a ) { return FS::Log( a ); } ).accuracy = 8192;
-        RegisterTest( tests, "f32 pow", []( TestRegf32 a, TestRegf32 b ) { return FS::Pow( a, b ); } ).accuracy = 8192;
+        RegisterTest( tests, "f32 cos", []( TestRegf32 a ) { return FS::Cos( a ); } ).relaxedAccuracy = 8192;
+        RegisterTest( tests, "f32 sin", []( TestRegf32 a ) { return FS::Sin( a ); } ).relaxedAccuracy = 8192;
+        RegisterTest( tests, "f32 exp", []( TestRegf32 a ) { return FS::Exp( a ); } ).relaxedAccuracy = 8192;
+        RegisterTest( tests, "f32 log", []( TestRegf32 a ) { return FS::Log( a ); } ).relaxedAccuracy = 8192;
+        RegisterTest( tests, "f32 pow", []( TestRegf32 a, TestRegf32 b ) { return FS::Pow( a, b ); } ).relaxedAccuracy = 8192;
 
         RegisterTest( tests, "i32 convert to f32", []( TestRegi32 a ) { return FS::Convert<float>( a ); } );
         RegisterTest( tests, "i32 cast to f32", []( TestRegi32 a ) { return FS::Cast<float>( a ); } );
@@ -415,4 +417,4 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes>, SIMD> : public TestFa
     }
 };
 
-template class FastSIMD::RegisterDispatchClass<TestFastSIMD<kTestBytes>>;
+template class FastSIMD::RegisterDispatchClass<TestFastSIMD<kTestBytes, FastSIMD::IsRelaxed()>>;

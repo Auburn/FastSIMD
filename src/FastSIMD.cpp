@@ -1,12 +1,6 @@
-#include <FastSIMD/Utility/ArchDetect.h>
-#include <FastSIMD/Utility/FeatureEnums.h>
+#include <FastSIMD/ToolSet.h>
 
 #if FASTSIMD_CURRENT_ARCH_IS( X86 )
-#ifdef __GNUG__
-#include <x86intrin.h>
-#else
-#include <intrin.h>
-#endif
 
 // Define interface to cpuid instruction.
 // input:  eax = functionnumber, ecx = 0
@@ -84,7 +78,7 @@ namespace FastSIMD
 #if FASTSIMD_CURRENT_ARCH_IS( X86 )
     static std::uint32_t DetectCpuSupportedFlags()
     {
-        std::uint32_t supportedFlags = FastSIMD::FeatureFlag::x86 | FastSIMD::FeatureFlag::Scalar;
+        std::uint32_t supportedFlags = FeatureFlag::x86 | FeatureFlag::Scalar;
 
         //#if FASTSIMD_x86
         int abcd[4] = { 0, 0, 0, 0 }; // cpuid results
@@ -140,10 +134,6 @@ namespace FastSIMD
         supportedFlags = supportedFlags | FeatureFlag::SSE42;
         // SSE4.2 supported
 
-        if( ( abcd[2] >> 12 & 1 ) == 1 )
-            supportedFlags = supportedFlags | FeatureFlag::FMA;
-        // FMA3 supported
-
         if( ( abcd[2] >> 26 & 1 ) == 0 )
             return supportedFlags; // no XSAVE
         if( ( abcd[2] >> 27 & 1 ) == 0 )
@@ -156,6 +146,12 @@ namespace FastSIMD
             return supportedFlags; // AVX not enabled in O.S.
         supportedFlags = supportedFlags | FeatureFlag::AVX;
         // AVX supported
+
+        if constexpr( IsRelaxed() )
+        {
+            if( ( abcd[2] >> 12 & 1 ) == 0 )
+                return supportedFlags; // no FMA3
+        }
 
         cpuid( abcd, 7 ); // call cpuid leaf 7 for feature flags
         if( ( abcd[1] >> 5 & 1 ) == 0 )
@@ -197,8 +193,7 @@ namespace FastSIMD
             FastSIMD::FeatureFlag::ARM |
             FastSIMD::FeatureFlag::Scalar |
             FastSIMD::FeatureFlag::NEON |
-            FastSIMD::FeatureFlag::AARCH64 |
-            FastSIMD::FeatureFlag::FMA;
+            FastSIMD::FeatureFlag::AARCH64;
 
         return supportedFlags;
     }
@@ -226,32 +221,27 @@ namespace FastSIMD
         FeatureSet::SSE41,
         FeatureSet::SSE42,
         FeatureSet::AVX,
-        FeatureSet::AVX_FMA,
         FeatureSet::AVX2,
-        FeatureSet::AVX2_FMA,
         FeatureSet::AVX512,
-        FeatureSet::AVX512_FMA,
 
 #elif FASTSIMD_CURRENT_ARCH_IS( ARM )
         FeatureSet::NEON,
-        FeatureSet::NEON_FMA,
         FeatureSet::AARCH64,
-        FeatureSet::AARCH64_FMA,
 
 #elif FASTSIMD_CURRENT_ARCH_IS( WASM )
         FeatureSet::WASM,
 #endif
     };
 
-    FASTSIMD_API FastSIMD::FeatureSet DetectCpuMaxFeatureSet()
+    FASTSIMD_API FeatureSet DetectCpuMaxFeatureSet()
     {
-        static FastSIMD::FeatureSet cache = []
+        static FeatureSet cache = []
         {
             std::uint32_t supportedFlags = DetectCpuSupportedFlags();
 
             FeatureSet maxSupported = FeatureSet::Invalid;
 
-            for( FeatureSet featureSet: FeatureSetValues )
+            for( FeatureSet featureSet : FeatureSetValues )
             {
                 // Check if feature set contains unsupported flags
                 if( ( static_cast<std::uint32_t>( featureSet ) ^ supportedFlags ) & ~supportedFlags )
@@ -281,15 +271,10 @@ namespace FastSIMD
             case FeatureSet::SSE41: return "SSE4.1";
             case FeatureSet::SSE42: return "SSE4.2";
             case FeatureSet::AVX: return "AVX";
-            case FeatureSet::AVX_FMA: return "AVX_FMA";
             case FeatureSet::AVX2: return "AVX2";
-            case FeatureSet::AVX2_FMA: return "AVX2_FMA";
             case FeatureSet::AVX512: return "AVX512";
-            case FeatureSet::AVX512_FMA: return "AVX512_FMA";
             case FeatureSet::NEON: return "NEON";
-            case FeatureSet::NEON_FMA: return "NEON_FMA";
             case FeatureSet::AARCH64: return "AARCH64";
-            case FeatureSet::AARCH64_FMA: return "AARCH64_FMA";
             case FeatureSet::WASM: return "WASM";
             case FeatureSet::Max: return "Max";
         }

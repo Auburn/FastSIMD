@@ -464,8 +464,22 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> InvSqrt( const Register<T, N, SIMD>& a )
     {
-        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::InvSqrt not supported with provided types" ); 
-        return Register<T, N, SIMD>{ InvSqrt( a.v0 ), InvSqrt( a.v1 ) };        
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return Register<T, N, SIMD>( 1 ) / Sqrt( a );
+        }
+        else
+        {
+            return Register<T, N, SIMD>{ InvSqrt( a.v0 ), InvSqrt( a.v1 ) };
+        }   
+    }
+
+    // Sqrt
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> Sqrt( const Register<T, N, SIMD>& a )
+    {
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::Sqrt not supported with provided types" );
+        return Register<T, N, SIMD>{ Sqrt( a.v0 ), Sqrt( a.v1 ) };
     }
 
     template<std::size_t N, FastSIMD::FeatureSet SIMD>

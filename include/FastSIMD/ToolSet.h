@@ -12,6 +12,12 @@ namespace FastSIMD
     {
         return SIMD;
     }
+
+    template<auto = 0, bool RELAXED = FASTSIMD_IS_RELAXED>
+    static constexpr bool IsRelaxed()
+    {
+        return RELAXED;
+    }
 } // namespace FastSIMD
 
 #include "ToolSet/Generic/Functions.h"

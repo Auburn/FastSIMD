@@ -58,8 +58,8 @@ namespace FastSIMD
     };
 
 
-    template<typename T, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE static T* DispatchClassFactoryIterator( FastSIMD::FeatureSet maxFeatureSet, MemoryAllocator allocator )
+    template<typename T, FeatureSet SIMD>
+    FS_FORCEINLINE static T* DispatchClassFactoryIterator( FeatureSet maxFeatureSet, MemoryAllocator allocator )
     {
         if( maxFeatureSet < SIMD )
         {
@@ -68,7 +68,7 @@ namespace FastSIMD
 
         constexpr auto NextCompiled = FastSIMD::FASTSIMD_LIBRARY_NAME::CompiledFeatureSets::NextAfter<SIMD>;
 
-        if constexpr( NextCompiled != FastSIMD::FeatureSet::Max )
+        if constexpr( NextCompiled != FeatureSet::Max )
         {
             if( maxFeatureSet >= NextCompiled )
             {
@@ -80,7 +80,7 @@ namespace FastSIMD
     }
 
     template<typename T>
-    FASTSIMD_API T* NewDispatchClass( FastSIMD::FeatureSet maxFeatureSet, MemoryAllocator allocator )
+    FASTSIMD_API T* NewDispatchClass( FeatureSet maxFeatureSet, MemoryAllocator allocator )
     {
         if( maxFeatureSet == FeatureSet::Max )
         {

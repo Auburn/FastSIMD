@@ -10,5 +10,5 @@ int main()
 
     auto out = FS::Masked( invSqrt != FS::f32<4>( INFINITY ), dist );
 
-    return 0;
+    return FS::Extract0( FS::Convert<int>( out ) );
 }

@@ -123,8 +123,8 @@ namespace FS
     
     
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>>
-    FS_FORCEINLINE f32<1, SIMD> InvSqrt( const f32<1, SIMD>& a )
+    FS_FORCEINLINE f32<1, SIMD> Sqrt( const f32<1, SIMD>& a )
     {
-        return 1 / std::sqrt( a.native.f );
+        return std::sqrt( a.native.f );
     }
 }

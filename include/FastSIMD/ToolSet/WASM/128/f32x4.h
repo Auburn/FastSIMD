@@ -156,13 +156,27 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Min( const f32<4, SIMD>& a, const f32<4, SIMD>& b )
     {
-        return wasm_f32x4_pmin( a.native, b.native );
+        if constexpr( FastSIMD::IsRelaxed() )
+        {
+            return wasm_f32x4_relaxed_min( a.native, b.native );        
+        }
+        else
+        {
+            return wasm_f32x4_min( a.native, b.native );
+        }
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Max( const f32<4, SIMD>& a, const f32<4, SIMD>& b )
     {
-        return wasm_f32x4_pmax( a.native, b.native );
+        if constexpr( FastSIMD::IsRelaxed() )
+        {
+            return wasm_f32x4_relaxed_max( a.native, b.native );
+        }
+        else
+        {
+            return wasm_f32x4_max( a.native, b.native );
+        }
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
@@ -182,50 +196,33 @@ namespace FS
     FS_FORCEINLINE f32<4, SIMD> MaskedIncrement( const typename f32<4, SIMD>::MaskTypeArg& mask, const f32<4, SIMD>& a )
     {
         return wasm_f32x4_sub( a.native,
-            wasm_f32x4_convert_i32x4(static_cast<v128_t>(mask.native)) );
+            wasm_f32x4_convert_i32x4( static_cast<v128_t>( mask.native ) ) );
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> MaskedDecrement( const typename f32<4, SIMD>::MaskTypeArg& mask, const f32<4, SIMD>& a )
     {
         return wasm_f32x4_add( a.native,
-            wasm_f32x4_convert_i32x4(static_cast<v128_t>(mask.native)) );
+            wasm_f32x4_convert_i32x4( static_cast<v128_t>( mask.native ) ) );
     }
 
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
-    FS_FORCEINLINE f32<4, SIMD> Reciprocal( const f32<4, SIMD>& a )
+    FS_FORCEINLINE f32<4, SIMD> Sqrt( const f32<4, SIMD>& a )
     {
-        return wasm_f32x4_div( f32<4, SIMD>{1.0f}.native, a.native );
+        return wasm_f32x4_sqrt( a.native );
     }
 
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
-    FS_FORCEINLINE f32<4, SIMD> InvSqrt( const f32<4, SIMD>& a )
-    {
-        return wasm_f32x4_div( f32<4, SIMD>{1.0f}.native, wasm_f32x4_sqrt( a.native ) );
-    }
 
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = EnableIfRelaxed<SIMD>()>
     FS_FORCEINLINE f32<4, SIMD> FMulAdd( const f32<4, SIMD>& a, const f32<4, SIMD>& b, const f32<4, SIMD>& c )
     {
         return wasm_f32x4_relaxed_madd( c.native, a.native, b.native );
     }
 
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
-    FS_FORCEINLINE f32<4, SIMD> FMulSub( const f32<4, SIMD>& a, const f32<4, SIMD>& b, const f32<4, SIMD>& c )
-    {
-        return wasm_f32x4_relaxed_msub( c.native, a.native, b.native );
-    }
-
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = EnableIfRelaxed<SIMD>()>
     FS_FORCEINLINE f32<4, SIMD> FNMulAdd( const f32<4, SIMD>& a, const f32<4, SIMD>& b, const f32<4, SIMD>& c )
     {
         return wasm_f32x4_relaxed_nmadd( c.native, a.native, b.native );
-    }
-
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
-    FS_FORCEINLINE f32<4, SIMD> FNMulSub( const f32<4, SIMD>& a, const f32<4, SIMD>& b, const f32<4, SIMD>& c )
-    {
-        return wasm_f32x4_relaxed_nmsub( c.native, a.native, b.native );
     }
 }

@@ -227,37 +227,43 @@ namespace FS
         return _mm512_mask_mul_ps( a.native, ~mask.native, a.native, b.native );
     }
     
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>, typename = EnableIfRelaxed<SIMD>()>
     FS_FORCEINLINE f32<16, SIMD> Reciprocal( const f32<16, SIMD>& a )
     {            
         return _mm512_rcp14_ps( a.native );
     }
     
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>, typename = EnableIfRelaxed<SIMD>()>
     FS_FORCEINLINE f32<16, SIMD> InvSqrt( const f32<16, SIMD>& a )
     {            
         return _mm512_rsqrt14_ps( a.native );
     }
+    
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>>
+    FS_FORCEINLINE f32<16, SIMD> Sqrt( const f32<16, SIMD>& a )
+    {            
+        return _mm512_sqrt_ps( a.native );
+    }
 
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>, typename = EnableIfRelaxed<SIMD>()>
     FS_FORCEINLINE f32<16, SIMD> FMulAdd( const f32<16, SIMD>& a, const f32<16, SIMD>& b, const f32<16, SIMD>& c )
     {
         return _mm512_fmadd_ps( a.native, b.native, c.native );
     }
 
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>, typename = EnableIfRelaxed<SIMD>()>
     FS_FORCEINLINE f32<16, SIMD> FMulSub( const f32<16, SIMD>& a, const f32<16, SIMD>& b, const f32<16, SIMD>& c )
     {
         return _mm512_fmsub_ps( a.native, b.native, c.native );
     }
 
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>, typename = EnableIfRelaxed<SIMD>()>
     FS_FORCEINLINE f32<16, SIMD> FNMulAdd( const f32<16, SIMD>& a, const f32<16, SIMD>& b, const f32<16, SIMD>& c )
     {
         return _mm512_fnmadd_ps( a.native, b.native, c.native );
     }
 
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>, typename = EnableIfRelaxed<SIMD>()>
     FS_FORCEINLINE f32<16, SIMD> FNMulSub( const f32<16, SIMD>& a, const f32<16, SIMD>& b, const f32<16, SIMD>& c )
     {
         return _mm512_fnmsub_ps( a.native, b.native, c.native );

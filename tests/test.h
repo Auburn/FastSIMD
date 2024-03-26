@@ -24,15 +24,16 @@ struct TestData
     };
     
     FastSIMD::FeatureSet featureSet;
+    bool relaxed;
     ReturnType returnType;
-    float accuracy = 0;
+    float relaxedAccuracy = 0;
     std::function<TestFunction> testFunc;
     std::function<InputsFunction> inputsFunc;
 };
 
 using TestCollection = std::vector<std::pair<std::string_view, TestData>>;
 
-template<size_t RegisterBytes>
+template<size_t RegisterBytes, bool Relaxed>
 class TestFastSIMD
 {
 public:
