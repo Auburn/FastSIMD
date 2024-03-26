@@ -1,6 +1,9 @@
 #include <FastSIMD/ToolSet.h>
 
 #if FASTSIMD_CURRENT_ARCH_IS( X86 )
+#if defined( _MSC_VER )
+#include <intrin.h>
+#endif
 
 // Define interface to cpuid instruction.
 // input:  eax = functionnumber, ecx = 0
