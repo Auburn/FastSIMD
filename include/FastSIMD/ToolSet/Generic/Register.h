@@ -5,6 +5,7 @@
 #include <utility>
 #include <tuple>
 
+#include <FastSIMD/Utility/ArchDetect.h>
 #include <FastSIMD/Utility/FeatureEnums.h>
 
 #ifdef _MSC_VER
@@ -15,7 +16,9 @@
 #define FS_NEVERINLINE __attribute__( ( noinline ) )
 #endif
 
-#ifdef __clang__
+#if FASTSIMD_CURRENT_ARCH_IS( WASM )
+#define FS_VECTORCALL
+#elif defined( __clang__ )
 #define FS_VECTORCALL __regcall
 #elif defined( _MSC_VER )
 #define FS_VECTORCALL __vectorcall

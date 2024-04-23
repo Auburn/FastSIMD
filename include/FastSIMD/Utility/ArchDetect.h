@@ -1,3 +1,4 @@
+#pragma once
 //Based on the Qt processor detection code, so should be very accurate
 //https: code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/global/qprocessordetection.h
 
