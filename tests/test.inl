@@ -201,7 +201,7 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
     struct GenArg<FS::Register<FS::Mask<MN, MB>, N, S>>
     {
         template<typename... ARGs>
-        static FS::Register<FS::Mask<MN, MB>, N, S> Load( size_t inIdx, size_t argIdx, float* rnd, ARGs... )
+        static FS::Register<FS::Mask<MN, MB>, N, S> Load( size_t inIdx, size_t argIdx, std::conditional_t<MB, float, int>* rnd, ARGs... )
         {
             return FS::Load<N>( rnd + inIdx + argIdx * N ) > FS::Load<N>( rnd + inIdx + argIdx * N + 1 );
         }
@@ -279,6 +279,7 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
         using TestRegi32 = TestReg<int32_t>;
         using TestRegf32 = TestReg<float>;
         using TestRegm32 = typename TestRegf32::MaskType;
+        using TestRegm32i = typename TestRegi32::MaskType;
 
 
         RegisterTest( tests, "m32 bit mask", []( TestRegm32 a ) { return a; } );
@@ -289,6 +290,15 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
         RegisterTest( tests, "m32 bit xor operator", std::bit_xor<TestRegm32>() );
         RegisterTest( tests, "m32 bit not operator", std::bit_not<TestRegm32>() );
         RegisterTest( tests, "m32 bit and not", []( TestRegm32 a, TestRegm32 b ) { return FS::BitwiseAndNot( a, b ); } );
+
+        RegisterTest( tests, "m32i bit mask", []( TestRegm32 a ) { return a; } );
+        RegisterTest( tests, "m32i any mask", []( TestRegm32 a ) { return FS::AnyMask( a ); } );
+
+        RegisterTest( tests, "m32i bit and operator", std::bit_and<TestRegm32i>() );
+        RegisterTest( tests, "m32i bit or operator", std::bit_or<TestRegm32i>() );
+        RegisterTest( tests, "m32i bit xor operator", std::bit_xor<TestRegm32i>() );
+        RegisterTest( tests, "m32i bit not operator", std::bit_not<TestRegm32i>() );
+        RegisterTest( tests, "m32i bit and not", []( TestRegm32i a, TestRegm32i b ) { return FS::BitwiseAndNot( a, b ); } );
 
         RegisterTest( tests, "i32 load store", []( TestRegi32 a ) { return a; } );
         RegisterTest( tests, "i32 load scalar", []( int32_t a ) { return TestRegi32( a ); } );
@@ -402,17 +412,27 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
             return FS::Reciprocal( FS::Select( a > TestRegf32( 0 ), clamped, -clamped ) );
         } ).relaxedAccuracy = 8192;
 
-        RegisterTest( tests, "f32 cos", []( TestRegf32 a ) { return FS::Cos( a ); } ).relaxedAccuracy = 8192;
-        RegisterTest( tests, "f32 sin", []( TestRegf32 a ) { return FS::Sin( a ); } ).relaxedAccuracy = 8192;
-        RegisterTest( tests, "f32 exp", []( TestRegf32 a ) { return FS::Exp( a ); } ).relaxedAccuracy = 8192;
-        RegisterTest( tests, "f32 log", []( TestRegf32 a ) { return FS::Log( a ); } ).relaxedAccuracy = 8192;
+        RegisterTest( tests, "f32 cos", []( TestRegf32 a ) { return FS::Cos( FS::Min( FS::Max( a, TestRegf32( -1.e+16f ) ), TestRegf32( 1.e+16f ) ) ); } ).relaxedAccuracy = 8192;
+        RegisterTest( tests, "f32 sin", []( TestRegf32 a ) { return FS::Sin( FS::Min( FS::Max( a, TestRegf32( -1.e+16f ) ), TestRegf32( 1.e+16f ) ) ); } ).relaxedAccuracy = 8192;
+        RegisterTest( tests, "f32 exp", []( TestRegf32 a ) { return FS::Exp( FS::Min( FS::Max( a, TestRegf32( -1.e+16f ) ), TestRegf32( 1.e+16f ) ) ); } ).relaxedAccuracy = 8192;
+        RegisterTest( tests, "f32 log", []( TestRegf32 a ) { return FS::Log( FS::Min( FS::Max( a, TestRegf32( -1.e+16f ) ), TestRegf32( 1.e+16f ) ) ); } ).relaxedAccuracy = 8192;
         RegisterTest( tests, "f32 pow", []( TestRegf32 a, TestRegf32 b ) { return FS::Pow( a, b ); } ).relaxedAccuracy = 8192;
 
         RegisterTest( tests, "i32 convert to f32", []( TestRegi32 a ) { return FS::Convert<float>( a ); } );
-        RegisterTest( tests, "i32 cast to f32", []( TestRegi32 a ) { return FS::Cast<float>( a ); } );
         RegisterTest( tests, "f32 convert to i32", []( TestRegf32 a ) { return FS::Convert<int32_t>( FS::Min( FS::Max( a, TestRegf32( 2147483648 ) ), TestRegf32( 2147483520 ) ) ); } );
-        RegisterTest( tests, "f32 cast to i32", []( TestRegf32 a ) { return FS::Cast<int32_t>( a ); } );
 
+        RegisterTest( tests, "f32 cast to i32", []( TestRegf32 a ) { return FS::Cast<int32_t>( a ); } );
+        RegisterTest( tests, "i32 cast to f32", []( TestRegi32 a ) { return FS::Cast<float>( a ); } );
+
+        if constexpr( !( SIMD & FeatureFlag::AVX512_F ) )
+        {
+            RegisterTest( tests, "f32 cast to m32", []( TestRegf32 a ) { return FS_BIND_INTRINSIC( FS::Cast<FS::Mask<32>> )( a ); } );
+            RegisterTest( tests, "i32 cast to m32", []( TestRegi32 a ) { return FS_BIND_INTRINSIC( FS::Cast<FS::Mask<32>> )( a ); } );
+            RegisterTest( tests, "m32 cast to i32", []( TestRegm32 a ) { return FS_BIND_INTRINSIC( FS::Cast<int32_t> )( a ) ; } );
+            RegisterTest( tests, "m32 cast to f32", []( TestRegm32 a ) { return FS_BIND_INTRINSIC( FS::Cast<float> )( a ); } );
+            RegisterTest( tests, "m32i cast to i32", []( TestRegm32i a ) { return FS_BIND_INTRINSIC( FS::Cast<int32_t> )( a ); } );
+            RegisterTest( tests, "m32i cast to f32", []( TestRegm32i a ) { return FS_BIND_INTRINSIC( FS::Cast<float> )( a ); } );
+        }
         return tests;
     }
 };

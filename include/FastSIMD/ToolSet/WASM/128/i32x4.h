@@ -12,7 +12,7 @@ namespace FS
 
         using NativeType = v128_t;
         using ElementType = std::int32_t;
-        using MaskType = m32<ElementCount, true, SIMD>;
+        using MaskType = m32<ElementCount, false, SIMD>;
         using MaskTypeArg = m32<ElementCount, true, SIMD>;
 
         FS_FORCEINLINE Register() = default;

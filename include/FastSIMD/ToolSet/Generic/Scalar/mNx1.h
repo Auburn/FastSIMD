@@ -4,49 +4,56 @@
 
 namespace FS
 {
-    template<FastSIMD::FeatureSet SIMD, size_t N>
-    struct Register<Mask<N, true>, 1, SIMD>
+    namespace impl
+    {
+        struct GenericMaskBase
+        {
+            bool native;
+        };
+    }
+
+    template<FastSIMD::FeatureSet SIMD, std::size_t N, bool OPTIMISE_FLOAT>
+    struct Register<Mask<N, OPTIMISE_FLOAT>, 1, SIMD>
+        : std::conditional_t<OPTIMISE_FLOAT, impl::GenericMaskBase, Register<Mask<N, true>, 1, SIMD>>
     {
         static constexpr size_t ElementCount = 1;
         static constexpr auto FeatureFlags = SIMD;
         
         using NativeType = bool;
-        using ElementType = Mask<N, true>;
+        using ElementType = Mask<N, OPTIMISE_FLOAT>;
         using MaskType = Register;
         using MaskTypeArg = Register;
 
         FS_FORCEINLINE Register() = default;
-        FS_FORCEINLINE Register( NativeType v ) : native( v ) { }
+        FS_FORCEINLINE Register( NativeType v ) { this->native = v; }
         
         FS_FORCEINLINE NativeType GetNative() const
         {
-            return native;
+            return this->native;
         }
 
         FS_FORCEINLINE Register& operator &=( const Register& rhs )
         {
-            native = native && rhs.native;
+            this->native = this->native && rhs.native;
             return *this;
         }
         
         FS_FORCEINLINE Register& operator |=( const Register& rhs )
         {
-            native = native || rhs.native;
+            this->native = this->native || rhs.native;
             return *this;
         }
         
         FS_FORCEINLINE Register& operator ^=( const Register& rhs )
         {
-            native = native ^ rhs.native;
+            this->native = this->native ^ rhs.native;
             return *this;
         }
         
         FS_FORCEINLINE Register operator ~() const
         {
-            return !native;   
+            return !this->native;   
         }
-
-        NativeType native;
     };
 
     template<FastSIMD::FeatureSet SIMD, size_t N, bool B, typename = EnableIfNative<Register<Mask<N, B>, 1, SIMD>>>
@@ -66,24 +73,4 @@ namespace FS
     {
         return static_cast<BitStorage<1>>( a.native );
     }
-
-    template<FastSIMD::FeatureSet SIMD, size_t N>
-    struct Register<Mask<N, false>, 1, SIMD> : Register<Mask<N, true>, 1, SIMD>
-    {
-        static constexpr size_t ElementCount = 1;
-        static constexpr auto FeatureFlags = SIMD;
-        
-        using NativeType = bool;
-        using ElementType = Mask<32, false>;
-        using MaskType = Register;
-        using MaskTypeArg = Register<Mask<N, true>, 1, SIMD>;
-
-        FS_FORCEINLINE Register() = default;
-        FS_FORCEINLINE Register( NativeType v ) : Register<Mask<N, true>, 1, SIMD>( v ) { }
-        
-        FS_FORCEINLINE Register operator ~() const
-        {
-            return !this->native;   
-        }
-    };
 }

@@ -4,54 +4,56 @@
 
 namespace FS
 {
+    namespace impl
+    {
+        struct ArmMaskBase32x4
+        {
+            uint32x4_t native;
+        };
+    }
+
     template<FastSIMD::FeatureSet SIMD, bool OPTIMISE_FLOAT>
-    struct Register<Mask<32, OPTIMISE_FLOAT>, 4, SIMD, std::enable_if_t<SIMD & FastSIMD::FeatureFlag::NEON>>
+    struct Register<Mask<32, OPTIMISE_FLOAT>, 4, SIMD, std::enable_if_t<SIMD & FastSIMD::FeatureFlag::ARM>>
+        : std::conditional_t<OPTIMISE_FLOAT, impl::ArmMaskBase32x4, Register<Mask<32, true>, 4, SIMD>>
     {
         static constexpr size_t ElementCount = 4;
         static constexpr auto FeatureFlags = SIMD;
         
-        using NativeType = uint32x4_t;
+        using NativeType = decltype(ArmMaskBase32x4::native);
         using ElementType = Mask<32, OPTIMISE_FLOAT>;
         using MaskType = Register;
         using MaskTypeArg = Register;
 
         FS_FORCEINLINE Register() = default;
-
-        template<typename T = NativeType>
-        FS_FORCEINLINE Register( std::enable_if_t<OPTIMISE_FLOAT, T> v ) : native( v ) { }
-
-        template<typename T = Register<Mask<32, false>, 4, SIMD>>
-        FS_FORCEINLINE Register( const std::enable_if_t<OPTIMISE_FLOAT, T>& v ) : native( v.native ) { }
+        FS_FORCEINLINE Register( NativeType v ) { this->native = v; }
         
         FS_FORCEINLINE NativeType GetNative() const
         {
-            return native;
+            return this->native;
         }
 
         FS_FORCEINLINE Register& operator &=( const Register& rhs )
         {
-            native = vandq_u32( native, rhs.native );
+            this->native = vandq_u32( this->native, rhs.native );
             return *this;
         }
         
         FS_FORCEINLINE Register& operator |=( const Register& rhs )
         {
-            native = vorrq_u32( native, rhs.native );
+            this->native = vorrq_u32( this->native, rhs.native );
             return *this;
         }
         
         FS_FORCEINLINE Register& operator ^=( const Register& rhs )
         {
-            native = veorq_u32( native, rhs.native );
+            this->native = veorq_u32( this->native, rhs.native );
             return *this;
         }
         
         FS_FORCEINLINE Register operator ~() const
         {
-            return vmvnq_u32( native );        
+            return vmvnq_u32( this->native );        
         }
-
-        NativeType native;
     };
 
     template<FastSIMD::FeatureSet SIMD, bool B, typename = EnableIfNative<Register<Mask<32, B>, 4, SIMD>>>
