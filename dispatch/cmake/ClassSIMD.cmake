@@ -102,10 +102,14 @@ function(fastsimd_create_dispatch_library simd_library_name)
         set_target_properties(${simd_library_name} PROPERTIES POSITION_INDEPENDENT_CODE ON)
     endif()
 
-    if(CMAKE_COMPILER_IS_GNUCC)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         set_target_properties(${simd_library_name} PROPERTIES COMPILE_FLAGS "-Wno-ignored-attributes")
     endif()
-    
+
+    if(MINGW)
+        target_compile_options(${simd_library_name} PRIVATE -Wa,-muse-unaligned-vector-move)
+    endif()
+
     if(fastsimd_create_dispatch_library_RELAXED)
         target_compile_definitions(${simd_library_name} PUBLIC FASTSIMD_IS_RELAXED=1)
     endif()
