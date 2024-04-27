@@ -112,6 +112,7 @@ function(fastsimd_create_dispatch_library simd_library_name)
 
     if(fastsimd_create_dispatch_library_RELAXED)
         target_compile_definitions(${simd_library_name} PUBLIC FASTSIMD_IS_RELAXED=1)
+        set(relaxed_log_msg " (RELAXED)")
     endif()
 
     set(feature_set_list "")
@@ -141,6 +142,6 @@ function(fastsimd_create_dispatch_library simd_library_name)
     string(REPLACE ";" ",\n" feature_set_list "${feature_set_list}")
     configure_file("${FastSIMD_SOURCE_DIR}/dispatch/cmake/simd_lib_config.h.in" "${simd_library_source_dir}/include/FastSIMD/${simd_library_name}_config.h")
 
-    message(STATUS "FastSIMD: Created dispatch library \"${simd_library_name}\" with Feature Sets: ${feature_set_list_debug}")
+    message(STATUS "FastSIMD: Created dispatch library \"${simd_library_name}\" with Feature Sets${relaxed_log_msg}: ${feature_set_list_debug}")
 
 endfunction()
