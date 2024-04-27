@@ -229,6 +229,12 @@ namespace FS
         return vmulq_f32( rsqrt, vrsqrtsq_f32( vmulq_f32( a.native, rsqrt ), rsqrt ) );
     }
 
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE f32<4, SIMD> Sqrt( const f32<4, SIMD>& a )
+    {
+        return vsqrtq_f32( a.native );
+    }
+
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = EnableIfRelaxed<SIMD>>
     FS_FORCEINLINE f32<4, SIMD> FMulAdd( const f32<4, SIMD>& a, const f32<4, SIMD>& b, const f32<4, SIMD>& c )
     {
