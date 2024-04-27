@@ -215,27 +215,27 @@ namespace FS
     }
 
     
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = EnableIfRelaxed<SIMD>>
     FS_FORCEINLINE f32<4, SIMD> Reciprocal( const f32<4, SIMD>& a )
     {
         float32x4_t recip = vrecpeq_f32( a.native );
         return vmulq_f32( recip, vrecpsq_f32( recip, a.native ) );
     }
     
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = EnableIfRelaxed<SIMD>>
     FS_FORCEINLINE f32<4, SIMD> InvSqrt( const f32<4, SIMD>& a )
     {
         float32x4_t rsqrt = vrsqrteq_f32( a.native );      
         return vmulq_f32( rsqrt, vrsqrtsq_f32( vmulq_f32( a.native, rsqrt ), rsqrt ) );
     }
 
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = EnableIfRelaxed<SIMD>>
     FS_FORCEINLINE f32<4, SIMD> FMulAdd( const f32<4, SIMD>& a, const f32<4, SIMD>& b, const f32<4, SIMD>& c )
     {
         return vmlaq_f32( b.native, c.native, a.native );
     }
 
-    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::FMA>>
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = EnableIfRelaxed<SIMD>>
     FS_FORCEINLINE f32<4, SIMD> FNMulAdd( const f32<4, SIMD>& a, const f32<4, SIMD>& b, const f32<4, SIMD>& c )
     {
         return vmlaq_f32( b.native, c.native, a.native );
