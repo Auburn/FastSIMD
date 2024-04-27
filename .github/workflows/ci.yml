@@ -51,7 +51,7 @@ jobs:
         no-cache: true
       
     - name: 'Checkout' 
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
    
     - name: 'CMake Configure Debug'
       run: cmake -S ${{ github.workspace }} -B ${{ github.workspace }}/debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/install/FastSIMD" ${{ matrix.cmake_options }}
