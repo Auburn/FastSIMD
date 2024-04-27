@@ -31,7 +31,7 @@ else()
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
-    target_compile_options(FastSIMD PUBLIC "-msimd128")
+    target_compile_options(FastSIMD PUBLIC -msimd128)
 endif()
 
 target_include_directories(FastSIMD PUBLIC 

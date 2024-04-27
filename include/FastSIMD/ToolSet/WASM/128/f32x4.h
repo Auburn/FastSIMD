@@ -217,12 +217,12 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = EnableIfRelaxed<SIMD>()>
     FS_FORCEINLINE f32<4, SIMD> FMulAdd( const f32<4, SIMD>& a, const f32<4, SIMD>& b, const f32<4, SIMD>& c )
     {
-        return wasm_f32x4_relaxed_madd( c.native, a.native, b.native );
+        return wasm_f32x4_relaxed_madd( a.native, b.native, c.native );
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = EnableIfRelaxed<SIMD>()>
     FS_FORCEINLINE f32<4, SIMD> FNMulAdd( const f32<4, SIMD>& a, const f32<4, SIMD>& b, const f32<4, SIMD>& c )
     {
-        return wasm_f32x4_relaxed_nmadd( c.native, a.native, b.native );
+        return wasm_f32x4_relaxed_nmadd( a.native, b.native, c.native );
     }
 }

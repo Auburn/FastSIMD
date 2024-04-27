@@ -426,12 +426,10 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
 
         if constexpr( !( SIMD & FeatureFlag::AVX512_F ) )
         {
-            RegisterTest( tests, "f32 cast to m32", []( TestRegf32 a ) { return FS_BIND_INTRINSIC( FS::Cast<FS::Mask<32>> )( a ); } );
-            RegisterTest( tests, "i32 cast to m32", []( TestRegi32 a ) { return FS_BIND_INTRINSIC( FS::Cast<FS::Mask<32>> )( a ); } );
-            RegisterTest( tests, "m32 cast to i32", []( TestRegm32 a ) { return FS_BIND_INTRINSIC( FS::Cast<int32_t> )( a ) ; } );
-            RegisterTest( tests, "m32 cast to f32", []( TestRegm32 a ) { return FS_BIND_INTRINSIC( FS::Cast<float> )( a ); } );
-            RegisterTest( tests, "m32i cast to i32", []( TestRegm32i a ) { return FS_BIND_INTRINSIC( FS::Cast<int32_t> )( a ); } );
-            RegisterTest( tests, "m32i cast to f32", []( TestRegm32i a ) { return FS_BIND_INTRINSIC( FS::Cast<float> )( a ); } );
+            RegisterTest( tests, "m32 cast to i32", []( TestRegm32 a ) { return FS_BIND_INTRINSIC( FS::Cast<FS::Mask<32>> )( FS_BIND_INTRINSIC( FS::Cast<int32_t> )( a ) ); } );
+            RegisterTest( tests, "m32 cast to f32", []( TestRegm32 a ) { return FS_BIND_INTRINSIC( FS::Cast<FS::Mask<32>> )( FS_BIND_INTRINSIC( FS::Cast<float> )( a ) ); } );
+            RegisterTest( tests, "m32i cast to i32", []( TestRegm32i a ) { return FS_BIND_INTRINSIC( FS::Cast<typename TestRegm32i::ElementType> )( FS_BIND_INTRINSIC( FS::Cast<int32_t> )( a ) ); } );
+            RegisterTest( tests, "m32i cast to f32", []( TestRegm32i a ) { return FS_BIND_INTRINSIC( FS::Cast<typename TestRegm32i::ElementType> )( FS_BIND_INTRINSIC( FS::Cast<float> )( a ) ); } );
         }
         return tests;
     }

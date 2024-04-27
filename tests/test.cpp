@@ -224,7 +224,7 @@ struct TestRunner
 
         for( size_t idx = 0; idx < TestCount; idx += RegisterBytes / sizeof( int ) )
         {
-            bool failed = false;
+            int failed = 0;
 
             for( size_t testIdx = 0; testIdx < tests.size(); testIdx++ )
             {               
@@ -260,14 +260,15 @@ struct TestRunner
                     if( !CompareOutputs( testNameRelaxed, test.featureSet, test.returnType, accuracy, outputCount, scalarResults, simdResults ) )
                     {
                         std::cerr << "Inputs: " << tests[0].inputsFunc( idx, rndInts, rndFloats ) << std::endl;
-                        failed = true;
+                        failed++;
                     }
                 }
             }
 
-            if( failed )
+            if( failed >= 3 )
             {
-                std::cin.ignore();
+                std::cerr << "Skipping test, fail limit reached" << std::endl;
+                break;
             }
         }
         
