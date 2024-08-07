@@ -206,7 +206,7 @@ namespace FS
         }
         else
         {
-            return Register<T, N, SIMD> { SelectHighBit( mask.v0, ifTrue.v0, ifFalse.v0 ), SelectHighBit( mask.v1, ifTrue.v1, ifFalse.v1 ) };
+            return Register<T, N, SIMD>{ SelectHighBit( mask.v0, ifTrue.v0, ifFalse.v0 ), SelectHighBit( mask.v1, ifTrue.v1, ifFalse.v1 ) };
         }
     }
 
@@ -220,7 +220,7 @@ namespace FS
         }
         else
         {
-            return Register<T, N, SIMD> { Increment( a.v0 ), Increment( a.v1 ) };
+            return Register<T, N, SIMD>{ Increment( a.v0 ), Increment( a.v1 ) };
         }
     }
 
@@ -234,7 +234,7 @@ namespace FS
         }
         else
         {
-            return Register<T, N, SIMD> { Decrement( a.v0 ), Decrement( a.v1 ) };
+            return Register<T, N, SIMD>{ Decrement( a.v0 ), Decrement( a.v1 ) };
         }
     }
     
@@ -290,7 +290,7 @@ namespace FS
         }
         else
         {        
-            return Register<T, N, SIMD> { FNMulSub( a.v0, b.v0, c.v0 ), FNMulSub( a.v1, b.v1, c.v1 ) };
+            return Register<T, N, SIMD>{ FNMulSub( a.v0, b.v0, c.v0 ), FNMulSub( a.v1, b.v1, c.v1 ) };
         }
     }
     
@@ -304,7 +304,7 @@ namespace FS
         }
         else
         {
-            return Register<T, N, SIMD> { BitwiseAndNot( a.v0, b.v0 ), BitwiseAndNot( a.v1, b.v1 ) };
+            return Register<T, N, SIMD>{ BitwiseAndNot( a.v0, b.v0 ), BitwiseAndNot( a.v1, b.v1 ) };
         }
     }    
 
@@ -429,7 +429,7 @@ namespace FS
         }
         else
         {        
-            return Register<T, N, SIMD> { MaskedMul( mask.v0, a.v0, b.v0 ), MaskedMul( mask.v1, a.v1, b.v1 ) };
+            return Register<T, N, SIMD>{ MaskedMul( mask.v0, a.v0, b.v0 ), MaskedMul( mask.v1, a.v1, b.v1 ) };
         }
     }
     
@@ -442,7 +442,7 @@ namespace FS
         }
         else
         {        
-            return Register<T, N, SIMD> { InvMaskedMul( mask.v0, a.v0, b.v0 ), InvMaskedMul( mask.v1, a.v1, b.v1 ) };
+            return Register<T, N, SIMD>{ InvMaskedMul( mask.v0, a.v0, b.v0 ), InvMaskedMul( mask.v1, a.v1, b.v1 ) };
         }
     }
     
@@ -517,7 +517,14 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Sin( const Register<T, N, SIMD>& a )
     {
-        return Cos( Register<T, N, SIMD>( (T)1.57079632679 ) - a );
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return Cos( Register<T, N, SIMD>( (T)1.57079632679 ) - a );
+        }
+        else
+        {
+            return Register<T, N, SIMD>{ Sin( a.v0 ), Sin( a.v1 ) };
+        }
     }
     
     template<std::size_t N, FastSIMD::FeatureSet SIMD>

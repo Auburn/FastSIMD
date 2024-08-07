@@ -3,11 +3,11 @@
 
 namespace FastSIMD
 {
-    template<FeatureSet...>
+    template<int, FeatureSet...>
     struct FeatureSetList;
 
     template<FeatureSet HEAD>
-    struct FeatureSetList<HEAD>
+    struct FeatureSetList<0, HEAD>
     {
         static constexpr FeatureSet AsArray[] = { HEAD };
         static constexpr FeatureSet Minimum = HEAD;
@@ -18,14 +18,14 @@ namespace FastSIMD
     };
 
     template<FeatureSet HEAD, FeatureSet... TAIL>
-    struct FeatureSetList<HEAD, TAIL...>
+    struct FeatureSetList<0, HEAD, TAIL...>
     {
         static constexpr FeatureSet AsArray[] = { HEAD, TAIL... };
         static constexpr FeatureSet Minimum = HEAD;
-        static constexpr FeatureSet Maximum = FeatureSetList<TAIL...>::Maximum;
+        static constexpr FeatureSet Maximum = FeatureSetList<0, TAIL...>::Maximum;
 
         template<FeatureSet L>
-        static constexpr FeatureSet NextAfter = (L == HEAD) ? FeatureSetList<TAIL...>::Minimum : FeatureSetList<TAIL...>::template NextAfter<L>;
+        static constexpr FeatureSet NextAfter = (L == HEAD) ? FeatureSetList<0, TAIL...>::Minimum : FeatureSetList<0, TAIL...>::template NextAfter<L>;
     };
 
 }

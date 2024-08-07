@@ -1,5 +1,5 @@
 
-fastsimd_create_dispatch_library(example_simd SOURCES "example.inl")
+fastsimd_create_dispatch_library(simd_example_dispatch_library SOURCES "example.inl")
 
 add_executable(example_dispatch_library "main.cpp")
-target_link_libraries(example_dispatch_library PRIVATE FastSIMD example_simd)
+target_link_libraries(example_dispatch_library PRIVATE FastSIMD simd_example_dispatch_library)

@@ -3,13 +3,7 @@
 #define TO_LITERAL_( string ) #string
 #define TO_LITERAL( string ) TO_LITERAL_( string )
 
-#ifdef TEST_FEATURE_SET_ACTIVE
-
-#if FASTSIMD_FEATURE_VALUE( TEST_FEATURE_SET_ACTIVE ) > 0
-static_assert( 0, "TEST_FEATURE_SET_ACTIVE_SUCCESS" );
-#endif
-
-#else
+#if !defined( TEST_FEATURE_SET_ACTIVE ) || FASTSIMD_FEATURE_VALUE( TEST_FEATURE_SET_ACTIVE ) > 0
 
 static_assert( 0, "FASTSIMD_ARCH<" TO_LITERAL( FASTSIMD_ARCH_NAME() ) ">" );
 

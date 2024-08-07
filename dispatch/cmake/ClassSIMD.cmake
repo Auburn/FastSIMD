@@ -120,26 +120,48 @@ function(fastsimd_create_dispatch_library simd_library_name)
 
     foreach(simd_inl ${fastsimd_create_dispatch_library_SOURCES})
         foreach(feature_set ${fastsimd_create_dispatch_library_FEATURE_SETS})
-            try_run(
-                run_result_unused
-                compile_result_unused
-                "${CMAKE_BINARY_DIR}"
-                "${FastSIMD_SOURCE_DIR}/cmake/ArchDetect.cpp"
-                COMPILE_OUTPUT_VARIABLE COMPILE_OUTPUT
-                CMAKE_FLAGS CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
-                COMPILE_DEFINITIONS -DTEST_FEATURE_SET_ACTIVE=${feature_set}
-            )
+            if(DEFINED CMAKE_OSX_ARCHITECTURES AND NOT "${feature_set}" STREQUAL "SCALAR")
+                # Loop through OSX arches and test compile on each separately
+                foreach(CMAKE_OSX_ARCHITECTURES ${CMAKE_OSX_ARCHITECTURES})
+                    #message(STATUS "${CMAKE_OSX_ARCHITECTURES} ${feature_set}")
+                    try_compile(
+                        compile_result_unused
+                        "${CMAKE_BINARY_DIR}"
+                        "${FastSIMD_SOURCE_DIR}/cmake/ArchDetect.cpp"
+                        OUTPUT_VARIABLE COMPILE_OUTPUT
+                        COMPILE_DEFINITIONS -DTEST_FEATURE_SET_ACTIVE=${feature_set}
+                    )
 
-            if ("${COMPILE_OUTPUT}" MATCHES "TEST_FEATURE_SET_ACTIVE_SUCCESS")
-                list(APPEND feature_set_list "FastSIMD::FeatureSet::${feature_set}")
-                list(APPEND feature_set_list_debug "${feature_set}")
-                fastsimd_add_feature_set_source(${simd_inl} ${feature_set} ${fastsimd_create_dispatch_library_RELAXED})
+                    #message(STATUS ${COMPILE_OUTPUT})
+                    if ("${COMPILE_OUTPUT}" MATCHES "FASTSIMD_ARCH<([^\"=]+)=([^>]+)")
+                        set(feature_arch_detect "FASTSIMD_CURRENT_ARCH_IS( ${CMAKE_MATCH_1} )")
+                        fastsimd_add_feature_set_source(${simd_inl} ${feature_set} ${fastsimd_create_dispatch_library_RELAXED})
+                        string(APPEND feature_set_list "#if ${feature_arch_detect}\n,FastSIMD::FeatureSet::${feature_set}\n#endif\n" )
+                        list(APPEND feature_set_list_debug "${feature_set}")
+                        break()
+                    endif()
+                endforeach()
+            else()
+                try_compile(
+                    compile_result_unused
+                    "${CMAKE_BINARY_DIR}"
+                    "${FastSIMD_SOURCE_DIR}/cmake/ArchDetect.cpp"
+                    OUTPUT_VARIABLE COMPILE_OUTPUT
+                    COMPILE_DEFINITIONS -DTEST_FEATURE_SET_ACTIVE=${feature_set}
+                )
+
+                #message(STATUS ${COMPILE_OUTPUT})
+                if ("${COMPILE_OUTPUT}" MATCHES "FASTSIMD_ARCH<([^\"=]+)=([^>]+)")
+                    set(feature_arch_detect "1")
+                    fastsimd_add_feature_set_source(${simd_inl} ${feature_set} ${fastsimd_create_dispatch_library_RELAXED})
+                    string(APPEND feature_set_list ",FastSIMD::FeatureSet::${feature_set}\n" )
+                    list(APPEND feature_set_list_debug "${feature_set}")
+                endif()
             endif()
         endforeach()
     endforeach()
 
     # Create array of compiled feature sets for lookup in FastSIMD::New()
-    string(REPLACE ";" ",\n" feature_set_list "${feature_set_list}")
     configure_file("${FastSIMD_SOURCE_DIR}/dispatch/cmake/simd_lib_config.h.in" "${simd_library_source_dir}/include/FastSIMD/${simd_library_name}_config.h")
 
     message(STATUS "FastSIMD: Created dispatch library \"${simd_library_name}\" with Feature Sets${relaxed_log_msg}: ${feature_set_list_debug}")

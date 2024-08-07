@@ -6,7 +6,7 @@ namespace FastSIMD
 {
 namespace ${simd_library_name}
 {
-using CompiledFeatureSets = FeatureSetList<
+using CompiledFeatureSets = FeatureSetList<0
 ${feature_set_list}>;
 }
 }
