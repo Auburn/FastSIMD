@@ -12,15 +12,12 @@ function(target_architecture output_arch output_arch_ver)
         # #error preprocessor directives... but by exploiting the preprocessor in this
         # way, we can detect the correct target architecture even when cross-compiling,
         # since the program itself never needs to be run (only the compiler/preprocessor)
-        try_run(
-            run_result_unused
+        try_compile(
             compile_result_unused
             "${CMAKE_BINARY_DIR}"
             "${FastSIMD_SOURCE_DIR}/cmake/ArchDetect.cpp"
-            COMPILE_OUTPUT_VARIABLE COMPILE_OUTPUT
-            CMAKE_FLAGS CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
+            OUTPUT_VARIABLE COMPILE_OUTPUT
         )
-    
         #message(STATUS ${COMPILE_OUTPUT})
 
         # Parse the architecture name from the compiler output

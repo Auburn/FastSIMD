@@ -67,11 +67,11 @@ struct TestRunner
     };
 
     template<FastSIMD::FeatureSet HEAD, FastSIMD::FeatureSet... TAIL>
-    struct TestOrganiser<FastSIMD::FeatureSetList<HEAD, TAIL...>>
+    struct TestOrganiser<FastSIMD::FeatureSetList<0, HEAD, TAIL...>>
     { 
         static TestCollection GetCollections()
         {
-            TestCollection collections = TestOrganiser<FastSIMD::FeatureSetList<TAIL...>>::GetCollections();
+            TestCollection collections = TestOrganiser<FastSIMD::FeatureSetList<0, TAIL...>>::GetCollections();
 
             if( HEAD <= FastSIMD::DetectCpuMaxFeatureSet() )
             {
@@ -280,7 +280,7 @@ struct TestRunner
     {
         std::cout << "Starting Tests - Register Size: " << RegisterBytes * 8 << " (" << RegisterBytes << "b)" << std::endl;
 
-        TestSet testSet = TestOrganiser<FastSIMD::test_simd::CompiledFeatureSets>::GetSet();
+        TestSet testSet = TestOrganiser<FastSIMD::simd_test::CompiledFeatureSets>::GetSet();
 
         for( auto& test : testSet )
         {
