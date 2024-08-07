@@ -9,7 +9,7 @@
 #include <random>
 #include <string>
 
-#include <FastSIMD/test_simd_config.h>
+#include <FastSIMD/simd_test_config.h>
 
 static constexpr size_t TestCount = 4096 * 4096;
 
