@@ -1,67 +1,68 @@
 
-function(fastsimd_add_feature_set_source simd_inl feature_set is_relaxed)
-    set(feature_set_source "${simd_library_source_dir}/${simd_library_name}_${feature_set}.cpp")
-    set(simd_inl_full "${CMAKE_CURRENT_LIST_DIR}/${simd_inl}")
+function(fastsimd_add_feature_set_source fastsimd_library_sources feature_set is_relaxed)
+    foreach(simd_inl ${fastsimd_library_sources})
+        set(feature_set_source "${simd_library_source_dir}/${simd_library_name}_${feature_set}.cpp")
+        set(simd_inl_full "${CMAKE_CURRENT_LIST_DIR}/${simd_inl}")
 
-    configure_file("${FastSIMD_SOURCE_DIR}/dispatch/cmake/feature_set_source.cpp.in" ${feature_set_source})
-    target_sources(${simd_library_name} PRIVATE ${feature_set_source})
+        configure_file("${FastSIMD_SOURCE_DIR}/dispatch/cmake/feature_set_source.cpp.in" ${feature_set_source})
+        target_sources(${simd_library_name} PRIVATE ${feature_set_source})
 
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-        # MSVC 32bit needs SSE2 flag for all SSE levels
-        if(${feature_set} MATCHES "SSE[^(0-9)]" AND CMAKE_SIZEOF_VOID_P EQUAL 4)
-            set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS /arch:SSE2)
+        if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+            # MSVC 32bit needs SSE2 flag for all SSE levels
+            if(${feature_set} MATCHES "SSE[^(0-9)]" AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS /arch:SSE2)
 
-        elseif(${feature_set} MATCHES "AVX[^(0-9)]")
-            set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS /arch:AVX)
+            elseif(${feature_set} MATCHES "AVX[^(0-9)]")
+                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS /arch:AVX)
 
-        elseif(${feature_set} MATCHES AVX2)
-            set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS /arch:AVX2)
+            elseif(${feature_set} MATCHES AVX2)
+                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS /arch:AVX2)
 
-        elseif(${feature_set} MATCHES AVX512)
-            set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS /arch:AVX512)
+            elseif(${feature_set} MATCHES AVX512)
+                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS /arch:AVX512)
+            endif()
+        else()
+            if(${feature_set} MATCHES SSE2 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -msse2)
+
+            elseif(${feature_set} MATCHES SSE3)
+                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -msse3)
+
+            elseif(${feature_set} MATCHES SSSE3)
+                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mssse3)
+
+            elseif(${feature_set} MATCHES SSE41)
+                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -msse4.1)
+
+            elseif(${feature_set} MATCHES SSE42)
+                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -msse4.2)
+
+            elseif(${feature_set} MATCHES "AVX[^(0-9)]")
+                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mavx)
+
+            elseif(${feature_set} MATCHES AVX2)
+                if(is_relaxed)
+                    set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mfma)
+                else()
+                    set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mno-fma)
+                endif()
+                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mavx2)
+
+            elseif(${feature_set} MATCHES AVX512)
+                if(is_relaxed)
+                    set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mfma)
+                else()
+                    set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mno-fma)
+                endif()
+                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mavx512f -mavx512dq -mavx512vl -mavx512bw)
+
+            elseif(${feature_set} MATCHES WASM)
+                if(is_relaxed)
+                    set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mrelaxed-simd)
+                endif()
+            endif()
         endif()
-    else()
-        if(${feature_set} MATCHES SSE2 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
-            set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -msse2)
-
-        elseif(${feature_set} MATCHES SSE3)
-            set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -msse3)
-
-        elseif(${feature_set} MATCHES SSSE3)
-            set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mssse3)
-
-        elseif(${feature_set} MATCHES SSE41)
-            set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -msse4.1)
-
-        elseif(${feature_set} MATCHES SSE42)
-            set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -msse4.2)
-
-        elseif(${feature_set} MATCHES "AVX[^(0-9)]")
-            set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mavx)
-
-        elseif(${feature_set} MATCHES AVX2)
-            if(is_relaxed)
-                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mfma)
-            else()
-                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mno-fma) 
-            endif()
-            set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mavx2)
-
-        elseif(${feature_set} MATCHES AVX512)
-            if(is_relaxed)
-                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mfma)
-            else()
-                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mno-fma)                
-            endif()
-            set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mavx512f -mavx512dq -mavx512vl -mavx512bw)
-
-        elseif(${feature_set} MATCHES WASM)
-            if(is_relaxed)
-                set_property(SOURCE ${feature_set_source} APPEND PROPERTY COMPILE_OPTIONS -mrelaxed-simd)
-            endif()
-        endif()
-    endif()
-
+    endforeach()
 endfunction()
 
 function(fastsimd_create_dispatch_library simd_library_name)
@@ -118,30 +119,11 @@ function(fastsimd_create_dispatch_library simd_library_name)
     set(feature_set_list "")
     set(feature_set_list_debug "")
 
-    foreach(simd_inl ${fastsimd_create_dispatch_library_SOURCES})
-        foreach(feature_set ${fastsimd_create_dispatch_library_FEATURE_SETS})
-            if(DEFINED CMAKE_OSX_ARCHITECTURES AND NOT "${feature_set}" STREQUAL "SCALAR")
-                # Loop through OSX arches and test compile on each separately
-                foreach(CMAKE_OSX_ARCHITECTURES ${CMAKE_OSX_ARCHITECTURES})
-                    #message(STATUS "${CMAKE_OSX_ARCHITECTURES} ${feature_set}")
-                    try_compile(
-                        compile_result_unused
-                        "${CMAKE_BINARY_DIR}"
-                        "${FastSIMD_SOURCE_DIR}/cmake/ArchDetect.cpp"
-                        OUTPUT_VARIABLE COMPILE_OUTPUT
-                        COMPILE_DEFINITIONS -DTEST_FEATURE_SET_ACTIVE=${feature_set}
-                    )
-
-                    #message(STATUS ${COMPILE_OUTPUT})
-                    if ("${COMPILE_OUTPUT}" MATCHES "FASTSIMD_ARCH<([^\"=]+)=([^>]+)")
-                        set(feature_arch_detect "FASTSIMD_CURRENT_ARCH_IS( ${CMAKE_MATCH_1} )")
-                        fastsimd_add_feature_set_source(${simd_inl} ${feature_set} ${fastsimd_create_dispatch_library_RELAXED})
-                        string(APPEND feature_set_list "#if ${feature_arch_detect}\n,FastSIMD::FeatureSet::${feature_set}\n#endif\n" )
-                        list(APPEND feature_set_list_debug "${feature_set}")
-                        break()
-                    endif()
-                endforeach()
-            else()
+    foreach(feature_set ${fastsimd_create_dispatch_library_FEATURE_SETS})
+        if(APPLE AND (NOT CMAKE_OSX_ARCHITECTURES STREQUAL "") AND (NOT feature_set STREQUAL "SCALAR"))
+            # Loop through OSX arches and test compile on each separately
+            foreach(CMAKE_OSX_ARCHITECTURES ${CMAKE_OSX_ARCHITECTURES})
+                #message(STATUS "${CMAKE_OSX_ARCHITECTURES} ${feature_set}")
                 try_compile(
                     compile_result_unused
                     "${CMAKE_BINARY_DIR}"
@@ -151,14 +133,31 @@ function(fastsimd_create_dispatch_library simd_library_name)
                 )
 
                 #message(STATUS ${COMPILE_OUTPUT})
-                if ("${COMPILE_OUTPUT}" MATCHES "FASTSIMD_ARCH<([^\"=]+)=([^>]+)")
-                    set(feature_arch_detect "1")
-                    fastsimd_add_feature_set_source(${simd_inl} ${feature_set} ${fastsimd_create_dispatch_library_RELAXED})
-                    string(APPEND feature_set_list ",FastSIMD::FeatureSet::${feature_set}\n" )
+                if (COMPILE_OUTPUT MATCHES "FASTSIMD_ARCH<([^\"=]+)=([^>]+)")
+                    set(feature_arch_detect "FASTSIMD_CURRENT_ARCH_IS( ${CMAKE_MATCH_1} )")
+                    fastsimd_add_feature_set_source(${fastsimd_create_dispatch_library_SOURCES} ${feature_set} ${fastsimd_create_dispatch_library_RELAXED})
+                    string(APPEND feature_set_list "#if ${feature_arch_detect}\n,FastSIMD::FeatureSet::${feature_set}\n#endif\n" )
                     list(APPEND feature_set_list_debug "${feature_set}")
+                    break()
                 endif()
+            endforeach()
+        else()
+            try_compile(
+                compile_result_unused
+                "${CMAKE_BINARY_DIR}"
+                "${FastSIMD_SOURCE_DIR}/cmake/ArchDetect.cpp"
+                OUTPUT_VARIABLE COMPILE_OUTPUT
+                COMPILE_DEFINITIONS -DTEST_FEATURE_SET_ACTIVE=${feature_set}
+            )
+
+            #message(STATUS ${COMPILE_OUTPUT})
+            if (COMPILE_OUTPUT MATCHES "FASTSIMD_ARCH<([^\">=]+)=([^\">]+)>")
+                set(feature_arch_detect "1")
+                fastsimd_add_feature_set_source(${fastsimd_create_dispatch_library_SOURCES} ${feature_set} ${fastsimd_create_dispatch_library_RELAXED})
+                string(APPEND feature_set_list ",FastSIMD::FeatureSet::${feature_set}\n" )
+                list(APPEND feature_set_list_debug "${feature_set}")
             endif()
-        endforeach()
+        endif()
     endforeach()
 
     # Create array of compiled feature sets for lookup in FastSIMD::New()
