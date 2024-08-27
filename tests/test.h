@@ -5,6 +5,7 @@
 #include <functional>
 #include <string_view>
 #include <vector>
+#include <string>
 
 constexpr size_t kTestBytes = 512 / 8;
 

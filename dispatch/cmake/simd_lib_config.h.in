@@ -1,5 +1,6 @@
 #pragma once
 
+#include <FastSIMD/Utility/ArchDetect.h>
 #include <FastSIMD/Utility/FeatureSetList.h>
 
 namespace FastSIMD
