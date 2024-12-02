@@ -176,6 +176,12 @@ namespace FS
     {
         return vrndpq_f32( a.native );
     }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE f32<4, SIMD> Trunc( const f32<4, SIMD>& a )
+    {
+        return vrndq_f32( a.native );
+    }
         
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Min( const f32<4, SIMD>& a, const f32<4, SIMD>& b )

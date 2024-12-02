@@ -148,6 +148,12 @@ namespace FS
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE f32<4, SIMD> Trunc( const f32<4, SIMD>& a )
+    {
+        return wasm_f32x4_trunc( a.native );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Ceil( const f32<4, SIMD>& a )
     {
         return wasm_f32x4_ceil( a.native );
