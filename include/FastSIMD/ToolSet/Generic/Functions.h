@@ -136,7 +136,7 @@ namespace FS
     }
 
     
-    // Round value
+    // Round value, banker's rounding
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Round( const Register<T, N, SIMD>& a )
     {
@@ -145,7 +145,7 @@ namespace FS
     }
 
 
-    // Floor value
+    // Floor value, round towards -infinity
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Floor( const Register<T, N, SIMD>& a )
     {
@@ -154,12 +154,20 @@ namespace FS
     }
 
 
-    // Ceil value
+    // Ceil value, round towards +infinity
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Ceil( const Register<T, N, SIMD>& a )
     {
         static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::Ceil not supported with provided types" );
         return Register<T, N, SIMD>{ Ceil( a.v0 ), Ceil( a.v1 ) };
+    }
+
+    // Truncate value, round towards 0
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> Trunc( const Register<T, N, SIMD>& a )
+    {
+        static_assert( !IsNativeV<Register<T, N, SIMD>>, "FastSIMD: FS::Trunc not supported with provided types" );
+        return Register<T, N, SIMD>{ Trunc( a.v0 ), Trunc( a.v1 ) };
     }
 
 
@@ -432,7 +440,7 @@ namespace FS
             return Register<T, N, SIMD>{ MaskedMul( mask.v0, a.v0, b.v0 ), MaskedMul( mask.v1, a.v1, b.v1 ) };
         }
     }
-    
+
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> InvMaskedMul( const typename Register<T, N, SIMD>::MaskTypeArg& mask, const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b )
     {
@@ -446,6 +454,46 @@ namespace FS
         }
     }
     
+    // Extract sign bit (high bit)
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> SignBit( const Register<T, N, SIMD>& a )
+    {
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            Register<T, N, SIMD> signBit;
+            if constexpr( std::is_floating_point_v<T> )
+            {
+                signBit = Register<T, N, SIMD>( (T)-0.0 );
+            }
+            else
+            {
+                static_assert( std::is_signed_v<T>, "No signed bit in unsigned type" );
+                signBit = Register<T, N, SIMD>( std::numeric_limits<T>::min() );
+            }
+
+            return signBit & a;
+        }
+        else
+        {        
+            return Register<T, N, SIMD>{ SignBit( a.v0 ), SignBit( a.v1 ) };
+        }
+    }
+
+    // Modulus: a % b
+    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<T, N, SIMD> Modulus( const Register<T, N, SIMD>& a, const Register<T, N, SIMD>& b )
+    {
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            auto ab = a / b;
+            return (ab - FS::Trunc( ab )) * b;
+        }
+        else
+        {
+            return Register<T, N, SIMD>{ Modulus( a.v0, b.v0 ), Modulus( a.v1, b.v1 ) };
+        }
+    }
+
     // Reciprocal: 1 / a
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Reciprocal( const Register<T, N, SIMD>& a )
@@ -455,7 +503,7 @@ namespace FS
             return Register<T, N, SIMD>( 1 ) / a;
         }
         else
-        {        
+        {
             return Register<T, N, SIMD>{ Reciprocal( a.v0 ), Reciprocal( a.v1 ) };
         }
     }

@@ -303,33 +303,33 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
         RegisterTest( tests, "i32 load store", []( TestRegi32 a ) { return a; } );
         RegisterTest( tests, "i32 load scalar", []( int32_t a ) { return TestRegi32( a ); } );
         RegisterTest( tests, "i32 splat", []( int32_t a ) { return FS::Splat<TestRegi32::ElementCount>( a ); } );
-        RegisterTest( tests, "i32 extract 0", []( TestRegi32 a ) { return FS::Extract0( a ); } );        
+        RegisterTest( tests, "i32 extract 0", []( TestRegi32 a ) { return FS::Extract0( a ); } );
         RegisterTest( tests, "i32 load incremented", []() { return FS::LoadIncremented<TestRegi32>(); } );
-        
+
         RegisterTest( tests, "i32 plus operator", std::plus<TestRegi32>() );
         RegisterTest( tests, "i32 minus operator", std::minus<TestRegi32>() );
         RegisterTest( tests, "i32 multiply operator", std::multiplies<TestRegi32>() );
-        
+
         RegisterTest( tests, "i32 bit and operator", std::bit_and<TestRegi32>() );
         RegisterTest( tests, "i32 bit or operator", std::bit_or<TestRegi32>() );
         RegisterTest( tests, "i32 bit xor operator", std::bit_xor<TestRegi32>() );
         RegisterTest( tests, "i32 bit not operator", std::bit_not<TestRegi32>() );
         RegisterTest( tests, "i32 negate operator", std::negate<TestRegi32>() );
         RegisterTest( tests, "i32 bit and not", []( TestRegi32 a, TestRegi32 b ) { return FS::BitwiseAndNot( a, b ); } );
-        
+
         RegisterTest( tests, "i32 increment", []( TestRegi32 a ) { return FS::Increment( a ); } );
         RegisterTest( tests, "i32 decrement", []( TestRegi32 a ) { return FS::Decrement( a ); } );
         RegisterTest( tests, "i32 abs", []( TestRegi32 a ) { return FS::Abs( a ); } );
         RegisterTest( tests, "i32 min", []( TestRegi32 a, TestRegi32 b ) { return FS::Min( a, b ); } );
         RegisterTest( tests, "i32 max", []( TestRegi32 a, TestRegi32 b ) { return FS::Max( a, b ); } );
-        
+
         RegisterTest( tests, "i32 bit shift left scalar", []( TestRegi32 a, int b ) { return a << ( b & 31 ); } );
         RegisterTest( tests, "i32 bit shift right scalar", []( TestRegi32 a, int b ) { return a >> ( b & 31 ); } );
         RegisterTest( tests, "i32 bit shift right zero extend scalar", []( TestRegi32 a, int b ) { return FS::BitShiftRightZeroExtend( a, b & 31 ); } );
-        
+
         //RegisterTest( tests, "i32 bit shift left", []( TestRegi32 a, TestRegi32 b ) { return a << FS::Min( TestRegi32( 31 ), FS::Abs( b ) ); } );
         //RegisterTest( tests, "i32 bit shift right", []( TestRegi32 a, TestRegi32 b ) { return a >> FS::Min( TestRegi32( 31 ), FS::Abs( b ) ); } );
-        
+
         RegisterTest( tests, "i32 equals operator", []( TestRegi32 a, TestRegi32 b ) { return a == b; } );
         RegisterTest( tests, "i32 equals operator alt", []( TestRegi32 a ) { return a == a; } );
         RegisterTest( tests, "i32 not equals operator", []( TestRegi32 a, TestRegi32 b ) { return a != b; } );
@@ -338,7 +338,7 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
         RegisterTest( tests, "i32 greater than operator", []( TestRegi32 a, TestRegi32 b ) { return a > b; } );
         RegisterTest( tests, "i32 less equal than operator", []( TestRegi32 a, TestRegi32 b ) { return a <= b; } );
         RegisterTest( tests, "i32 greater equal than operator", []( TestRegi32 a, TestRegi32 b ) { return a >= b; } );
-        
+
         RegisterTest( tests, "i32 select", []( TestRegm32 m, TestRegi32 a, TestRegi32 b ) { return FS::Select( m, a, b ); } );
         RegisterTest( tests, "i32 select high bit", []( TestRegf32 m, TestRegi32 a, TestRegi32 b ) { return FS::SelectHighBit( m, a, b ); } );
         RegisterTest( tests, "i32 masked", []( TestRegm32 m, TestRegi32 a ) { return FS::Masked( m, a ); } );
@@ -351,13 +351,13 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
         RegisterTest( tests, "i32 inv masked add", []( TestRegm32 m, TestRegi32 a, TestRegi32 b ) { return FS::InvMaskedAdd( m, a, b ); } );
         RegisterTest( tests, "i32 inv masked sub", []( TestRegm32 m, TestRegi32 a, TestRegi32 b ) { return FS::InvMaskedSub( m, a, b ); } );
         RegisterTest( tests, "i32 inv masked mul", []( TestRegm32 m, TestRegi32 a, TestRegi32 b ) { return FS::InvMaskedMul( m, a, b ); } );
-        
+
         RegisterTest( tests, "f32 load store", []( TestRegf32 a ) { return a; } );
         RegisterTest( tests, "f32 load scalar", []( float a ) { return TestRegf32( a ); } );
         RegisterTest( tests, "f32 splat", []( float a ) { return FS::Splat<TestRegf32::ElementCount>( a ); } );
         RegisterTest( tests, "f32 extract 0", []( TestRegf32 a ) { return FS::Extract0( a ); } );
         RegisterTest( tests, "f32 load incremented", []() { return FS::LoadIncremented<TestRegf32>(); } );
-        
+
         RegisterTest( tests, "f32 plus operator", std::plus<TestRegf32>() );
         RegisterTest( tests, "f32 minus operator", std::minus<TestRegf32>() );
         RegisterTest( tests, "f32 multiply operator", std::multiplies<TestRegf32>() );
@@ -367,14 +367,14 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
         RegisterTest( tests, "f32 fused multiply sub", []( TestRegf32 a, TestRegf32 b ) { return FS::FMulSub( a, TestRegf32( -1 ), b ); } );
         RegisterTest( tests, "f32 fused negative multiply add", []( TestRegf32 a, TestRegf32 b ) { return FS::FNMulAdd( a, TestRegf32( -1 ), b ); } );
         RegisterTest( tests, "f32 fused negative multiply sub", []( TestRegf32 a, TestRegf32 b ) { return FS::FNMulSub( a, TestRegf32( -1 ), b ); } );
-        
+
         RegisterTest( tests, "f32 bit and operator", std::bit_and<TestRegf32>() );
         RegisterTest( tests, "f32 bit or operator", std::bit_or<TestRegf32>() );
         RegisterTest( tests, "f32 bit xor operator", std::bit_xor<TestRegf32>() );
         RegisterTest( tests, "f32 bit not operator", std::bit_not<TestRegf32>() );
         RegisterTest( tests, "f32 negate operator", std::negate<TestRegf32>() );
         RegisterTest( tests, "f32 bit and not", []( TestRegf32 a, TestRegf32 b ) { return FS::BitwiseAndNot( a, b ); } );
-        
+
         RegisterTest( tests, "f32 equals operator", []( TestRegf32 a, TestRegf32 b ) { return a == b; } );
         RegisterTest( tests, "f32 greater equal than operator", []( TestRegf32 a, TestRegf32 b ) { return a >= b; } );
         RegisterTest( tests, "f32 not equals operator", []( TestRegf32 a, TestRegf32 b ) { return a != b; } );
@@ -400,16 +400,19 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
         RegisterTest( tests, "f32 inv masked add", []( TestRegm32 m, TestRegf32 a, TestRegf32 b ) { return FS::InvMaskedAdd( m, a, b ); } );
         RegisterTest( tests, "f32 inv masked sub", []( TestRegm32 m, TestRegf32 a, TestRegf32 b ) { return FS::InvMaskedSub( m, a, b ); } );
         RegisterTest( tests, "f32 inv masked mul", []( TestRegm32 m, TestRegf32 a, TestRegf32 b ) { return FS::InvMaskedMul( m, a, b ); } );
-        
+
         RegisterTest( tests, "f32 round", []( TestRegf32 a ) { return FS::Round( a ); } );
         RegisterTest( tests, "f32 ceil", []( TestRegf32 a ) { return FS::Ceil( a ); } );
         RegisterTest( tests, "f32 floor", []( TestRegf32 a ) { return FS::Floor( a ); } );
+        RegisterTest( tests, "f32 trunc", []( TestRegf32 a ) { return FS::Trunc( a ); } );
+        RegisterTest( tests, "f32 signbit", []( TestRegf32 a, TestRegf32 b ) { return FS::SignBit( a ) ^ b; } );
+        //RegisterTest( tests, "f32 modulus", []( TestRegf32 a, TestRegf32 b ) { return FS::Modulus( a, b ); } );
 
         RegisterTest( tests, "f32 sqrt", []( TestRegf32 a ) { return FS::Sqrt( FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-16f ) ), TestRegf32( 1.e+16f ) ) ); } );
         RegisterTest( tests, "f32 inv sqrt", []( TestRegf32 a ) { return FS::InvSqrt( FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-16f ) ), TestRegf32( 1.e+16f ) ) ); } ).relaxedAccuracy = 8192;
         RegisterTest( tests, "f32 reciprocal", []( TestRegf32 a ) {
-            TestRegf32 clamped = FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-16f ) ), TestRegf32( 1.e+16f ) );
-            return FS::Reciprocal( FS::Select( a > TestRegf32( 0 ), clamped, -clamped ) );
+            a = FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-16f ) ), TestRegf32( 1.e+16f ) ) | FS::SignBit( a );
+            return FS::Reciprocal( a );
         } ).relaxedAccuracy = 8192;
 
         RegisterTest( tests, "f32 cos", []( TestRegf32 a ) { return FS::Cos( FS::Min( FS::Max( a, TestRegf32( -1.e+16f ) ), TestRegf32( 1.e+16f ) ) ); } ).relaxedAccuracy = 8192;
@@ -419,7 +422,7 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
         RegisterTest( tests, "f32 pow", []( TestRegf32 a, TestRegf32 b ) { return FS::Pow( a, b ); } ).relaxedAccuracy = 8192;
 
         RegisterTest( tests, "i32 convert to f32", []( TestRegi32 a ) { return FS::Convert<float>( a ); } );
-        RegisterTest( tests, "f32 convert to i32", []( TestRegf32 a ) { return FS::Convert<int32_t>( FS::Min( FS::Max( a, TestRegf32( 2147483648 ) ), TestRegf32( 2147483520 ) ) ); } );
+        RegisterTest( tests, "f32 convert to i32", []( TestRegf32 a ) { return FS::Convert<int32_t>( FS::Min( FS::Max( a, TestRegf32( -2147483648 ) ), TestRegf32( 2147483520 ) ) ); } );
 
         RegisterTest( tests, "f32 cast to i32", []( TestRegf32 a ) { return FS::Cast<int32_t>( a ); } );
         RegisterTest( tests, "i32 cast to f32", []( TestRegi32 a ) { return FS::Cast<float>( a ); } );

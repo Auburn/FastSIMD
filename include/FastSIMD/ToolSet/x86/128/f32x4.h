@@ -183,6 +183,23 @@ namespace FS
             return MaskedIncrement( aRound < a, aRound );
         }
     }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
+    FS_FORCEINLINE f32<4, SIMD> Trunc( const f32<4, SIMD>& a )
+    {
+        if constexpr( SIMD & FastSIMD::FeatureFlag::SSE41 )
+        {
+            return _mm_round_ps( a.native, _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC );
+        }
+        else
+        {
+            __m128i aInt = _mm_cvttps_epi32( a.native );
+            __m128 aIntF = _mm_cvtepi32_ps( aInt );
+
+            return _mm_xor_ps( aIntF, _mm_and_ps( _mm_castsi128_ps( _mm_cmpeq_epi32( aInt, _mm_set1_epi32( (-2147483647 - 1) ) ) ), _mm_xor_ps( a.native, aIntF ) ) );
+
+        }
+    }
         
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Min( const f32<4, SIMD>& a, const f32<4, SIMD>& b )

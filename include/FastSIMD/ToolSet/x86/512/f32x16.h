@@ -154,6 +154,12 @@ namespace FS
     {
         return _mm512_roundscale_ps( a.native, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC );
     }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>>
+    FS_FORCEINLINE f32<16, SIMD> Trunc( const f32<16, SIMD>& a )
+    {
+        return _mm512_roundscale_ps( a.native, _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC );
+    }
         
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<16, SIMD>>>
     FS_FORCEINLINE f32<16, SIMD> Min( const f32<16, SIMD>& a, const f32<16, SIMD>& b )

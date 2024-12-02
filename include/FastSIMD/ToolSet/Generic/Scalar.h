@@ -82,6 +82,18 @@ namespace FS
     }
 
     template<typename T, FastSIMD::FeatureSet SIMD, typename = EnableIfNative<Register<T, 1, SIMD>>>
+    FS_FORCEINLINE Register<T, 1, SIMD> Trunc( const Register<T, 1, SIMD>& a )
+    {
+        return std::trunc( a.GetNative() );
+    }
+
+    template<typename T, FastSIMD::FeatureSet SIMD, typename = EnableIfNative<Register<T, 1, SIMD>>, typename = EnableIfNotRelaxed<SIMD>>
+    FS_FORCEINLINE f32<1, SIMD> Modulus( const Register<T, 1, SIMD>& a, const Register<T, 1, SIMD>& b )
+    {
+        return std::fmod( a.GetNative(), b.GetNative() );
+    }
+
+    template<typename T, FastSIMD::FeatureSet SIMD, typename = EnableIfNative<Register<T, 1, SIMD>>>
     FS_FORCEINLINE Register<T, 1, SIMD> Min( const Register<T, 1, SIMD>& a, const Register<T, 1, SIMD>& b )
     {
         return std::min( a.GetNative(), b.GetNative() );
