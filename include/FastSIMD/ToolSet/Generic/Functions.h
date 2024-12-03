@@ -487,7 +487,7 @@ namespace FS
         if constexpr( IsNativeV<Register<T, N, SIMD>> )
         {
             auto ab = a / b;
-            return (ab - FS::Trunc( ab )) * b;
+            return (ab - Trunc( ab )) * b;
         }
         else
         {
