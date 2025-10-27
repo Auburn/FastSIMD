@@ -244,12 +244,12 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = EnableIfRelaxed<SIMD>>
     FS_FORCEINLINE f32<4, SIMD> FMulAdd( const f32<4, SIMD>& a, const f32<4, SIMD>& b, const f32<4, SIMD>& c )
     {
-        return vmlaq_f32( b.native, c.native, a.native );
+        return vmlaq_f32( c.native, a.native, b.native );
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>, typename = EnableIfRelaxed<SIMD>>
     FS_FORCEINLINE f32<4, SIMD> FNMulAdd( const f32<4, SIMD>& a, const f32<4, SIMD>& b, const f32<4, SIMD>& c )
     {
-        return vmlaq_f32( b.native, c.native, a.native );
+        return vmlsq_f32( c.native, a.native, b.native );
     }
 }
