@@ -127,4 +127,76 @@ namespace FS
     {
         return std::sqrt( a.native.f );
     }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>, typename = EnableIfRelaxed<SIMD>>
+    FS_FORCEINLINE f32<1, SIMD> Sin( const f32<1, SIMD>& a )
+    {
+        return std::sin( a.native.f );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>, typename = EnableIfRelaxed<SIMD>>
+    FS_FORCEINLINE f32<1, SIMD> Cos( const f32<1, SIMD>& a )
+    {
+        return std::cos( a.native.f );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>, typename = EnableIfRelaxed<SIMD>>
+    FS_FORCEINLINE f32<1, SIMD> Log( const f32<1, SIMD>& a )
+    {
+        return std::log( a.native.f );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>, typename = EnableIfRelaxed<SIMD>>
+    FS_FORCEINLINE f32<1, SIMD> Exp( const f32<1, SIMD>& a )
+    {
+        return std::exp( a.native.f );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>, typename = EnableIfRelaxed<SIMD>>
+    FS_FORCEINLINE f32<1, SIMD> Pow( const f32<1, SIMD>& a, const f32<1, SIMD>& b )
+    {
+        return std::pow( a.native.f, b.native.f );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>, typename = EnableIfRelaxed<SIMD>>
+    FS_FORCEINLINE f32<1, SIMD> ACos( const f32<1, SIMD>& a )
+    {
+        return std::acos( a.native.f );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>, typename = EnableIfRelaxed<SIMD>>
+    FS_FORCEINLINE f32<1, SIMD> ASin( const f32<1, SIMD>& a )
+    {
+        return std::asin( a.native.f );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>, typename = EnableIfRelaxed<SIMD>>
+    FS_FORCEINLINE f32<1, SIMD> ATan( const f32<1, SIMD>& a )
+    {
+        return std::atan( a.native.f );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>, typename = EnableIfRelaxed<SIMD>>
+    FS_FORCEINLINE f32<1, SIMD> ATan2( const f32<1, SIMD>& y, const f32<1, SIMD>& x )
+    {
+        return std::atan2( y.native.f, x.native.f );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>, typename = EnableIfRelaxed<SIMD>>
+    FS_FORCEINLINE f32<1, SIMD> Tan( const f32<1, SIMD>& a )
+    {
+        return std::tan( a.native.f );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>, typename = EnableIfRelaxed<SIMD>>
+    FS_FORCEINLINE f32<1, SIMD> Log2( const f32<1, SIMD>& a )
+    {
+        return std::log2( a.native.f );
+    }
+
+    template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<1, SIMD>>, typename = EnableIfRelaxed<SIMD>>
+    FS_FORCEINLINE f32<1, SIMD> Exp2( const f32<1, SIMD>& a )
+    {
+        return std::exp2( a.native.f );
+    }
 }

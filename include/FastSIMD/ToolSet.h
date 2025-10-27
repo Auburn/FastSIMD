@@ -21,6 +21,7 @@ namespace FastSIMD
 } // namespace FastSIMD
 
 #include "ToolSet/Generic/Functions.h"
+#include "ToolSet/Generic/Trig.h"
 
 #include "ToolSet/Generic/Scalar.h"
 

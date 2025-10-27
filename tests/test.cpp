@@ -221,11 +221,10 @@ struct TestRunner
 
         char* scalarResults = new char[RegisterBytes];
         char* simdResults   = new char[RegisterBytes];
+        int failed = 0;
 
         for( size_t idx = 0; idx < TestCount; idx += RegisterBytes / sizeof( int ) )
         {
-            int failed = 0;
-
             for( size_t testIdx = 0; testIdx < tests.size(); testIdx++ )
             {               
                 TestData& test = tests[testIdx];
@@ -262,6 +261,11 @@ struct TestRunner
                         std::cerr << "Inputs: " << tests[0].inputsFunc( idx, rndInts, rndFloats ) << std::endl;
                         failed++;
                     }
+                }
+
+                if( failed >= 3 )
+                {
+                    break;
                 }
             }
 

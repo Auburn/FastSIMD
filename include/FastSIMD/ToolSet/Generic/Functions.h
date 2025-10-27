@@ -51,6 +51,7 @@ namespace FS
         Store( ptr + N / 2, a.v1 );
     }
     
+    // Convert a mask into a uint bitmask of appropriate size for register element count
     template<std::size_t S, bool F, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE BitStorage<N> BitMask( const Register<Mask<S, F>, N, SIMD>& a )
     {
@@ -531,50 +532,7 @@ namespace FS
         return Register<T, N, SIMD>{ Sqrt( a.v0 ), Sqrt( a.v1 ) };
     }
 
-    template<std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE Register<float, N, SIMD> Cos( const Register<float, N, SIMD>& a )
-    {
-        if constexpr( IsNativeV<Register<float, N, SIMD>> )
-        {
-            using RegisterF = Register<float, N, SIMD>;
-            using RegisterI = Register<std::int32_t, N, SIMD>;
 
-            RegisterF value = Abs( a );
-            value -= Floor( value * RegisterF( 0.1591549f ) ) * RegisterF( 6.283185f );
-
-            auto geHalfPi  = value >= RegisterF( 1.570796f );
-            auto geHalfPi2 = value >= RegisterF( 3.141593f );
-            auto geHalfPi3 = value >= RegisterF( 4.7123889f );
-
-            RegisterF cosAngle;
-            cosAngle = value ^ Masked( geHalfPi, value ^ ( RegisterF( 3.141593f ) - value ) );
-            cosAngle = cosAngle ^ Masked( geHalfPi2, Cast<float>( RegisterI( 0x80000000 ) ) );
-            cosAngle = cosAngle ^ Masked( geHalfPi3, cosAngle ^ ( RegisterF( 6.283185f ) - value ) );
-
-            cosAngle *= cosAngle;
-
-            cosAngle = FMulAdd( cosAngle, FMulAdd( cosAngle, RegisterF( 0.03679168f ), RegisterF( -0.49558072f ) ), RegisterF( 0.99940307f ) );
-
-            return cosAngle ^ Masked( BitwiseAndNot( geHalfPi, geHalfPi3 ), Cast<float>( RegisterI( 0x80000000 ) ) );
-        }
-        else
-        {   
-            return Register<float, N, SIMD>{ Cos( a.v0 ), Cos( a.v1 ) };
-        }
-    }
-    
-    template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE Register<T, N, SIMD> Sin( const Register<T, N, SIMD>& a )
-    {
-        if constexpr( IsNativeV<Register<T, N, SIMD>> )
-        {
-            return Cos( Register<T, N, SIMD>( (T)1.57079632679 ) - a );
-        }
-        else
-        {
-            return Register<T, N, SIMD>{ Sin( a.v0 ), Sin( a.v1 ) };
-        }
-    }
     
     template<std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<float, N, SIMD> Exp( const Register<float, N, SIMD>& a )
@@ -693,7 +651,14 @@ namespace FS
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Pow( const Register<T, N, SIMD>& value, const Register<T, N, SIMD>& pow )
     {
-        return Exp( pow * Log( value ) );
+        if constexpr( IsNativeV<Register<T, N, SIMD>> )
+        {
+            return Exp( pow * Log( value ) );
+        }
+        else
+        {
+            return Register<T, N, SIMD>{ Pow( value.v0, pow.v0 ), Pow( value.v1, pow.v1 ) };
+        }
     }
     
     // Any Mask

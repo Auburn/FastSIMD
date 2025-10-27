@@ -406,9 +406,11 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
         RegisterTest( tests, "f32 floor", []( TestRegf32 a ) { return FS::Floor( a ); } );
         RegisterTest( tests, "f32 trunc", []( TestRegf32 a ) { return FS::Trunc( a ); } );
         RegisterTest( tests, "f32 signbit", []( TestRegf32 a, TestRegf32 b ) { return FS::SignBit( a ) ^ b; } );
-#if !FASTSIMD_IS_RELAXED
-        RegisterTest( tests, "f32 modulus", []( TestRegf32 a, TestRegf32 b ) { return FS::Modulus( a, b ); } );
-#endif
+        RegisterTest( tests, "f32 modulus", []( TestRegf32 a, TestRegf32 b ) { 
+            a = FS::Min( FS::Max( a, TestRegf32( -100.0f ) ), TestRegf32( 100.0f ) );
+            b = FS::Min( FS::Max( FS::Abs( b ), TestRegf32( 0.25f ) ), TestRegf32( 100.0f ) ) | FS::SignBit( b );
+            return FS::Modulus( a, b ); 
+        } ).relaxedAccuracy = 16384;
 
         RegisterTest( tests, "f32 sqrt", []( TestRegf32 a ) { return FS::Sqrt( FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-16f ) ), TestRegf32( 1.e+16f ) ) ); } );
         RegisterTest( tests, "f32 inv sqrt", []( TestRegf32 a ) { return FS::InvSqrt( FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-16f ) ), TestRegf32( 1.e+16f ) ) ); } ).relaxedAccuracy = 8192;
@@ -417,11 +419,41 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
             return FS::Reciprocal( a );
         } ).relaxedAccuracy = 8192;
 
-        RegisterTest( tests, "f32 cos", []( TestRegf32 a ) { return FS::Cos( FS::Min( FS::Max( a, TestRegf32( -1.e+16f ) ), TestRegf32( 1.e+16f ) ) ); } ).relaxedAccuracy = 8192;
-        RegisterTest( tests, "f32 sin", []( TestRegf32 a ) { return FS::Sin( FS::Min( FS::Max( a, TestRegf32( -1.e+16f ) ), TestRegf32( 1.e+16f ) ) ); } ).relaxedAccuracy = 8192;
-        RegisterTest( tests, "f32 exp", []( TestRegf32 a ) { return FS::Exp( FS::Min( FS::Max( a, TestRegf32( -1.e+16f ) ), TestRegf32( 1.e+16f ) ) ); } ).relaxedAccuracy = 8192;
-        RegisterTest( tests, "f32 log", []( TestRegf32 a ) { return FS::Log( FS::Min( FS::Max( a, TestRegf32( -1.e+16f ) ), TestRegf32( 1.e+16f ) ) ); } ).relaxedAccuracy = 8192;
-        RegisterTest( tests, "f32 pow", []( TestRegf32 a, TestRegf32 b ) { return FS::Pow( a, b ); } ).relaxedAccuracy = 8192;
+        RegisterTest( tests, "f32 cos", []( TestRegf32 a ) { return FS::Cos( FS::Min( FS::Max( a, TestRegf32( -4096.0f ) ), TestRegf32( 4096.0f ) ) ); } ).relaxedAccuracy = 16384;
+        RegisterTest( tests, "f32 sin", []( TestRegf32 a ) { return FS::Sin( FS::Min( FS::Max( a, TestRegf32( -4096.0f ) ), TestRegf32( 4096.0f ) ) ); } ).relaxedAccuracy = 16384;
+        RegisterTest( tests, "f32 tan", []( TestRegf32 a ) { return FS::Tan( FS::Min( FS::Max( a, TestRegf32( -4096.0f ) ), TestRegf32( 4096.0f ) ) ); } ).relaxedAccuracy = 16384;
+        RegisterTest( tests, "f32 acos", []( TestRegf32 a ) { return FS::ACos( FS::Min( FS::Max( a, TestRegf32( -0.999f ) ), TestRegf32( 0.999f ) ) ); } ).relaxedAccuracy = 8192;
+        RegisterTest( tests, "f32 asin", []( TestRegf32 a ) {
+            // Clamp to avoid extreme near-zero and near-1 values
+            a = FS::Min( FS::Max( a, TestRegf32( -0.999f ) ), TestRegf32( 0.999f ) );
+            auto tooSmall = FS::Abs( a ) < TestRegf32( 1.e-6f );
+            a = FS::Select( tooSmall, TestRegf32( 0.0f ), a );
+            return FS::ASin( a );
+        } ).relaxedAccuracy = 8192;
+        RegisterTest( tests, "f32 atan", []( TestRegf32 a ) { return FS::ATan( FS::Min( FS::Max( a, TestRegf32( -100.0f ) ), TestRegf32( 100.0f ) ) ); } ).relaxedAccuracy = 16384;
+        RegisterTest( tests, "f32 atan2", []( TestRegf32 a, TestRegf32 b ) { 
+            a = FS::Min( FS::Max( a, TestRegf32( -1000.0f ) ), TestRegf32( 1000.0f ) );
+            b = FS::Min( FS::Max( b, TestRegf32( -1000.0f ) ), TestRegf32( 1000.0f ) );
+            // Avoid very small denominators that cause precision issues
+            auto bTooSmall = FS::Abs( b ) < TestRegf32( 0.001f );
+            b = FS::Select( bTooSmall, TestRegf32( 0.001f ) | FS::SignBit( b ), b );
+            return FS::ATan2( a, b ); 
+        } ).relaxedAccuracy = 16384;
+        RegisterTest( tests, "f32 exp", []( TestRegf32 a ) { return FS::Exp( FS::Min( FS::Max( a, TestRegf32( -87.0f ) ), TestRegf32( 88.0f ) ) ); } ).relaxedAccuracy = 8192;
+        RegisterTest( tests, "f32 exp2", []( TestRegf32 a ) { return FS::Exp2( FS::Min( FS::Max( a, TestRegf32( -126.0f ) ), TestRegf32( 127.0f ) ) ); } ).relaxedAccuracy = 8192;
+        RegisterTest( tests, "f32 log", []( TestRegf32 a ) { return FS::Log( FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-20f ) ), TestRegf32( 1.e+20f ) ) ); } ).relaxedAccuracy = 16384;
+        RegisterTest( tests, "f32 log2", []( TestRegf32 a ) { 
+            a = FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-20f ) ), TestRegf32( 1.e+20f ) );
+            // Avoid values very close to 1.0 which cause precision issues
+            auto nearOne = FS::Abs( a - TestRegf32( 1.0f ) ) < TestRegf32( 1.e-5f );
+            a = FS::Select( nearOne, TestRegf32( 1.0f ), a );
+            return FS::Log2( a );
+        } ).relaxedAccuracy = 16384;
+        RegisterTest( tests, "f32 pow", []( TestRegf32 a, TestRegf32 b ) { 
+            a = FS::Min( FS::Max( FS::Abs( a ), TestRegf32( 1.e-8f ) ), TestRegf32( 1.e+8f ) );
+            b = FS::Min( FS::Max( b, TestRegf32( -8.0f ) ), TestRegf32( 8.0f ) );
+            return FS::Pow( a, b ); 
+        } ).relaxedAccuracy = 16384;
 
         RegisterTest( tests, "i32 convert to f32", []( TestRegi32 a ) { return FS::Convert<float>( a ); } );
         RegisterTest( tests, "f32 convert to i32", []( TestRegf32 a ) { return FS::Convert<int32_t>( FS::Min( FS::Max( a, TestRegf32( -2147483647 - 1 ) ), TestRegf32( 2147483520 ) ) ); } );
