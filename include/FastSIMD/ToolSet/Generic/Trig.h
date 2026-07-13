@@ -372,7 +372,7 @@ namespace FS
             auto gtOne = absX > Register<T, N, SIMD>( (T)1.0 );
             
             Register<T, N, SIMD> result = impl::ATan_Neg1_1( x );
-            Register<T, N, SIMD> recip = Reciprocal( x );
+            Register<T, N, SIMD> recip = Reciprocal( absX );
             Register<T, N, SIMD> atanRecip = impl::ATan_Neg1_1( recip );
             Register<T, N, SIMD> baseResult = Register<T, N, SIMD>( C::K_HALF_PI ) - atanRecip;
             Register<T, N, SIMD> resultGtOne = xSign ^ baseResult;

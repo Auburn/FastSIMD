@@ -206,7 +206,7 @@ namespace FS
         if constexpr( IsNativeV<Register<T, N, SIMD>> )
         {
             if constexpr( std::is_same_v<typename Register<U, N, SIMD>::NativeType, typename Register<U, N, SIMD>::MaskType::NativeType> )
-        {
+            {
                 return Select( FS::Cast<typename Register<U, N, SIMD>::MaskType::ElementType>( FS::Cast<std::int32_t>( mask ) >> 31 ), ifTrue, ifFalse );                
             }
             else
@@ -488,7 +488,7 @@ namespace FS
         if constexpr( IsNativeV<Register<T, N, SIMD>> )
         {
             auto ab = a / b;
-            return (ab - Trunc( ab )) * b;
+            return a - Trunc( ab ) * b;
         }
         else
         {
