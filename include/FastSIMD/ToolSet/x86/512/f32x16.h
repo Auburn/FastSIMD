@@ -86,7 +86,7 @@ namespace FS
         
         FS_FORCEINLINE MaskType operator !=( const Register& rhs ) const
         {
-            return _mm512_cmp_ps_mask( native, rhs.native, _CMP_NEQ_OQ );
+            return _mm512_cmp_ps_mask( native, rhs.native, _CMP_NEQ_UQ );
         }
         
         FS_FORCEINLINE MaskType operator >=( const Register& rhs ) const
