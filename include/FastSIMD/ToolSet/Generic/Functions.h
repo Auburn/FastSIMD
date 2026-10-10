@@ -634,7 +634,7 @@ namespace FS
 
             RegisterF xx = value * value;
             y *= xx;
-            y *= e * RegisterF( -2.12194440e-4f );
+            y += e * RegisterF( -2.12194440e-4f );
             y -= xx * RegisterF( 0.5f );
 
             value += y;
