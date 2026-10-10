@@ -175,70 +175,94 @@ namespace FS
         DoubledType v0, v1;
     };
 
+    // Binary operators copy lhs into a local rather than taking it by value
+    // MSVC x86 doesn't copy over-aligned by value arguments, so modifying a by value lhs wrote into the caller's register
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE static Register<T, N, SIMD> operator +( Register<T, N, SIMD> lhs, const Register<T, N, SIMD>& rhs )
+    FS_FORCEINLINE static Register<T, N, SIMD> operator +( const Register<T, N, SIMD>& lhs, const Register<T, N, SIMD>& rhs )
     {
-        return lhs += rhs;
+        Register<T, N, SIMD> result = lhs;
+        result += rhs;
+        return result;
     }
 
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE static Register<T, N, SIMD> operator -( Register<T, N, SIMD> lhs, const Register<T, N, SIMD>& rhs )
+    FS_FORCEINLINE static Register<T, N, SIMD> operator -( const Register<T, N, SIMD>& lhs, const Register<T, N, SIMD>& rhs )
     {
-        return lhs -= rhs;
+        Register<T, N, SIMD> result = lhs;
+        result -= rhs;
+        return result;
     }
 
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE static Register<T, N, SIMD> operator *( Register<T, N, SIMD> lhs, const Register<T, N, SIMD>& rhs )
+    FS_FORCEINLINE static Register<T, N, SIMD> operator *( const Register<T, N, SIMD>& lhs, const Register<T, N, SIMD>& rhs )
     {
-        return lhs *= rhs;
+        Register<T, N, SIMD> result = lhs;
+        result *= rhs;
+        return result;
     }
 
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE static Register<T, N, SIMD> operator /( Register<T, N, SIMD> lhs, const Register<T, N, SIMD>& rhs )
+    FS_FORCEINLINE static Register<T, N, SIMD> operator /( const Register<T, N, SIMD>& lhs, const Register<T, N, SIMD>& rhs )
     {
-        return lhs /= rhs;
+        Register<T, N, SIMD> result = lhs;
+        result /= rhs;
+        return result;
     }
 
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE static Register<T, N, SIMD> operator &( Register<T, N, SIMD> lhs, const Register<T, N, SIMD>& rhs )
+    FS_FORCEINLINE static Register<T, N, SIMD> operator &( const Register<T, N, SIMD>& lhs, const Register<T, N, SIMD>& rhs )
     {
-        return lhs &= rhs;
+        Register<T, N, SIMD> result = lhs;
+        result &= rhs;
+        return result;
     }
 
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE static Register<T, N, SIMD> operator |( Register<T, N, SIMD> lhs, const Register<T, N, SIMD>& rhs )
+    FS_FORCEINLINE static Register<T, N, SIMD> operator |( const Register<T, N, SIMD>& lhs, const Register<T, N, SIMD>& rhs )
     {
-        return lhs |= rhs;
+        Register<T, N, SIMD> result = lhs;
+        result |= rhs;
+        return result;
     }
 
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE static Register<T, N, SIMD> operator ^( Register<T, N, SIMD> lhs, const Register<T, N, SIMD>& rhs )
+    FS_FORCEINLINE static Register<T, N, SIMD> operator ^( const Register<T, N, SIMD>& lhs, const Register<T, N, SIMD>& rhs )
     {
-        return lhs ^= rhs;
+        Register<T, N, SIMD> result = lhs;
+        result ^= rhs;
+        return result;
     }
 
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE static Register<T, N, SIMD> operator <<( Register<T, N, SIMD> lhs, int rhs )
+    FS_FORCEINLINE static Register<T, N, SIMD> operator <<( const Register<T, N, SIMD>& lhs, int rhs )
     {
-        return lhs <<= rhs;
+        Register<T, N, SIMD> result = lhs;
+        result <<= rhs;
+        return result;
     }
 
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE static Register<T, N, SIMD> operator >>( Register<T, N, SIMD> lhs, int rhs )
+    FS_FORCEINLINE static Register<T, N, SIMD> operator >>( const Register<T, N, SIMD>& lhs, int rhs )
     {
-        return lhs >>= rhs;
+        Register<T, N, SIMD> result = lhs;
+        result >>= rhs;
+        return result;
     }
 
     template<typename T, typename U, std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE static Register<T, N, SIMD> operator<<( Register<T, N, SIMD> lhs, Register<U, N, SIMD> rhs )
+    FS_FORCEINLINE static Register<T, N, SIMD> operator<<( const Register<T, N, SIMD>& lhs, const Register<U, N, SIMD>& rhs )
     {
-        return lhs <<= rhs;
+        Register<T, N, SIMD> result = lhs;
+        result <<= rhs;
+        return result;
     }
 
     template<typename T, typename U, std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE static Register<T, N, SIMD> operator>>( Register<T, N, SIMD> lhs, Register<U, N, SIMD> rhs )
+    FS_FORCEINLINE static Register<T, N, SIMD> operator>>( const Register<T, N, SIMD>& lhs, const Register<U, N, SIMD>& rhs )
     {
-        return lhs >>= rhs;
+        Register<T, N, SIMD> result = lhs;
+        result >>= rhs;
+        return result;
     }
 
     template<typename T, std::size_t N = 0, FastSIMD::FeatureSet SIMD = FastSIMD::FeatureSetDefault()>
