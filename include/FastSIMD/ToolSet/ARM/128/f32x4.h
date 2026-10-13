@@ -192,8 +192,8 @@ namespace FS
         }
         else
         {
-            // b < a ? b : a, matching std::min for +-0 and NaN, which vminq does not
-            return vbslq_f32( vcltq_f32( b.native, a.native ), b.native, a.native );
+            // Same as std::min for +-0 and NaN, which vminq is not
+            return Select( b < a, b, a );
         }
     }
         
@@ -206,8 +206,8 @@ namespace FS
         }
         else
         {
-            // a < b ? b : a, matching std::max for +-0 and NaN, which vmaxq does not
-            return vbslq_f32( vcltq_f32( a.native, b.native ), b.native, a.native );
+            // Same as std::max for +-0 and NaN, which vmaxq is not
+            return Select( a < b, b, a );
         }
     }
         
