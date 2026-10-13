@@ -454,6 +454,14 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
             b = FS::Min( FS::Max( b, TestRegf32( -8.0f ) ), TestRegf32( 8.0f ) );
             return FS::Pow( a, b ); 
         } ).relaxedAccuracy = 16384;
+        RegisterTest( tests, "f32 pow zero base", []( TestRegf32 a, TestRegf32 b ) {
+            // Negative inputs become a zero base, ranges avoid Exp overflow
+            auto zero = a < TestRegf32( 0.0f );
+            a = FS::Min( FS::Max( a, TestRegf32( 1.e-4f ) ), TestRegf32( 1.e+4f ) );
+            a = FS::Select( zero, TestRegf32( 0.0f ), a );
+            b = FS::Min( FS::Max( FS::Abs( b ), TestRegf32( 0.1f ) ), TestRegf32( 8.0f ) );
+            return FS::Pow( a, b );
+        } ).relaxedAccuracy = 16384;
 
         RegisterTest( tests, "i32 convert to f32", []( TestRegi32 a ) { return FS::Convert<float>( a ); } );
         RegisterTest( tests, "f32 convert to i32", []( TestRegf32 a ) { return FS::Convert<int32_t>( FS::Min( FS::Max( a, TestRegf32( -2147483647 - 1 ) ), TestRegf32( 2147483520 ) ) ); } );
