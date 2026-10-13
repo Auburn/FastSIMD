@@ -86,7 +86,7 @@ namespace FS
         
         FS_FORCEINLINE MaskType operator !=( const Register& rhs ) const
         {
-            return _mm256_cmp_ps( native, rhs.native, _CMP_NEQ_OQ );
+            return _mm256_cmp_ps( native, rhs.native, _CMP_NEQ_UQ );
         }
         
         FS_FORCEINLINE MaskType operator >=( const Register& rhs ) const
@@ -165,13 +165,15 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<8, SIMD>>>
     FS_FORCEINLINE f32<8, SIMD> Min( const f32<8, SIMD>& a, const f32<8, SIMD>& b )
     {
-        return _mm256_min_ps( a.native, b.native );
+        // minps returns its 2nd operand for equal (+-0) or NaN inputs, swapped to match std::min which returns a
+        return _mm256_min_ps( b.native, a.native );
     }
         
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<8, SIMD>>>
     FS_FORCEINLINE f32<8, SIMD> Max( const f32<8, SIMD>& a, const f32<8, SIMD>& b )
     {
-        return _mm256_max_ps( a.native, b.native );
+        // maxps returns its 2nd operand for equal (+-0) or NaN inputs, swapped to match std::max which returns a
+        return _mm256_max_ps( b.native, a.native );
     }
         
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<8, SIMD>>>

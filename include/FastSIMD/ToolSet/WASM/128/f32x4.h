@@ -168,7 +168,8 @@ namespace FS
         }
         else
         {
-            return wasm_f32x4_min( a.native, b.native );
+            // pmin is b < a ? b : a, matching std::min for +-0 and NaN, which min does not
+            return wasm_f32x4_pmin( a.native, b.native );
         }
     }
 
@@ -181,7 +182,8 @@ namespace FS
         }
         else
         {
-            return wasm_f32x4_max( a.native, b.native );
+            // pmax is a < b ? b : a, matching std::max for +-0 and NaN, which max does not
+            return wasm_f32x4_pmax( a.native, b.native );
         }
     }
 

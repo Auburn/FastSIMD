@@ -114,6 +114,15 @@ function(fastsimd_create_dispatch_library simd_library_name)
     if(fastsimd_create_dispatch_library_RELAXED)
         target_compile_definitions(${simd_library_name} PUBLIC FASTSIMD_IS_RELAXED=1)
         set(relaxed_log_msg " (RELAXED)")
+    else()
+        # Non relaxed results must match across feature sets, stop the compiler fusing mul + add into FMA
+        # -mno-fma isn't enough, AVX512F has its own FMA instructions
+        # MSVC is also set for clang-cl, which ignores a bare -ffp-contract=off
+        if(MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+            target_compile_options(${simd_library_name} PRIVATE /clang:-ffp-contract=off)
+        elseif(NOT MSVC)
+            target_compile_options(${simd_library_name} PRIVATE -ffp-contract=off)
+        endif()
     endif()
 
     set(feature_set_list "")

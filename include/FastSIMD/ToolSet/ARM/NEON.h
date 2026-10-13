@@ -19,24 +19,50 @@ namespace FS
         return vcvtq_f32_s32( a.native );
     }
 
+    namespace impl
+    {
+        // Native casts go through uint32x4_t and pick the reinterpret by element type, not native type
+        // With the MSVC ARM64 ABI every NEON vector type is the same __n128, so native types can't be told apart
+        template<typename T, typename V>
+        FS_FORCEINLINE uint32x4_t NeonCastToU32( V a )
+        {
+            if constexpr( std::is_same_v<T, float> )
+            {
+                return vreinterpretq_u32_f32( a );
+            }
+            else if constexpr( std::is_same_v<T, std::int32_t> )
+            {
+                return vreinterpretq_u32_s32( a );
+            }
+            else
+            {
+                static_assert( std::is_same_v<T, Mask<32, true>> || std::is_same_v<T, Mask<32, false>>, "FastSIMD: FS::Cast not supported with provided types" );
+                return a;
+            }
+        }
+
+        template<typename U>
+        FS_FORCEINLINE auto NeonCastFromU32( uint32x4_t a )
+        {
+            if constexpr( std::is_same_v<U, float> )
+            {
+                return vreinterpretq_f32_u32( a );
+            }
+            else if constexpr( std::is_same_v<U, std::int32_t> )
+            {
+                return vreinterpretq_s32_u32( a );
+            }
+            else
+            {
+                static_assert( std::is_same_v<U, Mask<32, true>> || std::is_same_v<U, Mask<32, false>>, "FastSIMD: FS::Cast not supported with provided types" );
+                return a;
+            }
+        }
+    }
+
     template<typename U, typename T, FastSIMD::FeatureSet SIMD, typename = EnableIfNative<Register<T, 4, SIMD>>>
     FS_FORCEINLINE Register<U, 4, SIMD> Cast( const Register<T, 4, SIMD>& a, TypeDummy<U> )
     {
-        if constexpr( 
-            std::is_same_v<typename Register<T, 4, SIMD>::NativeType, float32x4_t> &&
-            std::is_same_v<typename Register<U, 4, SIMD>::NativeType, int32x4_t> )
-        {
-            return vreinterpretq_s32_f32( a.GetNative() );
-        }
-        else if constexpr( 
-            std::is_same_v<typename Register<T, 4, SIMD>::NativeType, int32x4_t> &&
-            std::is_same_v<typename Register<U, 4, SIMD>::NativeType, float32x4_t> )
-        {
-            return vreinterpretq_f32_s32( a.GetNative() );
-        }
-        else
-        {
-            return a.GetNative();
-        }
+        return impl::NeonCastFromU32<U>( impl::NeonCastToU32<T>( a.GetNative() ) );
     }
 }

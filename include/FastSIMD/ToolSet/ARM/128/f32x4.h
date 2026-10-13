@@ -186,13 +186,29 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Min( const f32<4, SIMD>& a, const f32<4, SIMD>& b )
     {
-        return vminq_f32( a.native, b.native );
+        if constexpr( FastSIMD::IsRelaxed() )
+        {
+            return vminq_f32( a.native, b.native );
+        }
+        else
+        {
+            // Same as std::min for +-0 and NaN, which vminq is not
+            return Select( b < a, b, a );
+        }
     }
         
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Max( const f32<4, SIMD>& a, const f32<4, SIMD>& b )
     {
-        return vmaxq_f32( a.native, b.native );
+        if constexpr( FastSIMD::IsRelaxed() )
+        {
+            return vmaxq_f32( a.native, b.native );
+        }
+        else
+        {
+            // Same as std::max for +-0 and NaN, which vmaxq is not
+            return Select( a < b, b, a );
+        }
     }
         
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
