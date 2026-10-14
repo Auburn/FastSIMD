@@ -18,6 +18,12 @@ namespace FS
         FS_FORCEINLINE Register() = default;
         FS_FORCEINLINE Register( NativeType v ) : native( v ) { }
         FS_FORCEINLINE Register( std::int32_t v ) : native( _mm512_set1_epi32( v ) ) { }
+#if defined( _MSC_VER ) && !defined( __clang__ )
+        // MSVC copies trivially copyable 64 byte structs as two 32 byte halves, reloading those as a 512 bit register
+        // stalls store forwarding. Copying the native vector keeps register copies in zmm registers
+        FS_FORCEINLINE Register( const Register& v ) : native( v.native ) { }
+        FS_FORCEINLINE Register& operator =( const Register& v ) { native = v.native; return *this; }
+#endif
         
         FS_FORCEINLINE NativeType GetNative() const
         {
