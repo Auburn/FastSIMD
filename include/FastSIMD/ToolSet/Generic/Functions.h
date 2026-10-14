@@ -569,10 +569,9 @@ namespace FS
             y *= value * value;
             y += value + RegisterF( 1 );        
 
-            /* build 2^n */
-            RegisterI i = Convert<std::int32_t>( fx );
+            /* build 2^n: fx is an integer in [-127, 128], adding 2^23 + 127 puts fx + 127 in the low mantissa bits */
+            RegisterI i = Cast<std::int32_t>( fx + RegisterF( 8388608.0f + 127.0f ) );
 
-            i += RegisterI( 0x7f );
             i <<= 23;
             RegisterF pow2n = Cast<float>( i );
         
@@ -594,20 +593,15 @@ namespace FS
             using RegisterI = Register<std::int32_t, N, SIMD>;
 
             RegisterF value = Max( a, Cast<float>( RegisterI( 0x00800000 ) ) );  /* cut off denormalized stuff */
-            
-            RegisterI i = BitShiftRightZeroExtend( Cast<std::int32_t>( value ), 23 );
 
-            /* keep only the fractional part */
-            value &= Cast<float>( RegisterI( ~0x7f800000 ) );
-            value |= RegisterF( 0.5f );
+            /* split value into 2^e * m with m in [sqrt(0.5), sqrt(2)): subtracting the bits of sqrt(0.5) borrows from
+               the exponent when the mantissa is below sqrt(2), then the low bits plus sqrt(0.5)'s give m (same e and m as
+               taking the [0.5, 1) mantissa and doubling it below sqrt(0.5)) */
+            RegisterI bits = Cast<std::int32_t>( value ) - RegisterI( 0x3f3504f3 );
+            RegisterF e = Convert<float>( bits >> 23 );
 
-            auto mask = value < RegisterF( 0.707106781186547524f );
-            value = MaskedAdd( mask, value, value );
+            value = Cast<float>( ( bits & RegisterI( 0x007fffff ) ) + RegisterI( 0x3f3504f3 ) );
             value -= RegisterF( 1 );
-
-            /* unbiased exponent + 1, minus 1 where the mantissa was doubled (small integers, exact in int or float) */
-            i = MaskedDecrement( mask, i - RegisterI( 0x7e ) );
-            RegisterF e = Convert<float>( i );
 
             RegisterF y = RegisterF( 7.0376836292E-2f );
             y *= value;
