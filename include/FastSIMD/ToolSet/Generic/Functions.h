@@ -550,7 +550,16 @@ namespace FS
             RegisterF fx = value * RegisterF( 1.44269504088896341f );
             fx += RegisterF( 0.5f );
 
-            fx = Floor( fx );
+            if constexpr( ( SIMD & FastSIMD::FeatureFlag::SSE2 ) && !( SIMD & FastSIMD::FeatureFlag::SSE41 ) )
+            {
+                /* no round instruction: fx is in [-127, 128], so floor via int round trip without SSE2 Floor's overflow handling */
+                RegisterF rounded = Convert<float>( Convert<std::int32_t>( fx ) );
+                fx = MaskedDecrement( rounded > fx, rounded );
+            }
+            else
+            {
+                fx = Floor( fx );
+            }
 
             value -= fx * RegisterF( 0.693359375f );
             value -= fx * RegisterF( -2.12194440e-4f );
