@@ -648,12 +648,13 @@ namespace FS
         }
     }
     
+    // value <= 0 returns 0, matching 0^pow for pow > 0
     template<typename T, std::size_t N, FastSIMD::FeatureSet SIMD>
     FS_FORCEINLINE Register<T, N, SIMD> Pow( const Register<T, N, SIMD>& value, const Register<T, N, SIMD>& pow )
     {
         if constexpr( IsNativeV<Register<T, N, SIMD>> )
         {
-            return Exp( pow * Log( value ) );
+            return Masked( value > Register<T, N, SIMD>( 0 ), Exp( pow * Log( value ) ) );
         }
         else
         {
