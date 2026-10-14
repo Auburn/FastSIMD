@@ -21,8 +21,8 @@ namespace FS
             static constexpr T K_INV_PI      = (T)0.3183098861837907;
             static constexpr T K_INV_TWO_PI  = (T)0.1591549430918953;
             static constexpr T K_INV_HALF_PI = (T)0.6366197723675813;
-            static constexpr T K_INV_LN_2    = (T)0.6931471805599453;
-            static constexpr T K_LN_2        = (T)1.4426950408889634;
+            static constexpr T K_LN_2        = (T)0.6931471805599453;
+            static constexpr T K_INV_LN_2    = (T)1.4426950408889634;
             
             // ACOS polynomial coefficients
             static constexpr T ACOS_DEG8_C0  = (T)+1.5707963267948966;
@@ -524,7 +524,7 @@ namespace FS
         if constexpr( IsNativeV<Register<T, N, SIMD>> )
         {
             using C = impl::TrigConstants<T>;
-            return Log2( x ) * Register<T, N, SIMD>( C::K_INV_LN_2 );
+            return Log2( x ) * Register<T, N, SIMD>( C::K_LN_2 );
         }
         else
         {
@@ -560,7 +560,7 @@ namespace FS
         if constexpr( IsNativeV<Register<T, N, SIMD>> )
         {
             using C = impl::TrigConstants<T>;
-            return Exp2( Register<T, N, SIMD>( C::K_LN_2 ) * x );
+            return Exp2( Register<T, N, SIMD>( C::K_INV_LN_2 ) * x );
         }
         else
         {
