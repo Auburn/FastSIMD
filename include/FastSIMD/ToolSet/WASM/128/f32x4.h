@@ -190,7 +190,15 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE f32<4, SIMD> Select( const typename f32<4, SIMD>::MaskTypeArg& mask, const f32<4, SIMD>& ifTrue, const f32<4, SIMD>& ifFalse )
     {
-        return wasm_v128_bitselect( ifTrue.native, ifFalse.native, mask.native );
+        if constexpr( FastSIMD::IsRelaxed() )
+        {
+            // Mask lanes are all ones or all zeros, laneselect is a single blend on x64 hosts (bitselect is and/andnot/or)
+            return wasm_i32x4_relaxed_laneselect( ifTrue.native, ifFalse.native, mask.native );
+        }
+        else
+        {
+            return wasm_v128_bitselect( ifTrue.native, ifFalse.native, mask.native );
+        }
     }
 
 
