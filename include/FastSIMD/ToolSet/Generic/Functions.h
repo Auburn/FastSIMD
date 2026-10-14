@@ -550,8 +550,7 @@ namespace FS
             RegisterF fx = value * RegisterF( 1.44269504088896341f );
             fx += RegisterF( 0.5f );
 
-            RegisterF flr = Floor( fx );  
-            fx = MaskedDecrement( flr > fx, flr );
+            fx = Floor( fx );
 
             value -= fx * RegisterF( 0.693359375f );
             value -= fx * RegisterF( -2.12194440e-4f );
@@ -585,15 +584,14 @@ namespace FS
         }
     }
     
-    template<std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE Register<float, N, SIMD> Log( const Register<float, N, SIMD>& a )
+    namespace impl
     {
-        if constexpr( IsNativeV<Register<float, N, SIMD>> )
+        // Natural log of a native register, without zeroing the a <= 0 lanes (they hold finite garbage)
+        template<std::size_t N, FastSIMD::FeatureSet SIMD>
+        FS_FORCEINLINE Register<float, N, SIMD> LogUnmasked( const Register<float, N, SIMD>& a )
         {
             using RegisterF = Register<float, N, SIMD>;
             using RegisterI = Register<std::int32_t, N, SIMD>;
-                
-            auto validMask = a > RegisterF( 0 );
 
             RegisterF value = Max( a, Cast<float>( RegisterI( 0x00800000 ) ) );  /* cut off denormalized stuff */
             
@@ -602,16 +600,14 @@ namespace FS
             /* keep only the fractional part */
             value &= Cast<float>( RegisterI( ~0x7f800000 ) );
             value |= RegisterF( 0.5f );
-            
-            i -= RegisterI( 0x7f );
-            RegisterF e = Convert<float>( i );
-
-            e += RegisterF( 1 );
 
             auto mask = value < RegisterF( 0.707106781186547524f );
             value = MaskedAdd( mask, value, value );
             value -= RegisterF( 1 );
-            e = MaskedDecrement( mask, e );
+
+            /* unbiased exponent + 1, minus 1 where the mantissa was doubled (small integers, exact in int or float) */
+            i = MaskedDecrement( mask, i - RegisterI( 0x7e ) );
+            RegisterF e = Convert<float>( i );
 
             RegisterF y = RegisterF( 7.0376836292E-2f );
             y *= value;
@@ -640,7 +636,16 @@ namespace FS
             value += y;
             value += e * RegisterF( 0.693359375f );
 
-            return Masked( validMask, value );
+            return value;
+        }
+    }
+
+    template<std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<float, N, SIMD> Log( const Register<float, N, SIMD>& a )
+    {
+        if constexpr( IsNativeV<Register<float, N, SIMD>> )
+        {
+            return Masked( a > Register<float, N, SIMD>( 0 ), impl::LogUnmasked( a ) );
         }
         else
         {   
@@ -654,7 +659,15 @@ namespace FS
     {
         if constexpr( IsNativeV<Register<T, N, SIMD>> )
         {
-            return Masked( value > Register<T, N, SIMD>( 0 ), Exp( pow * Log( value ) ) );
+            if constexpr( std::is_same_v<T, float> )
+            {
+                // The outer mask already zeroes value <= 0, so skip Log's own mask
+                return Masked( value > Register<T, N, SIMD>( 0 ), Exp( pow * impl::LogUnmasked( value ) ) );
+            }
+            else
+            {
+                return Masked( value > Register<T, N, SIMD>( 0 ), Exp( pow * Log( value ) ) );
+            }
         }
         else
         {
