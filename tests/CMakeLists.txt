@@ -25,7 +25,7 @@ foreach(register_bytes 16 32 64 128)
 endforeach()
 
 # "test" is a reserved target name when CTest is enabled
-add_executable(FastSIMD_tests "test.cpp")
+add_executable(FastSIMD_tests "test.cpp" "test_inputs.cpp")
 target_link_libraries(FastSIMD_tests PRIVATE FastSIMD ${simd_test_libraries})
 
 # Random inputs must be the same on every platform for a seed, stop arm64 compilers fusing the range maths into FMA
@@ -51,7 +51,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
   endif()
 
   # Single page to run the tests in a browser
-  add_executable(FastSIMD_tests_web "test.cpp")
+  add_executable(FastSIMD_tests_web "test.cpp" "test_inputs.cpp")
   target_link_libraries(FastSIMD_tests_web PRIVATE FastSIMD ${simd_test_libraries})
   set_target_properties(FastSIMD_tests_web PROPERTIES SUFFIX ".html")
   target_link_options(FastSIMD_tests_web PRIVATE -sALLOW_MEMORY_GROWTH=1 -sSINGLE_FILE $<$<CONFIG:Debug>:-g0>)
