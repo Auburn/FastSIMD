@@ -224,7 +224,8 @@ namespace FS
         }
         else
         {
-            return _mm_xor_ps( ifFalse.native, _mm_and_ps( mask.native, _mm_xor_ps( ifTrue.native, ifFalse.native ) ) );
+            // MSVC 19.51 miscompiles the equivalent xor( ifFalse, and( mask, xor( ifTrue, ifFalse ) ) ) inside FS::ATan2
+            return _mm_xor_ps( ifTrue.native, _mm_andnot_ps( mask.native, _mm_xor_ps( ifTrue.native, ifFalse.native ) ) );
         }
     }
 
