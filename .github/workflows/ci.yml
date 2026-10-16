@@ -64,3 +64,6 @@ jobs:
    
     - name: 'CMake Build Release'
       run: cmake --build ${{ github.workspace }}/release --config Release --parallel 4
+
+    - name: 'Test Release'
+      run: ctest --test-dir ${{ github.workspace }}/release -C Release --output-on-failure

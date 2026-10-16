@@ -44,6 +44,7 @@ if(FASTSIMD_DISPATCH_CLASS)
 endif()
 
 if(FASTSIMD_TESTS)
+    enable_testing()
     add_subdirectory(tests)
 endif()
 

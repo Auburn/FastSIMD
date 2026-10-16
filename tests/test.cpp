@@ -1,308 +1,767 @@
 #include "test.h"
+#include "test_inputs.h"
 
-#include <iomanip>
-#include <vector>
-#include <iostream>
-#include <cstring>
 #include <algorithm>
+#include <cctype>
+#include <cerrno>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <iomanip>
+#include <iostream>
+#include <iterator>
+#include <limits>
 #include <memory>
 #include <random>
+#include <sstream>
+#include <stdexcept>
 #include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
-#include <FastSIMD/simd_test_config.h>
+#include <FastSIMD/simd_test_16_config.h>
+#include <FastSIMD/simd_test_32_config.h>
+#include <FastSIMD/simd_test_64_config.h>
+#include <FastSIMD/simd_test_128_config.h>
+#include <FastSIMD/simd_test_relaxed_16_config.h>
+#include <FastSIMD/simd_test_relaxed_32_config.h>
+#include <FastSIMD/simd_test_relaxed_64_config.h>
+#include <FastSIMD/simd_test_relaxed_128_config.h>
 
-static constexpr size_t TestCount = 4096 * 4096;
+// Every register size has a test library pair, all created for the same feature sets
+using TestFeatureSets = FastSIMD::simd_test_16::CompiledFeatureSets;
 
-static int  * rndInts;
-static float* rndFloats;
+static_assert( std::is_same_v<TestFeatureSets, FastSIMD::simd_test_32::CompiledFeatureSets> &&
+               std::is_same_v<TestFeatureSets, FastSIMD::simd_test_64::CompiledFeatureSets> &&
+               std::is_same_v<TestFeatureSets, FastSIMD::simd_test_128::CompiledFeatureSets> &&
+               std::is_same_v<TestFeatureSets, FastSIMD::simd_test_relaxed_16::CompiledFeatureSets> &&
+               std::is_same_v<TestFeatureSets, FastSIMD::simd_test_relaxed_32::CompiledFeatureSets> &&
+               std::is_same_v<TestFeatureSets, FastSIMD::simd_test_relaxed_64::CompiledFeatureSets> &&
+               std::is_same_v<TestFeatureSets, FastSIMD::simd_test_relaxed_128::CompiledFeatureSets>,
+               "Every simd_test library must compile the same feature sets" );
 
-static float GenFiniteFloat( std::mt19937& gen )
+struct TestOptions
 {
-    union
-    {
-        float f;
-        int32_t i;
-    } u;
+    uint64_t seed = 24301;
+    uint64_t count = 1 << 22; // Random input values per test argument, after the special value combinations
+    std::string filter;       // Only run tests with names containing this
+    size_t registerBytes = 0; // Only run this register size, 0 for all
+    FastSIMD::FeatureSet maxFeatureSet = FastSIMD::FeatureSet::Max;
+    bool stats = false;       // Print the largest relaxed differences
+};
 
-    do
-    {
-        u.i = static_cast<int>( gen() );
+struct TestSummary
+{
+    size_t passed = 0;
+    std::vector<std::string> knownFailures;
+    std::vector<std::string> knownNotSeen;
+    std::vector<std::string> failed;
+};
 
-    } while( !std::isfinite( u.f ) );
+static constexpr int kMaxFailuresPerTier = 3;
 
-    return u.f;
+static std::string FeatureSetName( FastSIMD::FeatureSet featureSet )
+{
+    return FastSIMD::GetFeatureSetString( featureSet );
 }
 
-static void GenerateRandomValues()
+static std::string TierName( const TestTier& tier )
 {
-    std::cout << "Generating random values..." << std::endl;
-
-    rndInts = new int[TestCount + 1024];
-    rndFloats = new float[TestCount + 1024];
-
-    std::random_device rd;  //Will be used to obtain a seed for the random number engine
-    std::mt19937 gen( rd() ); //Standard mersenne_twister_engine seeded with rd()
-
-    for ( std::size_t i = 0; i < TestCount; i++ )
+    if( tier.kind == Tiers::Oracle )
     {
-        rndInts[i] = (int)gen();
-        rndFloats[i] = GenFiniteFloat( gen );
+        return "SCALAR vs ORACLE";
+    }
+    return FeatureSetName( tier.featureSet ) + ( tier.kind == Tiers::Relaxed ? " RELAXED" : "" );
+}
+
+static std::string JoinNames( const std::vector<std::string>& names )
+{
+    std::string joined;
+    for( size_t i = 0; i < names.size(); i++ )
+    {
+        joined += ( i ? ", " : "" ) + names[i];
+    }
+    return joined;
+}
+
+// A tier's own version of a test, everything else is the reference's
+struct TierTest
+{
+    TestTier tier;
+    std::function<TestFunction> testFunc;
+};
+
+// A test's SCALAR non relaxed reference registration, and the test function of every other tier in tier order
+struct Test
+{
+    std::string_view name;
+    TestData reference;
+    std::vector<TierTest> tiers;
+};
+
+using TestSet = std::vector<Test>;
+
+static void CheckReference( std::string_view testName, const TestData& reference )
+{
+    for( const KnownFailure& knownFailure : reference.knownFailures )
+    {
+        if( knownFailure.reason.empty() )
+        {
+            throw std::runtime_error( "Known failure with no reason in \"" + std::string( testName ) + "\"" );
+        }
+    }
+    ValidateInputs( testName, reference );
+}
+
+// Input conditions are a different function in each tier, so only whether there is one can be compared
+static bool SameKnownFailure( const KnownFailure& a, const KnownFailure& b )
+{
+    return a.reason == b.reason && a.tiers == b.tiers && a.minFeatureSet == b.minFeatureSet && a.maxFeatureSet == b.maxFeatureSet &&
+           a.zeroSignOnly == b.zeroSignOnly && !a.inputCondition == !b.inputCondition;
+}
+
+// Every tier's results are read as the reference's types and checked with the reference's settings, so a tier registering others is an error
+static void CheckMatchesReference( const Test& test, const TestTier& tier, const TestData& registered )
+{
+    const TestData& reference = test.reference;
+
+    if( registered.returnType != reference.returnType || registered.lanes != reference.lanes || registered.argCount != reference.argCount ||
+        !std::equal( registered.argTypes, registered.argTypes + kMaxTestArgs, reference.argTypes ) ||
+        !std::equal( registered.knownFailures.begin(), registered.knownFailures.end(), reference.knownFailures.begin(), reference.knownFailures.end(), SameKnownFailure ) ||
+        registered.bitExact != reference.bitExact ||
+        registered.relaxedTolerance != reference.relaxedTolerance || registered.scalarRelaxedTolerance != reference.scalarRelaxedTolerance )
+    {
+        throw std::runtime_error( "Tests do not match: " + std::string( test.name ) + " (" + TierName( tier ) + ")" );
+    }
+}
+
+// NewDispatchClass gives the highest compiled feature set up to the one asked for, every test library compiles TestFeatureSets so it's always that one
+template<size_t RegisterBytes, bool Relaxed>
+static void AddTier( TestSet& set, FastSIMD::FeatureSet featureSet )
+{
+    std::unique_ptr<TestFastSIMD<RegisterBytes, Relaxed>> testClass( FastSIMD::NewDispatchClass<TestFastSIMD<RegisterBytes, Relaxed>>( featureSet ) );
+
+    if( !testClass )
+    {
+        throw std::runtime_error( "No test class created for " + FeatureSetName( featureSet ) );
     }
 
-    //std::sort( rndFloats, rndFloats + TestCount + 1024, std::less() );
+    TestTier tier = { featureSet, Relaxed ? Tiers::Relaxed : Tiers::NonRelaxed };
+    bool isReference = featureSet == FastSIMD::FeatureSet::SCALAR && !Relaxed;
+
+    for( auto& registered : testClass->RegisterTests() )
+    {
+        std::string_view testName = registered.first;
+        TestData& test = registered.second;
+
+        auto find = std::find_if( set.begin(), set.end(), [testName]( const Test& other ) { return other.name == testName; } );
+
+        if( isReference )
+        {
+            if( find != set.end() )
+            {
+                throw std::runtime_error( "Multiple tests with same name: " + std::string( testName ) );
+            }
+            CheckReference( testName, test );
+            set.push_back( { testName, std::move( test ), {} } );
+            continue;
+        }
+
+        if( find == set.end() )
+        {
+            throw std::runtime_error( "\"" + std::string( testName ) + "\" has no SCALAR non relaxed reference" );
+        }
+        if( std::any_of( find->tiers.begin(), find->tiers.end(), [&]( const TierTest& other ) { return other.tier.featureSet == featureSet && other.tier.kind == tier.kind; } ) )
+        {
+            throw std::runtime_error( "Multiple tests with same name: " + std::string( testName ) + " (" + TierName( tier ) + ")" );
+        }
+        CheckMatchesReference( *find, tier, test );
+        find->tiers.push_back( { tier, std::move( test.testFunc ) } );
+    }
 }
 
+// Only creating the test classes depends on the register size
 template<size_t RegisterBytes>
-struct TestRunner
+static TestSet CollectTests( FastSIMD::FeatureSet maxFeatureSet )
 {
-    using TestSet = std::vector<std::pair<std::string_view, std::vector<TestData>>>;
+    TestSet set;
 
-    template<typename...>
-    struct TestOrganiser
+    for( FastSIMD::FeatureSet featureSet : TestFeatureSets::AsArray )
     {
-        static TestCollection GetCollections()
+        if( featureSet <= FastSIMD::DetectCpuMaxFeatureSet() && featureSet <= maxFeatureSet )
         {
-            return {};
+            std::cout << "Generating Tests: " << FeatureSetName( featureSet ) << std::endl;
+
+            AddTier<RegisterBytes, false>( set, featureSet );
+            AddTier<RegisterBytes, true>( set, featureSet );
         }
-    };
+    }
+    return set;
+}
 
-    template<FastSIMD::FeatureSet HEAD, FastSIMD::FeatureSet... TAIL>
-    struct TestOrganiser<FastSIMD::FeatureSetList<0, HEAD, TAIL...>>
-    { 
-        static TestCollection GetCollections()
-        {
-            TestCollection collections = TestOrganiser<FastSIMD::FeatureSetList<0, TAIL...>>::GetCollections();
+// Value of the least significant bit, relaxed differences are counted in these
+// Zero and denormals use the smallest normal rather than the denormal spacing, so relaxed results may flush denormals
+template<typename T>
+static T DeltaUnit( T x )
+{
+    x = std::fabs( x );
 
-            if( HEAD <= FastSIMD::DetectCpuMaxFeatureSet() )
-            {
-                std::cout << "Generating Tests: " << FastSIMD::GetFeatureSetString( HEAD ) << std::endl;
-                {
-                    std::unique_ptr<TestFastSIMD<RegisterBytes, true>> testSimd( FastSIMD::NewDispatchClass<TestFastSIMD<RegisterBytes, true>>( HEAD ) );
-
-                    TestCollection simdCollection = testSimd->RegisterTests();
-
-                    collections.insert( collections.begin(), simdCollection.begin(), simdCollection.end() );
-                }
-                {
-                    std::unique_ptr<TestFastSIMD<RegisterBytes, false>> testSimd( FastSIMD::NewDispatchClass<TestFastSIMD<RegisterBytes, false>>( HEAD ) );
-
-                    TestCollection simdCollection = testSimd->RegisterTests();
-
-                    collections.insert( collections.begin(), simdCollection.begin(), simdCollection.end() );
-                }
-            }
-
-            return collections;
-        }
-
-        static TestSet GetSet()
-        {
-            TestCollection collections = GetCollections();
-            TestSet set;
-            
-            for( auto& collection : collections )
-            {
-                std::string_view& testName = collection.first;
-
-                auto find = std::find_if( set.begin(), set.end(), [testName]( const auto& pair ){ return pair.first == testName; } );
-
-                if( find == set.end() )
-                {
-                    if( collection.second.featureSet != FastSIMD::FeatureSet::SCALAR )
-                    {
-                        throw std::runtime_error( "Scalar must be base test set" );
-                    }
-
-                    find = set.emplace( set.end(), testName, std::vector<TestData>{} );
-                }
-
-                find->second.emplace_back( collection.second );
-            }
-
-            return set;
-        }
-    };
-
-    // get value of least significant bit
-    static float DeltaUnit( float x )
+    if( !std::isfinite( x ) )
     {
-        union
-        {
-            float f;
-            uint32_t i;
-        } u;
-        x = std::fabs( x );
-
-        if( !std::isfinite( x ) )
-        {
-            return 1.f;
-        }
-        if( x == 0.f || !std::isnormal( x ) )
-        {
-            u.i = 0x00800000; // smallest positive normal number
-            return u.f;
-        }
-        float x1 = x;
-        u.f = x;
-        u.i++;
-        return u.f - x1;
+        return T( 1 );
+    }
+    if( x == T( 0 ) || !std::isnormal( x ) )
+    {
+        return std::numeric_limits<T>::min(); // smallest positive normal number
     }
 
-    template<typename T>
-    static bool CompareTyped( std::string_view testName, FastSIMD::FeatureSet featureSet, float accuracy, size_t outputCount, void* scalarResults, void* simdResults )
+    T above = std::nextafter( x, std::numeric_limits<T>::infinity() );
+
+    // The largest finite value has nothing finite above it, use the gap below instead
+    return std::isfinite( above ) ? above - x : x - std::nextafter( x, T( 0 ) );
+}
+
+enum class LaneResult
+{
+    Equal, ZeroSign, Different
+};
+
+struct LaneComparison
+{
+    LaneResult result;
+    double ulpsCovered = 0; // Relaxed difference only the ULP tolerance covered, for --stats
+    double absCovered = 0;  // Relaxed difference only the absolute tolerance covered
+};
+
+template<typename T>
+static LaneComparison CompareLane( const TestData& test, const TestTier& tier, T expected, T actual )
+{
+    if constexpr( std::is_floating_point_v<T> )
     {
-        bool success = true;
+        bool bitsEqual = ToBits( expected ) == ToBits( actual );
+        bool bothNaN = std::isnan( expected ) && std::isnan( actual );
 
-        const T* typedScalar = reinterpret_cast<T*>( scalarResults );
-        const T* typedSimd = reinterpret_cast<T*>( simdResults );
-
-        for( size_t idx = 0; idx < outputCount; idx++ )
+        if( bitsEqual || ( bothNaN && !test.bitExact ) )
         {
-            if( typedScalar[idx] != typedSimd[idx] )
+            return { LaneResult::Equal };
+        }
+
+        // Relaxed results are compared by value, so +0 and -0 are equal
+        if( tier.kind == Tiers::Relaxed && !test.bitExact )
+        {
+            if( expected == actual )
             {
-                float relativeDif = 0;
-
-                if constexpr( std::is_floating_point_v<T> )
-                {
-                    if( std::isnan( typedScalar[idx] ) && std::isnan( typedSimd[idx] ) )
-                    {
-                        continue;
-                    }
-
-                    relativeDif = std::abs( typedScalar[idx] - typedSimd[idx] ) / DeltaUnit( typedScalar[idx] );
-
-                    if( relativeDif <= accuracy )
-                    {
-                        continue;
-                    }
-                }
-                if( success )
-                {
-                    std::cerr << std::setprecision( 16 ) << std::boolalpha;
-                    std::cerr << "--- " << FastSIMD::GetFeatureSetString( featureSet ) << " FAILED ---" << std::endl;
-                }
-                std::cerr << "idx " << idx << ": " << testName
-                          << " Expected \"" << typedScalar[idx]
-                          << "\" Actual \"" << typedSimd[idx]
-                          << "\" Diff \"" << std::abs( typedScalar[idx] - typedSimd[idx] ) << "\"";
-
-                if( relativeDif != 0.0f )
-                {
-                    std::cerr << " (" << relativeDif << ")";
-                }
-                std::cerr << std::endl;
-                success = false;
-            }
-        }
-
-        return success;
-    }
-
-    static bool CompareOutputs( std::string_view testName, FastSIMD::FeatureSet featureSet, TestData::ReturnType returnType, float accuracy, size_t outputCount, void* scalarResults, void* simdResults )
-    {
-        switch( returnType )
-        {
-        case TestData::ReturnType::boolean:
-            return CompareTyped<bool>( testName, featureSet, accuracy, outputCount, scalarResults, simdResults );
-
-        case TestData::ReturnType::f32:
-            return CompareTyped<float>( testName, featureSet, accuracy, outputCount, scalarResults, simdResults );
-
-        case TestData::ReturnType::i32:
-            return CompareTyped<int32_t>( testName, featureSet, accuracy, outputCount, scalarResults, simdResults );
-        }
-
-        return false;
-    }
-
-    static void DoTest( std::string_view testName, std::vector<TestData>& tests )
-    {
-        std::cout << "Testing: " << testName << std::endl;
-
-        char* scalarResults = new char[RegisterBytes];
-        char* simdResults   = new char[RegisterBytes];
-        int failed = 0;
-
-        for( size_t idx = 0; idx < TestCount; idx += RegisterBytes / sizeof( int ) )
-        {
-            for( size_t testIdx = 0; testIdx < tests.size(); testIdx++ )
-            {               
-                TestData& test = tests[testIdx];
-            
-                char* resultsOut = testIdx ? simdResults : scalarResults;
-                std::memset( resultsOut, (int)testIdx, RegisterBytes );
-                
-                size_t outputCount = test.testFunc( resultsOut, idx, rndInts, rndFloats );
-
-                if( testIdx )
-                {
-                    if( test.returnType != tests[0].returnType )
-                    {
-                        std::cerr << "Tests do not match: " << testName; 
-                        throw std::exception();
-                    }
-                    if( test.featureSet == FastSIMD::FeatureSet::SCALAR && !test.relaxed )
-                    {
-                        std::cerr << "Multiple tests with same name: " << testName; 
-                        throw std::exception();
-                    }
-
-                    std::string testNameRelaxed = testName.data();
-                    float accuracy = 0;
-
-                    if( test.relaxed )
-                    {
-                        testNameRelaxed += " RELAXED";
-                        accuracy = test.relaxedAccuracy;
-                    }
-
-                    if( !CompareOutputs( testNameRelaxed, test.featureSet, test.returnType, accuracy, outputCount, scalarResults, simdResults ) )
-                    {
-                        std::cerr << "Inputs: " << tests[0].inputsFunc( idx, rndInts, rndFloats ) << std::endl;
-                        failed++;
-                    }
-                }
-
-                if( failed >= 3 )
-                {
-                    break;
-                }
+                return { LaneResult::Equal };
             }
 
-            if( failed >= 3 )
+            Tolerance tolerance = test.RelaxedTolerance( tier.featureSet );
+            double absoluteDif = std::abs( static_cast<double>( expected ) - static_cast<double>( actual ) );
+            double relativeDif = absoluteDif / DeltaUnit( expected );
+
+            if( relativeDif <= tolerance.ulps || absoluteDif <= tolerance.absolute )
             {
-                std::cerr << "Skipping test, fail limit reached" << std::endl;
-                break;
+                LaneComparison equal = { LaneResult::Equal };
+
+                // Track what each tolerance had to cover on its own
+                if( std::isfinite( absoluteDif ) )
+                {
+                    if( absoluteDif > tolerance.absolute )
+                    {
+                        equal.ulpsCovered = relativeDif;
+                    }
+                    if( relativeDif > tolerance.ulps )
+                    {
+                        equal.absCovered = absoluteDif;
+                    }
+                }
+                return equal;
             }
+            return { LaneResult::Different };
         }
-        
-        delete[] scalarResults;
-        delete[] simdResults;
+
+        return { expected == 0 && actual == 0 ? LaneResult::ZeroSign : LaneResult::Different };
     }
-
-    static void Run()
+    else
     {
-        std::cout << "Starting Tests - Register Size: " << RegisterBytes * 8 << " (" << RegisterBytes << "b)" << std::endl;
+        return { expected == actual ? LaneResult::Equal : LaneResult::Different };
+    }
+}
 
-        TestSet testSet = TestOrganiser<FastSIMD::simd_test::CompiledFeatureSets>::GetSet();
+template<typename T>
+static std::string Describe( T expected, T actual )
+{
+    std::ostringstream sstr;
+    sstr << std::setprecision( std::is_floating_point_v<T> ? std::numeric_limits<T>::max_digits10 : 16 ) << std::boolalpha;
+    sstr << "Expected \"" << expected << "\" Actual \"" << actual << "\"";
 
-        for( auto& test : testSet )
+    if constexpr( std::is_floating_point_v<T> )
+    {
+        T absoluteDif = std::abs( expected - actual );
+        sstr << " Diff \"" << absoluteDif << "\"";
+
+        if( std::isfinite( absoluteDif ) && absoluteDif != 0 )
         {
-            //if( test.first.find( "sqrt" ) != std::string_view::npos )
-            {
-                DoTest( test.first, test.second );
-            }
+            sstr << " (" << absoluteDif / DeltaUnit( expected ) << " ULP)";
         }
+        if( ToBits( expected ) != ToBits( actual ) && ( absoluteDif == 0 || std::isnan( absoluteDif ) ) )
+        {
+            sstr << std::hex << " (bits 0x" << ToBits( expected ) << " vs 0x" << ToBits( actual ) << ")" << std::dec;
+        }
+    }
+    else if constexpr( std::is_same_v<T, int32_t> )
+    {
+        sstr << " Diff \"" << static_cast<int64_t>( expected ) - static_cast<int64_t>( actual ) << "\"";
+    }
+    else if constexpr( std::is_same_v<T, int64_t> )
+    {
+        sstr << std::hex << " (bits 0x" << static_cast<uint64_t>( expected ) << " vs 0x" << static_cast<uint64_t>( actual ) << ")" << std::dec;
+    }
+    return sstr.str();
+}
 
-        std::cout << "Testing Complete!" << std::endl;
+// A tier's run state while one test runs
+struct Tier : TestTier
+{
+    std::string name;
+    const std::function<TestFunction>& testFunc; // The tier's test, or the oracle for the oracle tier
+    bool allDifferencesKnown; // A known failure covers any difference on this tier, so comparing more of its calls can't fail
+    size_t compared = 0;     // Calls compared
+    int failures = 0;        // Calls with differences not covered by a known failure
+    int knownCalls = 0;      // Calls with only known differences
+    double maxUlps = 0;      // Largest relaxed difference only the ULP tolerance covered, for --stats
+    double maxAbs = 0;       // Largest relaxed difference only the absolute tolerance covered
+
+    // A tier stops being checked after kMaxFailuresPerTier failing calls, or known failing calls if a known failure covers every difference
+    bool Stopped() const
+    {
+        return failures >= kMaxFailuresPerTier || ( allDifferencesKnown && knownCalls >= kMaxFailuresPerTier );
     }
 };
 
-int main()
+// Ordered, a call's outcome is its worst lane's
+enum class CallOutcome
 {
-    GenerateRandomValues();
+    Pass, Known, Fail
+};
 
-    TestRunner<kTestBytes>::Run();
+struct CallResult
+{
+    CallOutcome outcome = CallOutcome::Pass;
+    std::string details; // A line for each difference no known failure covers
+};
 
-    return 0;
+// Compares every tier of one test on every call, then reports what they found
+class TestRun
+{
+public:
+    TestRun( size_t registerBytes, const Test& test ) :
+        mWidth( std::to_string( registerBytes * 8 ) + "bit " ), mTestName( test.name ), mReference( test.reference ), mKnownSeen( test.reference.knownFailures.size() )
+    {
+        auto addComparison = [this]( TestTier tier, const std::function<TestFunction>& testFunc )
+        {
+            bool allDifferencesKnown = std::any_of( mReference.knownFailures.begin(), mReference.knownFailures.end(),
+                                                    [&]( const KnownFailure& knownFailure ) { return knownFailure.CoversAnyDifference() && knownFailure.Covers( tier ); } );
+
+            mTiers.push_back( { tier, TierName( tier ), testFunc, allDifferencesKnown } );
+        };
+
+        if( mReference.oracleFunc )
+        {
+            addComparison( { FastSIMD::FeatureSet::SCALAR, Tiers::Oracle }, mReference.oracleFunc );
+        }
+        for( const TierTest& tierTest : test.tiers )
+        {
+            addComparison( tierTest.tier, tierTest.testFunc );
+        }
+    }
+
+    void Run( const TestOptions& options )
+    {
+        switch( mReference.returnType )
+        {
+        case TestData::ReturnType::boolean:
+            return RunCalls<bool>( options );
+
+        case TestData::ReturnType::f32:
+            return RunCalls<float>( options );
+
+        case TestData::ReturnType::f64:
+            return RunCalls<double>( options );
+
+        case TestData::ReturnType::i32:
+            return RunCalls<int32_t>( options );
+
+        case TestData::ReturnType::i64:
+            return RunCalls<int64_t>( options );
+        }
+    }
+
+    void Report( const TestOptions& options, TestSummary& summary ) const
+    {
+        std::vector<std::string> failedTiers;
+        bool comparedAny = false;
+
+        for( const Tier& tier : mTiers )
+        {
+            comparedAny |= tier.compared > 0;
+
+            if( tier.failures )
+            {
+                failedTiers.push_back( tier.name );
+            }
+            if( options.stats && tier.kind == Tiers::Relaxed && ( tier.maxUlps > 0 || tier.maxAbs > 0 ) )
+            {
+                Tolerance tolerance = mReference.RelaxedTolerance( tier.featureSet );
+                std::cout << "  Stats " << mWidth << mTestName << " " << tier.name << ": max " << tier.maxUlps << " / " << tolerance.ulps << " ULP, "
+                          << tier.maxAbs << " / " << tolerance.absolute << " abs" << std::endl;
+            }
+        }
+
+        for( size_t knownIdx = 0; knownIdx < mReference.knownFailures.size(); knownIdx++ )
+        {
+            const KnownFailure& knownFailure = mReference.knownFailures[knownIdx];
+            std::string reason( knownFailure.reason );
+
+            if( !mKnownSeen[knownIdx].empty() )
+            {
+                summary.knownFailures.push_back( mWidth + std::string( mTestName ) + " (" + JoinNames( mKnownSeen[knownIdx] ) + "): " + reason );
+            }
+            else if( std::any_of( mTiers.begin(), mTiers.end(), [&]( const Tier& tier ) { return tier.compared && knownFailure.Covers( tier ); } ) )
+            {
+                summary.knownNotSeen.push_back( mWidth + std::string( mTestName ) + ": " + reason );
+            }
+        }
+
+        if( !comparedAny )
+        {
+            std::cout << "  Warning: no tiers to compare with the reference" << std::endl;
+        }
+
+        if( !failedTiers.empty() )
+        {
+            summary.failed.push_back( mWidth + std::string( mTestName ) + " (" + JoinNames( failedTiers ) + ")" );
+        }
+        else
+        {
+            summary.passed++;
+        }
+    }
+
+private:
+    template<typename T>
+    void RunCalls( const TestOptions& options )
+    {
+        InputGenerator generator( options.seed, mTestName, mReference );
+
+        // No argument tests always produce the same output
+        size_t inputCount = mReference.argCount ? generator.SpecialCount() + static_cast<size_t>( options.count ) : mReference.lanes;
+
+        auto allStopped = [this]() { return std::all_of( mTiers.begin(), mTiers.end(), []( const Tier& tier ) { return tier.Stopped(); } ); };
+        std::vector<char> referenceResults( kMaxTestResultBytes ), tierResults( kMaxTestResultBytes );
+        const T* reference = reinterpret_cast<const T*>( referenceResults.data() );
+        const T* results = reinterpret_cast<const T*>( tierResults.data() );
+
+        for( size_t chunkStart = 0; chunkStart < inputCount && !allStopped(); chunkStart += kChunkSize )
+        {
+            const TestInputs& inputs = generator.Generate( chunkStart );
+            size_t chunkCount = std::min( kChunkSize, inputCount - chunkStart );
+
+            for( size_t idx = 0; idx < chunkCount; idx += mReference.lanes )
+            {
+                std::memset( referenceResults.data(), 0xCD, kMaxTestResultBytes );
+                size_t referenceCount = mReference.testFunc( referenceResults.data(), idx, inputs );
+
+                for( Tier& tier : mTiers )
+                {
+                    if( tier.Stopped() )
+                    {
+                        continue;
+                    }
+
+                    std::memset( tierResults.data(), 0xAB, kMaxTestResultBytes );
+                    size_t outputCount = tier.testFunc( tierResults.data(), idx, inputs );
+
+                    // The oracle is the expected value, the SCALAR reference is checked against it
+                    bool oracle = tier.kind == Tiers::Oracle;
+                    CallResult call = outputCount != referenceCount
+                        ? CallResult{ CallOutcome::Fail, "Output count " + std::to_string( outputCount ) + ", reference " + std::to_string( referenceCount ) + "\n" }
+                        : CompareCall( tier, inputs, idx, outputCount, oracle ? results : reference, oracle ? reference : results );
+
+                    tier.compared++;
+
+                    if( call.outcome == CallOutcome::Fail )
+                    {
+                        if( !tier.failures )
+                        {
+                            std::cerr << std::setprecision( 16 ) << "--- " << mWidth << mTestName << " " << tier.name << " FAILED ---" << std::endl;
+                            std::cerr << call.details;
+                            std::cerr << "Inputs (index " << chunkStart + idx << "): " << DescribeInputs( mReference, inputs, idx ) << std::endl;
+                        }
+                        tier.failures++;
+                    }
+                    else if( call.outcome == CallOutcome::Known )
+                    {
+                        tier.knownCalls++;
+                    }
+                }
+            }
+        }
+    }
+
+    template<typename T>
+    CallResult CompareCall( Tier& tier, const TestInputs& inputs, size_t inIdx, size_t outputCount, const T* expected, const T* actual )
+    {
+        const std::vector<KnownFailure>& knownFailures = mReference.knownFailures;
+        CallResult call;
+
+        for( size_t idx = 0; idx < outputCount; idx++ )
+        {
+            LaneComparison lane = CompareLane<T>( mReference, tier, expected[idx], actual[idx] );
+            tier.maxUlps = std::max( tier.maxUlps, lane.ulpsCovered );
+            tier.maxAbs = std::max( tier.maxAbs, lane.absCovered );
+
+            if( lane.result == LaneResult::Equal )
+            {
+                continue;
+            }
+
+            LaneArgs laneArgs = GetLaneArgs( mReference, inputs, inIdx, idx );
+            auto known = std::find_if( knownFailures.begin(), knownFailures.end(), [&]( const KnownFailure& knownFailure )
+            {
+                return knownFailure.Matches( tier, lane.result == LaneResult::ZeroSign, laneArgs );
+            } );
+
+            if( known != knownFailures.end() )
+            {
+                std::vector<std::string>& seen = mKnownSeen[known - knownFailures.begin()];
+
+                if( std::find( seen.begin(), seen.end(), tier.name ) == seen.end() )
+                {
+                    seen.push_back( tier.name );
+                }
+                call.outcome = std::max( call.outcome, CallOutcome::Known );
+            }
+            else
+            {
+                call.details += "idx " + std::to_string( idx ) + ": " + std::string( mTestName ) + ( tier.kind == Tiers::Relaxed ? " RELAXED " : " " ) + Describe( expected[idx], actual[idx] ) + "\n";
+                call.outcome = CallOutcome::Fail;
+            }
+        }
+        return call;
+    }
+
+    std::string mWidth;
+    std::string_view mTestName;
+    const TestData& mReference;
+    std::vector<Tier> mTiers;
+    std::vector<std::vector<std::string>> mKnownSeen; // Tiers each known failure was seen on
+};
+
+static void DoTest( size_t registerBytes, const Test& test, const TestOptions& options, TestSummary& summary )
+{
+    std::cout << "Testing: " << test.name << std::endl;
+
+    TestRun run( registerBytes, test );
+    run.Run( options );
+    run.Report( options, summary );
+}
+
+template<size_t RegisterBytes>
+static void RunRegisterSize( const TestOptions& options, TestSummary& summary )
+{
+    if( options.registerBytes && options.registerBytes != RegisterBytes )
+    {
+        return;
+    }
+
+    std::cout << "Starting Tests - Register Size: " << RegisterBytes * 8 << " (" << RegisterBytes << "b)" << std::endl;
+
+    for( const Test& test : CollectTests<RegisterBytes>( options.maxFeatureSet ) )
+    {
+        if( test.name.find( options.filter ) != std::string_view::npos )
+        {
+            DoTest( RegisterBytes, test, options, summary );
+        }
+    }
+}
+
+template<size_t... IDXs>
+static void RunTests( const TestOptions& options, TestSummary& summary, std::index_sequence<IDXs...> )
+{
+    ( RunRegisterSize<kTestRegisterBytes[IDXs]>( options, summary ), ... );
+}
+
+static void PrintUsage( const char* exe )
+{
+    std::cout << "Usage: " << exe << " [options]\n"
+              << "  --seed <n|random>         Seed for random inputs (default " << TestOptions{}.seed << ")\n"
+              << "  --count <n>               Random input values per test argument (default " << TestOptions{}.count << ")\n"
+              << "  --filter <text>           Only run tests with names containing text\n"
+              << "  --width <bytes>           Only run one register size:";
+    for( size_t bytes : kTestRegisterBytes )
+    {
+        std::cout << " " << bytes;
+    }
+    std::cout << "\n  --max-feature-set <name>  Only run feature sets up to this one, to match a less capable CPU:";
+    for( FastSIMD::FeatureSet featureSet : TestFeatureSets::AsArray )
+    {
+        std::cout << " " << FeatureSetName( featureSet );
+    }
+    std::cout << "\n  --stats                   Print the largest relaxed differences within tolerance" << std::endl;
+}
+
+static bool ParseUnsigned( const char* text, uint64_t& value )
+{
+    if( !text || !std::isdigit( static_cast<unsigned char>( text[0] ) ) )
+    {
+        return false;
+    }
+
+    char* end = nullptr;
+    errno = 0;
+    unsigned long long parsed = std::strtoull( text, &end, 0 );
+
+    if( errno || *end )
+    {
+        return false;
+    }
+    value = parsed;
+    return true;
+}
+
+static std::string NormaliseName( std::string_view name )
+{
+    std::string normalised;
+    for( char c : name )
+    {
+        if( c != '.' && c != '_' )
+        {
+            normalised += static_cast<char>( std::toupper( static_cast<unsigned char>( c ) ) );
+        }
+    }
+    return normalised;
+}
+
+static bool ParseArgs( int argc, char** argv, TestOptions& options )
+{
+    for( int i = 1; i < argc; i++ )
+    {
+        std::string_view arg = argv[i];
+
+        if( arg == "--stats" )
+        {
+            options.stats = true;
+            continue;
+        }
+
+        const char* value = i + 1 < argc ? argv[++i] : nullptr;
+        uint64_t number = 0;
+        bool valid = value != nullptr;
+
+        if( arg == "--seed" && valid )
+        {
+            if( std::string_view( value ) == "random" )
+            {
+                options.seed = std::random_device()();
+            }
+            else
+            {
+                valid = ParseUnsigned( value, options.seed );
+            }
+        }
+        else if( arg == "--count" && valid )
+        {
+            // Limited so the input index can't overflow size_t on 32bit
+            valid = ParseUnsigned( value, number ) && number <= ( 1ull << 30 );
+            options.count = number;
+        }
+        else if( arg == "--filter" && valid )
+        {
+            options.filter = value;
+        }
+        else if( arg == "--width" && valid )
+        {
+            valid = ParseUnsigned( value, number ) &&
+                    std::find( std::begin( kTestRegisterBytes ), std::end( kTestRegisterBytes ), number ) != std::end( kTestRegisterBytes );
+            options.registerBytes = static_cast<size_t>( number );
+        }
+        else if( arg == "--max-feature-set" && valid )
+        {
+            const auto& featureSets = TestFeatureSets::AsArray;
+            auto find = std::find_if( std::begin( featureSets ), std::end( featureSets ), [value]( FastSIMD::FeatureSet featureSet ) { return NormaliseName( FeatureSetName( featureSet ) ) == NormaliseName( value ); } );
+
+            valid = find != std::end( featureSets );
+            options.maxFeatureSet = valid ? *find : options.maxFeatureSet;
+        }
+        else
+        {
+            valid = false;
+        }
+
+        if( !valid )
+        {
+            std::cout << "Invalid argument: " << arg << ( value ? std::string( " " ) + value : std::string() ) << "\n" << std::endl;
+            PrintUsage( argv[0] );
+            return false;
+        }
+    }
+    return true;
+}
+
+int main( int argc, char** argv )
+{
+    TestOptions options;
+
+    if( !ParseArgs( argc, argv, options ) )
+    {
+        return 2;
+    }
+
+    std::cout << "Seed: " << options.seed << ", Random inputs per test: " << options.count << std::endl;
+    std::cout << "CPU max feature set: " << FeatureSetName( FastSIMD::DetectCpuMaxFeatureSet() ) << ", Compiled:";
+    for( FastSIMD::FeatureSet featureSet : TestFeatureSets::AsArray )
+    {
+        std::cout << " " << FeatureSetName( featureSet );
+    }
+    std::cout << std::endl;
+    if( options.maxFeatureSet != FastSIMD::FeatureSet::Max )
+    {
+        std::cout << "Max feature set: " << FeatureSetName( options.maxFeatureSet ) << std::endl;
+    }
+
+    TestSummary summary;
+
+    try
+    {
+        RunTests( options, summary, std::make_index_sequence<std::size( kTestRegisterBytes )>{} );
+    }
+    catch( const std::exception& e )
+    {
+        std::cerr << std::endl << "Test setup error: " << e.what() << std::endl;
+        return 1;
+    }
+
+    std::cout << std::endl << "Passed: " << summary.passed << ", Known failures: " << summary.knownFailures.size() << ", Failed: " << summary.failed.size() << std::endl;
+
+    for( const std::string& knownFailure : summary.knownFailures )
+    {
+        std::cout << "  Known failure: " << knownFailure << std::endl;
+    }
+    for( const std::string& notSeen : summary.knownNotSeen )
+    {
+        std::cout << "  Known failure not seen: " << notSeen << std::endl;
+    }
+    for( const std::string& failed : summary.failed )
+    {
+        std::cout << "  FAILED: " << failed << std::endl;
+    }
+
+    if( !summary.passed && summary.failed.empty() )
+    {
+        std::cout << "No tests matched filter \"" << options.filter << "\"" << std::endl;
+        return 1;
+    }
+
+    return summary.failed.empty() ? 0 : 1;
 }
