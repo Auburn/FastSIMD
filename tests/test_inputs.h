@@ -2,6 +2,7 @@
 #include "test.h"
 
 #include <random>
+#include <string>
 #include <string_view>
 #include <variant>
 #include <vector>
@@ -13,6 +14,12 @@ static_assert( kChunkSize % kMaxTestLanes == 0, "Calls must not straddle input c
 
 // Checks a test's input specs can be generated, mistakes here would silently test the wrong domain
 void ValidateInputs( std::string_view testName, const TestData& test );
+
+// A call's input values as text, one line per argument, for failure messages
+std::string DescribeInputs( const TestData& test, const TestInputs& inputs, size_t inIdx );
+
+// A lane's argument values as the oracle sees them (TestValue::Lane in test.inl), for known failure conditions
+LaneArgs GetLaneArgs( const TestData& test, const TestInputs& inputs, size_t inIdx, size_t lane );
 
 // Generates the input values for every argument of a test
 // Only uses std::mt19937_64 and arithmetic without FMA contraction (see tests/CMakeLists.txt) so a seed produces the same values on any compiler

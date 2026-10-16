@@ -5,10 +5,7 @@
 #include <cstring>
 #include <algorithm>
 #include <functional>
-#include <iomanip>
-#include <iterator>
 #include <limits>
-#include <sstream>
 #include <tuple>
 
 template<typename... Ts>
@@ -38,53 +35,23 @@ template<class T>
 decltype( lambda_pack_helper( &T::operator() ) ) pack_helper( T );
 
 
-template<typename F>
-struct GetReturn;
-
-template<>
-struct GetReturn<int32_t>
-{
-    static constexpr auto Type = TestData::ReturnType::i32;
-};
-
-template<>
-struct GetReturn<float>
-{
-    static constexpr auto Type = TestData::ReturnType::f32;
-};
-
-template<>
-struct GetReturn<double>
-{
-    static constexpr auto Type = TestData::ReturnType::f64;
-};
-
-template<>
-struct GetReturn<bool>
-{
-    static constexpr auto Type = TestData::ReturnType::boolean;
-};
-
-// Mask results are stored as integer lanes of the mask's width so every bit of each lane is compared
-template<size_t N, bool B>
-struct GetReturn<FS::Mask<N, B>>
-{
-    static_assert( N == 32 || N == 64, "Mask results are stored as 32 or 64bit lanes" );
-    static constexpr auto Type = N == 32 ? TestData::ReturnType::i32 : TestData::ReturnType::i64;
-};
-
-template<typename T, size_t N, FastSIMD::FeatureSet S>
-struct GetReturn<FS::Register<T, N, S>>
-{
-    static constexpr auto Type = GetReturn<T>::Type;
-};
-
-// Elements per call of a test argument or result, scalars are 1
+// The type an argument's inputs are stored as
 template<typename T>
-static constexpr size_t LaneCount = 1;
+constexpr TestElement ElementOf()
+{
+    static_assert( std::is_same_v<T, int32_t> || std::is_same_v<T, float> || std::is_same_v<T, double>, "No test inputs for type" );
+    return std::is_same_v<T, float> ? TestElement::Float : std::is_same_v<T, double> ? TestElement::Double : TestElement::Int32;
+}
 
-template<typename T, size_t N, FastSIMD::FeatureSet S>
-static constexpr size_t LaneCount<FS::Register<T, N, S>> = N;
+// The type a result's lanes are stored and compared as
+template<typename T>
+constexpr TestData::ReturnType ReturnTypeOf()
+{
+    static_assert( std::is_same_v<T, bool> || std::is_same_v<T, int32_t> || std::is_same_v<T, int64_t> || std::is_same_v<T, float> || std::is_same_v<T, double>,
+                   "No test results for type" );
+    return std::is_same_v<T, bool> ? TestData::ReturnType::boolean : std::is_same_v<T, float> ? TestData::ReturnType::f32 :
+           std::is_same_v<T, double> ? TestData::ReturnType::f64 : std::is_same_v<T, int64_t> ? TestData::ReturnType::i64 : TestData::ReturnType::i32;
+}
 
 
 template<FastSIMD::FeatureSet SIMD, size_t RegisterBytes, bool Relaxed>
@@ -94,222 +61,128 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
     using TestReg = FS::Register<T, RegisterBytes / sizeof( T )>;
 
 
-    template<typename T>
-    static std::string AsString( T arg )
-    {
-        std::stringstream ss;
-        ss << std::setprecision( 17 ) << std::boolalpha << arg;
-        return ss.str();
-    }
-
-    template<typename T, size_t N, FastSIMD::FeatureSet S>
-    static std::string AsString( const FS::Register<T, N, S>& arg )
-    {
-        T scalarValues[N];
-        FS::Store( scalarValues, arg );
-
-        std::ostringstream sstr;
-        sstr << "[" << AsString( scalarValues[0] );
-
-        for( size_t idx = 1; idx < N; idx++ )
-        {
-            sstr << ", " << AsString( scalarValues[idx] );
-        }
-
-        sstr << "]";
-        return sstr.str();
-    }
-
-    template<size_t MN, bool MB, size_t N, FastSIMD::FeatureSet S>
-    static std::string AsString( const FS::Register<FS::Mask<MN, MB>, N, S>& arg )
-    {
-        FS::BitStorage<N> bitMask = FS::BitMask( arg );
-
-        std::ostringstream sstr;
-        sstr << "[" << AsString( static_cast<bool>( bitMask & 1 ) );
-
-        for( size_t idx = 1; idx < N; idx++ )
-        {
-            bitMask >>= 1;
-
-            sstr << ", " << AsString( static_cast<bool>( bitMask & 1 ) );
-        }
-
-        sstr << "]";
-        return sstr.str();
-    }
-
-
-    template<typename T>
-    static size_t StoreOutput( void* outResult, T result )
-    {
-        *reinterpret_cast<T*>( outResult ) = result;
-        return 1;
-    }
-
-    template<typename T, size_t N, FastSIMD::FeatureSet S>
-    static size_t StoreOutput( void* outResult, FS::Register<T, N, S> result )
-    {
-        static_assert( N * sizeof( T ) <= kMaxTestResultBytes, "Test result is larger than the result buffer" );
-        FS::Store( reinterpret_cast<T*>( outResult ), result );
-        return N;
-    }
-
-    template<size_t MN, bool MB, size_t N, FastSIMD::FeatureSet S>
-    static size_t StoreOutput( void* outResult, FS::Register<FS::Mask<MN, MB>, N, S> result )
-    {
-        static_assert( N * MN / 8 <= kMaxTestResultBytes, "Test result is larger than the result buffer" );
-
-        // Store all bits of each lane, BitMask only shows the high bit
-        if constexpr( MN == 32 )
-        {
-            FS::Store( reinterpret_cast<int32_t*>( outResult ), FS::Masked( result, FS::Register<int32_t, N, S>( -1 ) ) );
-        }
-        else
-        {
-            // No 64bit int registers, a double with every bit set keeps all the lane's bits through Masked
-            static_assert( MN == 64 && MB, "Mask results are stored as 32 or 64bit lanes" );
-            FS::Store( reinterpret_cast<double*>( outResult ), FS::Masked( result, FS::Register<double, N, S>( FromBits<double>( ~uint64_t( 0 ) ) ) ) );
-        }
-        return N;
-    }
-
-
-    template<typename T>
-    static constexpr TestElement ElementOf()
-    {
-        static_assert( std::is_same_v<T, int32_t> || std::is_same_v<T, float> || std::is_same_v<T, double>, "No test inputs for type" );
-        return std::is_same_v<T, float> ? TestElement::Float : std::is_same_v<T, double> ? TestElement::Double : TestElement::Int32;
-    }
-
-    // A mask argument's 0/1 lanes are stored as, and compared != 0 in: double for 64bit masks, float for float masks, int32 for int masks
-    template<size_t MN, bool MB>
-    using MaskElement = std::conditional_t<MN == 64, double, std::conditional_t<MB, float, int32_t>>;
-
-    template<typename T>
-    struct ArgType
-    {
-        static constexpr TestArgType Value = { ElementOf<T>(), false };
-    };
-
-    template<typename T, size_t N, FastSIMD::FeatureSet S>
-    struct ArgType<FS::Register<T, N, S>> : ArgType<T> {};
-
-    template<size_t MN, bool MB, size_t N, FastSIMD::FeatureSet S>
-    struct ArgType<FS::Register<FS::Mask<MN, MB>, N, S>>
-    {
-        static_assert( MN == 32 || ( MN == 64 && MB ), "Mask inputs are generated as 32bit lanes, or 64bit from doubles" );
-
-        static constexpr TestArgType Value = { ElementOf<MaskElement<MN, MB>>(), true };
-    };
-
-    template<typename T>
-    struct GenArg
-    {
-        static T Load( size_t inIdx, size_t argIdx, const TestInputs& inputs )
-        {
-            return inputs.Get<T>( argIdx )[inIdx];
-        }
-    };
-
-    template<typename T, size_t N, FastSIMD::FeatureSet S>
-    struct GenArg<FS::Register<T, N, S>>
-    {
-        static FS::Register<T, N, S> Load( size_t inIdx, size_t argIdx, const TestInputs& inputs )
-        {
-            return FS::Load<N>( inputs.Get<T>( argIdx ) + inIdx );
-        }
-    };
-
-    // Each mask lane is generated independently, then compared != 0 in its stored type to make the mask
-    template<size_t MN, bool MB, size_t N, FastSIMD::FeatureSet S>
-    struct GenArg<FS::Register<FS::Mask<MN, MB>, N, S>>
-    {
-        static FS::Register<FS::Mask<MN, MB>, N, S> Load( size_t inIdx, size_t argIdx, const TestInputs& inputs )
-        {
-            using Element = MaskElement<MN, MB>;
-            return FS::Load<N>( inputs.Get<Element>( argIdx ) + inIdx ) != FS::Register<Element, N, S>( Element( 0 ) );
-        }
-    };
-
-    // Argument values for one lane, as plain C++ types for the oracle
-    template<typename T>
-    struct OracleArg
-    {
-        // Scalar arguments are the same for every lane
-        static T Get( const TestInputs& inputs, size_t argIdx, size_t inIdx, size_t )
-        {
-            return inputs.Get<T>( argIdx )[inIdx];
-        }
-    };
-
-    template<typename T, size_t N, FastSIMD::FeatureSet S>
-    struct OracleArg<FS::Register<T, N, S>>
-    {
-        static T Get( const TestInputs& inputs, size_t argIdx, size_t inIdx, size_t lane )
-        {
-            return inputs.Get<T>( argIdx )[inIdx + lane];
-        }
-    };
-
-    template<size_t MN, bool MB, size_t N, FastSIMD::FeatureSet S>
-    struct OracleArg<FS::Register<FS::Mask<MN, MB>, N, S>>
-    {
-        static bool Get( const TestInputs& inputs, size_t argIdx, size_t inIdx, size_t lane )
-        {
-            return inputs.Get<MaskElement<MN, MB>>( argIdx )[inIdx + lane] != 0;
-        }
-    };
-
-    // Stores an oracle lane in the same format as StoreOutput, float/double lanes can be given as their bits in an unsigned int
+    // Stores an oracle lane as T, float/double lanes can be given as their bits in an unsigned int
     // Any unsigned type of the right size, uint64_t is unsigned long on LP64 so 64bit literals have a different type
     template<typename T, typename V>
     static void StoreOracleLane( void* outResult, size_t lane, V value )
     {
         if constexpr( std::is_floating_point_v<T> && std::is_integral_v<V> && std::is_unsigned_v<V> && sizeof( V ) == sizeof( T ) )
         {
-            std::memcpy( reinterpret_cast<T*>( outResult ) + lane, &value, sizeof( T ) );
+            std::memcpy( static_cast<T*>( outResult ) + lane, &value, sizeof( T ) );
         }
         else
         {
             static_assert( std::is_same_v<T, V>, "Oracle must return the test's element type" );
-            reinterpret_cast<T*>( outResult )[lane] = value;
+            static_cast<T*>( outResult )[lane] = value;
         }
     }
 
-    template<typename R>
-    struct OracleOutput
+    // How each kind of test argument and result is read from the inputs, passed to the oracle and stored as results
+    // Load is a call's argument, Lane is one lane's argument for the oracle, Store and StoreLane write results as Element
+    // Scalars are one value, the oracle sees the same value in every lane
+    template<typename T>
+    struct TestValue
     {
+        using Element = T;
         static constexpr size_t Lanes = 1;
 
+        static constexpr TestArgType ArgType() { return { ElementOf<T>(), false, Lanes }; }
+
+        static T Load( const TestInputs& inputs, size_t argIdx, size_t inIdx )
+        {
+            return inputs.Get<T>( argIdx )[inIdx];
+        }
+
+        static T Lane( const TestInputs& inputs, size_t argIdx, size_t inIdx, size_t )
+        {
+            return Load( inputs, argIdx, inIdx );
+        }
+
+        static void Store( void* outResult, T result )
+        {
+            *static_cast<T*>( outResult ) = result;
+        }
+
         template<typename V>
-        static void Store( void* outResult, size_t lane, V value ) { StoreOracleLane<R>( outResult, lane, value ); }
+        static void StoreLane( void* outResult, size_t lane, V value )
+        {
+            StoreOracleLane<T>( outResult, lane, value );
+        }
     };
 
     template<typename T, size_t N, FastSIMD::FeatureSet S>
-    struct OracleOutput<FS::Register<T, N, S>>
+    struct TestValue<FS::Register<T, N, S>>
     {
+        static_assert( N * sizeof( T ) <= kMaxTestResultBytes, "Test result is larger than the result buffer" );
+
+        using Element = T;
         static constexpr size_t Lanes = N;
+
+        static constexpr TestArgType ArgType() { return { ElementOf<T>(), false, Lanes }; }
+
+        static FS::Register<T, N, S> Load( const TestInputs& inputs, size_t argIdx, size_t inIdx )
+        {
+            return FS::Load<N>( inputs.Get<T>( argIdx ) + inIdx );
+        }
+
+        static T Lane( const TestInputs& inputs, size_t argIdx, size_t inIdx, size_t lane )
+        {
+            return inputs.Get<T>( argIdx )[inIdx + lane];
+        }
+
+        static void Store( void* outResult, FS::Register<T, N, S> result )
+        {
+            FS::Store( static_cast<T*>( outResult ), result );
+        }
 
         template<typename V>
-        static void Store( void* outResult, size_t lane, V value ) { StoreOracleLane<T>( outResult, lane, value ); }
+        static void StoreLane( void* outResult, size_t lane, V value )
+        {
+            StoreOracleLane<T>( outResult, lane, value );
+        }
     };
 
+    // Mask lanes are generated independently as 0 or 1, then compared != 0 to make the mask. The oracle sees them as bool
+    // Results are stored as integer lanes of the mask's width so every bit of each lane is compared
     template<size_t MN, bool MB, size_t N, FastSIMD::FeatureSet S>
-    struct OracleOutput<FS::Register<FS::Mask<MN, MB>, N, S>>
+    struct TestValue<FS::Register<FS::Mask<MN, MB>, N, S>>
     {
+        static_assert( MN == 32 || ( MN == 64 && MB ), "Masks are tested as 32bit lanes, or 64bit from doubles" );
+
+        // Inputs are stored as double for 64bit masks, float for float masks, int32 for int masks
+        using Stored = std::conditional_t<MN == 64, double, std::conditional_t<MB, float, int32_t>>;
+        using Element = std::conditional_t<MN == 64, int64_t, int32_t>;
         static constexpr size_t Lanes = N;
 
-        static void Store( void* outResult, size_t lane, bool value )
+        static constexpr TestArgType ArgType() { return { ElementOf<Stored>(), true, Lanes }; }
+
+        static FS::Register<FS::Mask<MN, MB>, N, S> Load( const TestInputs& inputs, size_t argIdx, size_t inIdx )
+        {
+            return FS::Load<N>( inputs.Get<Stored>( argIdx ) + inIdx ) != FS::Register<Stored, N, S>( Stored( 0 ) );
+        }
+
+        static bool Lane( const TestInputs& inputs, size_t argIdx, size_t inIdx, size_t lane )
+        {
+            return inputs.Get<Stored>( argIdx )[inIdx + lane] != 0;
+        }
+
+        // BitMask only shows the high bit of each lane, Masked keeps all of them
+        static void Store( void* outResult, FS::Register<FS::Mask<MN, MB>, N, S> result )
         {
             if constexpr( MN == 32 )
             {
-                reinterpret_cast<int32_t*>( outResult )[lane] = value ? -1 : 0;
+                FS::Store( static_cast<int32_t*>( outResult ), FS::Masked( result, FS::Register<int32_t, N, S>( -1 ) ) );
             }
             else
             {
-                reinterpret_cast<int64_t*>( outResult )[lane] = value ? -1 : 0;
+                // No 64bit int registers, a double with every bit set keeps all the lane's bits through Masked
+                FS::Store( static_cast<double*>( outResult ), FS::Masked( result, FS::Register<double, N, S>( FromBits<double>( ~uint64_t( 0 ) ) ) ) );
             }
+        }
+
+        static void StoreLane( void* outResult, size_t lane, bool value )
+        {
+            static_cast<Element*>( outResult )[lane] = value ? -1 : 0;
         }
     };
 
@@ -320,9 +193,9 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
     template <class FUNC, class... ARGs>
     struct TestFunctionFactory<FUNC, pack<ARGs...>>
     {
-        using ReturnType = std::invoke_result_t<FUNC, ARGs...>;
+        using Result = TestValue<std::invoke_result_t<FUNC, ARGs...>>;
         static constexpr size_t ArgCount = sizeof...( ARGs );
-        static constexpr size_t Lanes = std::max( { LaneCount<ReturnType>, LaneCount<std::decay_t<ARGs>>... } );
+        static constexpr size_t Lanes = std::max( { Result::Lanes, TestValue<std::decay_t<ARGs>>::Lanes... } );
 
         static_assert( Lanes <= kMaxTestLanes, "Too many lanes per call" );
 
@@ -331,17 +204,18 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
         static void ArgTypes( TestArgType* argTypes )
         {
             [[maybe_unused]] size_t argIdx = 0;
-            ( ( argTypes[argIdx++] = ArgType<std::decay_t<ARGs>>::Value ), ... );
+            ( ( argTypes[argIdx++] = TestValue<std::decay_t<ARGs>>::ArgType() ), ... );
         }
 
         static std::function<TestFunction> Create( FUNC func )
         {
-            return [func]( void* outResult, size_t inIdx, const TestInputs& inputs )
+            return [func]( void* outResult, size_t inIdx, const TestInputs& inputs ) -> size_t
             {
-                size_t argIdx = 0;
-                auto tuple = std::tuple{ GenArg<std::decay_t<ARGs>>::Load( inIdx, argIdx++, inputs )... };
+                [[maybe_unused]] size_t argIdx = 0;
+                auto tuple = std::tuple{ TestValue<std::decay_t<ARGs>>::Load( inputs, argIdx++, inIdx )... };
 
-                return StoreOutput( outResult, std::apply( func, tuple ) );
+                Result::Store( outResult, std::apply( func, tuple ) );
+                return Result::Lanes;
             };
         }
 
@@ -351,48 +225,14 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
         {
             return [oracle]( void* outResult, size_t inIdx, const TestInputs& inputs ) -> size_t
             {
-                using Output = OracleOutput<ReturnType>;
-
-                for( size_t lane = 0; lane < Output::Lanes; lane++ )
+                for( size_t lane = 0; lane < Result::Lanes; lane++ )
                 {
                     [[maybe_unused]] size_t argIdx = 0;
-                    auto tuple = std::tuple{ OracleArg<std::decay_t<ARGs>>::Get( inputs, argIdx++, inIdx, lane )... };
+                    auto tuple = std::tuple{ TestValue<std::decay_t<ARGs>>::Lane( inputs, argIdx++, inIdx, lane )... };
 
-                    Output::Store( outResult, lane, std::apply( oracle, tuple ) );
+                    Result::StoreLane( outResult, lane, std::apply( oracle, tuple ) );
                 }
-                return Output::Lanes;
-            };
-        }
-
-        // A lane's argument values as the oracle sees them, for known failure conditions
-        static LaneArgs GetLaneArgs( [[maybe_unused]] size_t inIdx, [[maybe_unused]] size_t lane, [[maybe_unused]] const TestInputs& inputs )
-        {
-            LaneArgs args = {};
-            [[maybe_unused]] size_t argIdx = 0;
-            ( ( args.Set( argIdx, OracleArg<std::decay_t<ARGs>>::Get( inputs, argIdx, inIdx, lane ) ), argIdx++ ), ... );
-            return args;
-        }
-
-        static std::function<InputsFunction> GetInputs()
-        {
-            return []( size_t inIdx, const TestInputs& inputs ) -> std::string
-            {
-                if( !sizeof...( ARGs ) )
-                {
-                    return "No Inputs";
-                }
-
-                size_t argIdx = 0;
-                std::initializer_list<std::string> tuple = { AsString( GenArg<std::decay_t<ARGs>>::Load( inIdx, argIdx++, inputs ) )... };
-
-                std::ostringstream inputsString;
-                inputsString << "\n";
-
-                std::copy( tuple.begin(), tuple.end() - 1, std::ostream_iterator<std::string>( inputsString, "\n" ) );
-
-                inputsString << *(tuple.end() - 1);
-
-                return inputsString.str();
+                return Result::Lanes;
             };
         }
     };
@@ -401,19 +241,16 @@ class FastSIMD::DispatchClass<TestFastSIMD<RegisterBytes, Relaxed>, SIMD> : publ
     template<typename FUNC>
     TestData& RegisterTest( TestCollection& testMap, const char* name, FUNC func )
     {
+        using Factory = TestFunctionFactory<FUNC>;
+
         TestData data;
-        data.featureSet = SIMD;
-        data.relaxed = FastSIMD::IsRelaxed();
-        data.returnType = GetReturn<typename TestFunctionFactory<FUNC>::ReturnType>::Type;
-        data.lanes = TestFunctionFactory<FUNC>::Lanes;
-        data.argCount = TestFunctionFactory<FUNC>::ArgCount;
-        TestFunctionFactory<FUNC>::ArgTypes( data.argTypes );
+        data.returnType = ReturnTypeOf<typename Factory::Result::Element>();
+        data.lanes = Factory::Lanes;
+        data.argCount = Factory::ArgCount;
+        Factory::ArgTypes( data.argTypes );
+        data.testFunc = Factory::Create( func );
 
-        data.testFunc = TestFunctionFactory<FUNC>::Create( func );
-        data.inputsFunc = TestFunctionFactory<FUNC>::GetInputs();
-        data.laneArgsFunc = TestFunctionFactory<FUNC>::GetLaneArgs;
-
-        return testMap.emplace_back( name, data ).second;
+        return testMap.emplace_back( name, std::move( data ) ).second;
     }
 
     // oracle is a plain C++ version of the test, called per lane with plain values (masks as bool)

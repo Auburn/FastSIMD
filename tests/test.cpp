@@ -66,11 +66,6 @@ static std::string FeatureSetName( FastSIMD::FeatureSet featureSet )
     return FastSIMD::GetFeatureSetString( featureSet );
 }
 
-static TestTier TierOf( const TestData& test )
-{
-    return { test.featureSet, test.relaxed ? Tiers::Relaxed : Tiers::NonRelaxed };
-}
-
 static std::string TierName( const TestTier& tier )
 {
     if( tier.kind == Tiers::Oracle )
@@ -90,9 +85,58 @@ static std::string JoinNames( const std::vector<std::string>& names )
     return joined;
 }
 
-// Each test name's registrations in tier order, the first is the SCALAR non relaxed reference
-using TestSet = std::vector<std::pair<std::string_view, std::vector<TestData>>>;
+// A tier's own version of a test, everything else is the reference's
+struct TierTest
+{
+    TestTier tier;
+    std::function<TestFunction> testFunc;
+};
 
+// A test's SCALAR non relaxed reference registration, and the test function of every other tier in tier order
+struct Test
+{
+    std::string_view name;
+    TestData reference;
+    std::vector<TierTest> tiers;
+};
+
+using TestSet = std::vector<Test>;
+
+static void CheckReference( std::string_view testName, const TestData& reference )
+{
+    for( const KnownFailure& knownFailure : reference.knownFailures )
+    {
+        if( knownFailure.reason.empty() )
+        {
+            throw std::runtime_error( "Known failure with no reason in \"" + std::string( testName ) + "\"" );
+        }
+    }
+    ValidateInputs( testName, reference );
+}
+
+// Input conditions are a different function in each tier, so only whether there is one can be compared
+static bool SameKnownFailure( const KnownFailure& a, const KnownFailure& b )
+{
+    return a.reason == b.reason && a.tiers == b.tiers && a.minFeatureSet == b.minFeatureSet && a.maxFeatureSet == b.maxFeatureSet &&
+           a.zeroSignOnly == b.zeroSignOnly && !a.inputCondition == !b.inputCondition;
+}
+
+// Every tier's results are read as the reference's types and checked with the reference's settings, so a tier registering others is an error
+static void CheckMatchesReference( const Test& test, const TestTier& tier, const TestData& registered )
+{
+    const TestData& reference = test.reference;
+
+    if( registered.returnType != reference.returnType || registered.lanes != reference.lanes || registered.argCount != reference.argCount ||
+        !std::equal( registered.argTypes, registered.argTypes + kMaxTestArgs, reference.argTypes ) ||
+        !std::equal( registered.knownFailures.begin(), registered.knownFailures.end(), reference.knownFailures.begin(), reference.knownFailures.end(), SameKnownFailure ) ||
+        registered.bitExact != reference.bitExact ||
+        registered.relaxedTolerance != reference.relaxedTolerance || registered.scalarRelaxedTolerance != reference.scalarRelaxedTolerance )
+    {
+        throw std::runtime_error( "Tests do not match: " + std::string( test.name ) + " (" + TierName( tier ) + ")" );
+    }
+}
+
+// NewDispatchClass gives the highest compiled feature set up to the one asked for, every test library compiles TestFeatureSets so it's always that one
 template<size_t RegisterBytes, bool Relaxed>
 static void AddTier( TestSet& set, FastSIMD::FeatureSet featureSet )
 {
@@ -103,6 +147,7 @@ static void AddTier( TestSet& set, FastSIMD::FeatureSet featureSet )
         throw std::runtime_error( "No test class created for " + FeatureSetName( featureSet ) );
     }
 
+    TestTier tier = { featureSet, Relaxed ? Tiers::Relaxed : Tiers::NonRelaxed };
     bool isReference = featureSet == FastSIMD::FeatureSet::SCALAR && !Relaxed;
 
     for( auto& registered : testClass->RegisterTests() )
@@ -110,12 +155,7 @@ static void AddTier( TestSet& set, FastSIMD::FeatureSet featureSet )
         std::string_view testName = registered.first;
         TestData& test = registered.second;
 
-        if( test.featureSet != featureSet || test.relaxed != Relaxed )
-        {
-            throw std::runtime_error( "Test class for " + FeatureSetName( featureSet ) + " registered \"" + std::string( testName ) + "\" for " + FeatureSetName( test.featureSet ) );
-        }
-
-        auto find = std::find_if( set.begin(), set.end(), [testName]( const auto& pair ) { return pair.first == testName; } );
+        auto find = std::find_if( set.begin(), set.end(), [testName]( const Test& other ) { return other.name == testName; } );
 
         if( isReference )
         {
@@ -123,7 +163,8 @@ static void AddTier( TestSet& set, FastSIMD::FeatureSet featureSet )
             {
                 throw std::runtime_error( "Multiple tests with same name: " + std::string( testName ) );
             }
-            set.emplace_back( testName, std::vector<TestData>{ std::move( test ) } );
+            CheckReference( testName, test );
+            set.push_back( { testName, std::move( test ), {} } );
             continue;
         }
 
@@ -131,11 +172,12 @@ static void AddTier( TestSet& set, FastSIMD::FeatureSet featureSet )
         {
             throw std::runtime_error( "\"" + std::string( testName ) + "\" has no SCALAR non relaxed reference" );
         }
-        if( std::any_of( find->second.begin(), find->second.end(), [&]( const TestData& other ) { return other.featureSet == featureSet && other.relaxed == Relaxed; } ) )
+        if( std::any_of( find->tiers.begin(), find->tiers.end(), [&]( const TierTest& other ) { return other.tier.featureSet == featureSet && other.tier.kind == tier.kind; } ) )
         {
-            throw std::runtime_error( "Multiple tests with same name: " + std::string( testName ) + " (" + TierName( TierOf( test ) ) + ")" );
+            throw std::runtime_error( "Multiple tests with same name: " + std::string( testName ) + " (" + TierName( tier ) + ")" );
         }
-        find->second.push_back( std::move( test ) );
+        CheckMatchesReference( *find, tier, test );
+        find->tiers.push_back( { tier, std::move( test.testFunc ) } );
     }
 }
 
@@ -156,33 +198,6 @@ static TestSet CollectTests( FastSIMD::FeatureSet maxFeatureSet )
         }
     }
     return set;
-}
-
-// Every tier's results are read as the reference's types, and only the reference's settings are used, so a tier registering others is an error
-static void CheckTests( std::string_view testName, const std::vector<TestData>& tests )
-{
-    const TestData& reference = tests[0];
-
-    for( size_t testIdx = 1; testIdx < tests.size(); testIdx++ )
-    {
-        const TestData& test = tests[testIdx];
-
-        if( test.returnType != reference.returnType || test.lanes != reference.lanes || test.argCount != reference.argCount ||
-            !std::equal( test.argTypes, test.argTypes + kMaxTestArgs, reference.argTypes ) ||
-            test.knownFailures.size() != reference.knownFailures.size() || test.bitExact != reference.bitExact ||
-            test.relaxedTolerance != reference.relaxedTolerance || test.scalarRelaxedTolerance != reference.scalarRelaxedTolerance )
-        {
-            throw std::runtime_error( "Tests do not match: " + std::string( testName ) + " (" + TierName( TierOf( test ) ) + ")" );
-        }
-    }
-
-    for( const KnownFailure& knownFailure : reference.knownFailures )
-    {
-        if( knownFailure.reason.empty() )
-        {
-            throw std::runtime_error( "Known failure with no reason in \"" + std::string( testName ) + "\"" );
-        }
-    }
 }
 
 // Value of the least significant bit, relaxed differences are counted in these
@@ -340,8 +355,8 @@ struct CallResult
 class TestRun
 {
 public:
-    TestRun( size_t registerBytes, std::string_view testName, const std::vector<TestData>& tests ) :
-        mWidth( std::to_string( registerBytes * 8 ) + "bit " ), mTestName( testName ), mReference( tests[0] ), mKnownSeen( tests[0].knownFailures.size() )
+    TestRun( size_t registerBytes, const Test& test ) :
+        mWidth( std::to_string( registerBytes * 8 ) + "bit " ), mTestName( test.name ), mReference( test.reference ), mKnownSeen( test.reference.knownFailures.size() )
     {
         auto addComparison = [this]( TestTier tier, const std::function<TestFunction>& testFunc )
         {
@@ -355,9 +370,9 @@ public:
         {
             addComparison( { FastSIMD::FeatureSet::SCALAR, Tiers::Oracle }, mReference.oracleFunc );
         }
-        for( size_t testIdx = 1; testIdx < tests.size(); testIdx++ )
+        for( const TierTest& tierTest : test.tiers )
         {
-            addComparison( TierOf( tests[testIdx] ), tests[testIdx].testFunc );
+            addComparison( tierTest.tier, tierTest.testFunc );
         }
     }
 
@@ -481,7 +496,7 @@ private:
                         {
                             std::cerr << std::setprecision( 16 ) << "--- " << mWidth << mTestName << " " << tier.name << " FAILED ---" << std::endl;
                             std::cerr << call.details;
-                            std::cerr << "Inputs (index " << chunkStart + idx << "): " << mReference.inputsFunc( idx, inputs ) << std::endl;
+                            std::cerr << "Inputs (index " << chunkStart + idx << "): " << DescribeInputs( mReference, inputs, idx ) << std::endl;
                         }
                         tier.failures++;
                     }
@@ -511,7 +526,7 @@ private:
                 continue;
             }
 
-            LaneArgs laneArgs = mReference.laneArgsFunc( inIdx, idx, inputs );
+            LaneArgs laneArgs = GetLaneArgs( mReference, inputs, inIdx, idx );
             auto known = std::find_if( knownFailures.begin(), knownFailures.end(), [&]( const KnownFailure& knownFailure )
             {
                 return knownFailure.Matches( tier, lane.result == LaneResult::ZeroSign, laneArgs );
@@ -543,14 +558,11 @@ private:
     std::vector<std::vector<std::string>> mKnownSeen; // Tiers each known failure was seen on
 };
 
-static void DoTest( size_t registerBytes, std::string_view testName, const std::vector<TestData>& tests, const TestOptions& options, TestSummary& summary )
+static void DoTest( size_t registerBytes, const Test& test, const TestOptions& options, TestSummary& summary )
 {
-    std::cout << "Testing: " << testName << std::endl;
+    std::cout << "Testing: " << test.name << std::endl;
 
-    CheckTests( testName, tests );
-    ValidateInputs( testName, tests[0] );
-
-    TestRun run( registerBytes, testName, tests );
+    TestRun run( registerBytes, test );
     run.Run( options );
     run.Report( options, summary );
 }
@@ -565,11 +577,11 @@ static void RunRegisterSize( const TestOptions& options, TestSummary& summary )
 
     std::cout << "Starting Tests - Register Size: " << RegisterBytes * 8 << " (" << RegisterBytes << "b)" << std::endl;
 
-    for( const auto& [testName, tests] : CollectTests<RegisterBytes>( options.maxFeatureSet ) )
+    for( const Test& test : CollectTests<RegisterBytes>( options.maxFeatureSet ) )
     {
-        if( testName.find( options.filter ) != std::string_view::npos )
+        if( test.name.find( options.filter ) != std::string_view::npos )
         {
-            DoTest( RegisterBytes, testName, tests, options, summary );
+            DoTest( RegisterBytes, test, options, summary );
         }
     }
 }

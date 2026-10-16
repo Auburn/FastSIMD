@@ -3,10 +3,27 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <iomanip>
 #include <iostream>
 #include <limits>
+#include <sstream>
 #include <stdexcept>
 #include <string>
+
+// Calls func with a value of the type an argument's inputs are stored as
+template<typename FUNC>
+static void WithStoredType( TestElement element, FUNC&& func )
+{
+    switch( element )
+    {
+    case TestElement::Int32:
+        return func( int32_t() );
+    case TestElement::Float:
+        return func( float() );
+    case TestElement::Double:
+        return func( double() );
+    }
+}
 
 static uint64_t SplitMix64( uint64_t& state )
 {
@@ -94,6 +111,70 @@ void ValidateInputs( std::string_view testName, const TestData& test )
             fail( argIdx, "int range must contain an integer and be within int32 range" );
         }
     }
+}
+
+std::string DescribeInputs( const TestData& test, const TestInputs& inputs, size_t inIdx )
+{
+    if( !test.argCount )
+    {
+        return "No Inputs";
+    }
+
+    std::ostringstream description;
+    description << std::setprecision( 17 ) << std::boolalpha;
+
+    for( size_t argIdx = 0; argIdx < test.argCount; argIdx++ )
+    {
+        TestArgType type = test.argTypes[argIdx];
+        bool isRegister = type.lanes > 1;
+
+        // Registers list their lanes, mask lanes are true or false
+        WithStoredType( type.element, [&]( auto stored )
+        {
+            const auto* values = inputs.Get<decltype( stored )>( argIdx ) + inIdx;
+
+            description << "\n" << ( isRegister ? "[" : "" );
+            for( size_t lane = 0; lane < type.lanes; lane++ )
+            {
+                description << ( lane ? ", " : "" );
+                if( type.mask )
+                {
+                    description << ( values[lane] != 0 );
+                }
+                else
+                {
+                    description << values[lane];
+                }
+            }
+            description << ( isRegister ? "]" : "" );
+        } );
+    }
+    return description.str();
+}
+
+LaneArgs GetLaneArgs( const TestData& test, const TestInputs& inputs, size_t inIdx, size_t lane )
+{
+    LaneArgs args = {};
+
+    for( size_t argIdx = 0; argIdx < test.argCount; argIdx++ )
+    {
+        TestArgType type = test.argTypes[argIdx];
+        size_t idx = inIdx + ( type.lanes > 1 ? lane : 0 );
+
+        WithStoredType( type.element, [&]( auto stored )
+        {
+            auto value = inputs.Get<decltype( stored )>( argIdx )[idx];
+            if( type.mask )
+            {
+                args.Set( argIdx, value != 0 );
+            }
+            else
+            {
+                args.Set( argIdx, value );
+            }
+        } );
+    }
+    return args;
 }
 
 template<typename T>
@@ -460,18 +541,7 @@ InputGenerator::InputGenerator( uint64_t seed, std::string_view testName, const 
         arg.type = test.argTypes[argIdx];
         arg.spec = test.inputs[argIdx];
 
-        switch( arg.type.element )
-        {
-        case TestElement::Int32:
-            arg.values = MakeValues<int32_t>( arg );
-            break;
-        case TestElement::Float:
-            arg.values = MakeValues<float>( arg );
-            break;
-        case TestElement::Double:
-            arg.values = MakeValues<double>( arg );
-            break;
-        }
+        WithStoredType( arg.type.element, [&]( auto stored ) { arg.values = MakeValues<decltype( stored )>( arg ); } );
 
         arg.specialCount = arg.type.mask ? MaskPatternCount() : std::visit( []( const auto& values ) { return values.specials.size(); }, arg.values );
         mCombinations *= arg.specialCount;

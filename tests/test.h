@@ -63,9 +63,10 @@ enum class TestElement : uint8_t
 struct TestArgType
 {
     TestElement element;
-    bool mask; // Lanes are 0 or 1 in the element type, from lane patterns rather than an input spec, compared != 0 to make the mask
+    bool mask;    // Lanes are 0 or 1 in the element type, from lane patterns rather than an input spec, compared != 0 to make the mask
+    size_t lanes; // Values the argument takes per call, 1 for scalars which are the same value in every lane
 
-    bool operator==( const TestArgType& other ) const { return element == other.element && mask == other.mask; }
+    bool operator==( const TestArgType& other ) const { return element == other.element && mask == other.mask && lanes == other.lanes; }
 };
 
 // One pointer per argument to its values for the current chunk, indexed by input index and stored as the argument's TestElement
@@ -80,7 +81,7 @@ struct TestInputs
     }
 };
 
-// A lane's input values, for known failure conditions. Arguments of other types are 0
+// A lane's input values as the oracle sees them, for known failure conditions. Arguments of other types are 0
 struct LaneArgs
 {
     int32_t ints[kMaxTestArgs]; // Masks are 0 or 1
@@ -134,8 +135,6 @@ struct InputSpec
 };
 
 using TestFunction = size_t ( void* outResult, size_t inIdx, const TestInputs& inputs );
-using InputsFunction = std::string ( size_t inIdx, const TestInputs& inputs );
-using LaneArgsFunction = LaneArgs ( size_t inIdx, size_t lane, const TestInputs& inputs );
 
 // Kinds of tier, each tier is one kind and known failures are scoped to a set of them
 enum class Tiers : uint8_t
@@ -224,8 +223,8 @@ struct Tolerance
     bool operator!=( const Tolerance& other ) const { return !( *this == other ); }
 };
 
-// A test as registered by one feature set, plain or relaxed
-// Only the SCALAR non relaxed registration's settings (inputs, tolerances, known failures, oracle) are used, every tier must register the same ones
+// A test as registered by one tier
+// Only the SCALAR non relaxed registration is kept whole, the other tiers must register the same settings and only their test function is kept
 struct TestData
 {
     enum class ReturnType
@@ -233,8 +232,6 @@ struct TestData
         boolean, f32, f64, i32, i64 // i64 holds 64bit mask lanes
     };
 
-    FastSIMD::FeatureSet featureSet;
-    bool relaxed;
     ReturnType returnType;
     size_t lanes = 0; // Elements per call, the widest register in the test sets it
     size_t argCount = 0;
@@ -246,8 +243,6 @@ struct TestData
     std::vector<KnownFailure> knownFailures;
     std::function<TestFunction> testFunc;
     std::function<TestFunction> oracleFunc; // Optional plain C++ version of the test, the SCALAR reference must match it exactly
-    std::function<InputsFunction> inputsFunc;
-    std::function<LaneArgsFunction> laneArgsFunc;
 
     template<typename... SPECs>
     TestData& Inputs( SPECs... specs )
