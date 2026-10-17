@@ -44,9 +44,11 @@ namespace FS
             }
             else
             {
+                // Products stay in place in their 64 bit lanes: chained multiplies need no repacking in between,
+                // pmuludq only reads the low 32 bits of each 64 bit lane, which the and/shift/or leave in place
                 __m128i mul20 = _mm_mul_epu32( native, rhs.native ); /* mul 2,0*/
-                __m128i mul31 = _mm_mul_epu32( _mm_srli_si128( native, 4 ), _mm_srli_si128( rhs.native, 4 ) ); /* mul 3,1 */
-                native = _mm_unpacklo_epi32( _mm_shuffle_epi32( mul20, _MM_SHUFFLE( 0, 0, 2, 0 ) ), _mm_shuffle_epi32( mul31, _MM_SHUFFLE( 0, 0, 2, 0 ) ) ); /* shuffle results to [63..0] and pack */                
+                __m128i mul31 = _mm_mul_epu32( _mm_shuffle_epi32( native, _MM_SHUFFLE( 3, 3, 1, 1 ) ), _mm_shuffle_epi32( rhs.native, _MM_SHUFFLE( 3, 3, 1, 1 ) ) ); /* mul 3,1 */
+                native = _mm_or_si128( _mm_and_si128( mul20, _mm_set_epi32( 0, -1, 0, -1 ) ), _mm_slli_epi64( mul31, 32 ) );
             }
             return *this;
         }
