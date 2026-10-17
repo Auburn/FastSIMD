@@ -10,7 +10,15 @@ namespace FS
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<f32<4, SIMD>>>
     FS_FORCEINLINE i32<4, SIMD> Convert( const f32<4, SIMD>& a, TypeDummy<int32_t> )
     {
-        return vcvtq_s32_f32( Round( a ).native );
+        if constexpr( SIMD & FastSIMD::FeatureFlag::AARCH64 )
+        {
+            // FCVTNS rounds to nearest even like Round, in one instruction
+            return vcvtnq_s32_f32( a.native );
+        }
+        else
+        {
+            return vcvtq_s32_f32( Round( a ).native );
+        }
     }
 
     template<FastSIMD::FeatureSet SIMD, typename = EnableIfNative<i32<4, SIMD>>>
