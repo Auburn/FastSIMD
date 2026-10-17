@@ -550,8 +550,16 @@ namespace FS
             RegisterF fx = value * RegisterF( 1.44269504088896341f );
             fx += RegisterF( 0.5f );
 
-            RegisterF flr = Floor( fx );  
-            fx = MaskedDecrement( flr > fx, flr );
+            if constexpr( ( SIMD & FastSIMD::FeatureFlag::SSE2 ) && !( SIMD & FastSIMD::FeatureFlag::SSE41 ) )
+            {
+                /* no round instruction: fx is in [-127, 128], so floor via int round trip without SSE2 Floor's overflow handling */
+                RegisterF rounded = Convert<float>( Convert<std::int32_t>( fx ) );
+                fx = MaskedDecrement( rounded > fx, rounded );
+            }
+            else
+            {
+                fx = Floor( fx );
+            }
 
             value -= fx * RegisterF( 0.693359375f );
             value -= fx * RegisterF( -2.12194440e-4f );
@@ -570,10 +578,9 @@ namespace FS
             y *= value * value;
             y += value + RegisterF( 1 );        
 
-            /* build 2^n */
-            RegisterI i = Convert<std::int32_t>( fx );
+            /* build 2^n: fx is an integer in [-127, 128], adding 2^23 + 127 puts fx + 127 in the low mantissa bits */
+            RegisterI i = Cast<std::int32_t>( fx + RegisterF( 8388608.0f + 127.0f ) );
 
-            i += RegisterI( 0x7f );
             i <<= 23;
             RegisterF pow2n = Cast<float>( i );
         
@@ -585,33 +592,25 @@ namespace FS
         }
     }
     
-    template<std::size_t N, FastSIMD::FeatureSet SIMD>
-    FS_FORCEINLINE Register<float, N, SIMD> Log( const Register<float, N, SIMD>& a )
+    namespace impl
     {
-        if constexpr( IsNativeV<Register<float, N, SIMD>> )
+        // Natural log of a native register, without zeroing the a <= 0 lanes (they hold finite garbage)
+        template<std::size_t N, FastSIMD::FeatureSet SIMD>
+        FS_FORCEINLINE Register<float, N, SIMD> LogUnmasked( const Register<float, N, SIMD>& a )
         {
             using RegisterF = Register<float, N, SIMD>;
             using RegisterI = Register<std::int32_t, N, SIMD>;
-                
-            auto validMask = a > RegisterF( 0 );
 
             RegisterF value = Max( a, Cast<float>( RegisterI( 0x00800000 ) ) );  /* cut off denormalized stuff */
-            
-            RegisterI i = BitShiftRightZeroExtend( Cast<std::int32_t>( value ), 23 );
 
-            /* keep only the fractional part */
-            value &= Cast<float>( RegisterI( ~0x7f800000 ) );
-            value |= RegisterF( 0.5f );
-            
-            i -= RegisterI( 0x7f );
-            RegisterF e = Convert<float>( i );
+            /* split value into 2^e * m with m in [sqrt(0.5), sqrt(2)): subtracting the bits of sqrt(0.5) borrows from
+               the exponent when the mantissa is below sqrt(2), then the low bits plus sqrt(0.5)'s give m (same e and m as
+               taking the [0.5, 1) mantissa and doubling it below sqrt(0.5)) */
+            RegisterI bits = Cast<std::int32_t>( value ) - RegisterI( 0x3f3504f3 );
+            RegisterF e = Convert<float>( bits >> 23 );
 
-            e += RegisterF( 1 );
-
-            auto mask = value < RegisterF( 0.707106781186547524f );
-            value = MaskedAdd( mask, value, value );
+            value = Cast<float>( ( bits & RegisterI( 0x007fffff ) ) + RegisterI( 0x3f3504f3 ) );
             value -= RegisterF( 1 );
-            e = MaskedDecrement( mask, e );
 
             RegisterF y = RegisterF( 7.0376836292E-2f );
             y *= value;
@@ -640,7 +639,16 @@ namespace FS
             value += y;
             value += e * RegisterF( 0.693359375f );
 
-            return Masked( validMask, value );
+            return value;
+        }
+    }
+
+    template<std::size_t N, FastSIMD::FeatureSet SIMD>
+    FS_FORCEINLINE Register<float, N, SIMD> Log( const Register<float, N, SIMD>& a )
+    {
+        if constexpr( IsNativeV<Register<float, N, SIMD>> )
+        {
+            return Masked( a > Register<float, N, SIMD>( 0 ), impl::LogUnmasked( a ) );
         }
         else
         {   
@@ -654,7 +662,15 @@ namespace FS
     {
         if constexpr( IsNativeV<Register<T, N, SIMD>> )
         {
-            return Masked( value > Register<T, N, SIMD>( 0 ), Exp( pow * Log( value ) ) );
+            if constexpr( std::is_same_v<T, float> )
+            {
+                // The outer mask already zeroes value <= 0, so skip Log's own mask
+                return Masked( value > Register<T, N, SIMD>( 0 ), Exp( pow * impl::LogUnmasked( value ) ) );
+            }
+            else
+            {
+                return Masked( value > Register<T, N, SIMD>( 0 ), Exp( pow * Log( value ) ) );
+            }
         }
         else
         {
