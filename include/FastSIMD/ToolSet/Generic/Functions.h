@@ -684,7 +684,7 @@ namespace FS
     FS_FORCEINLINE bool AnyMask( const Register<Mask<S, F>, N, SIMD>& a )
     {
         static_assert( !IsNativeV<Register<Mask<S, F>, N, SIMD>>, "FastSIMD: FS::AnyMask not supported with provided types" );
-        return AnyMask( a.v0 ) || AnyMask( a.v1 );
+        return AnyMask( a.v0 | a.v1 );
     }
 
     namespace impl
