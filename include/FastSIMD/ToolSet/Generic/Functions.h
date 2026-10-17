@@ -556,19 +556,33 @@ namespace FS
             value -= fx * RegisterF( 0.693359375f );
             value -= fx * RegisterF( -2.12194440e-4f );
 
-            RegisterF y( 1.9875691500E-4f );
-            y *= value;
-            y += RegisterF( 1.3981999507E-3f );
-            y *= value;
-            y += RegisterF( 8.3334519073E-3f );
-            y *= value;
-            y += RegisterF( 4.1665795894E-2f );
-            y *= value;
-            y += RegisterF( 1.6666665459E-1f );
-            y *= value;
-            y += RegisterF( 5.0000001201E-1f );
-            y *= value * value;
-            y += value + RegisterF( 1 );        
+            RegisterF y;
+            if constexpr( FastSIMD::IsRelaxed<SIMD>() )
+            {
+                /* Estrin's scheme: about half the dependency chain of Horner's, rounds slightly differently */
+                RegisterF x2 = value * value;
+                RegisterF r01 = FMulAdd( RegisterF( 1.6666665459E-1f ), value, RegisterF( 5.0000001201E-1f ) );
+                RegisterF r23 = FMulAdd( RegisterF( 8.3334519073E-3f ), value, RegisterF( 4.1665795894E-2f ) );
+                RegisterF r45 = FMulAdd( RegisterF( 1.9875691500E-4f ), value, RegisterF( 1.3981999507E-3f ) );
+                y = FMulAdd( r45, x2 * x2, FMulAdd( r23, x2, r01 ) );
+                y = FMulAdd( y, x2, value + RegisterF( 1 ) );
+            }
+            else
+            {
+                y = RegisterF( 1.9875691500E-4f );
+                y *= value;
+                y += RegisterF( 1.3981999507E-3f );
+                y *= value;
+                y += RegisterF( 8.3334519073E-3f );
+                y *= value;
+                y += RegisterF( 4.1665795894E-2f );
+                y *= value;
+                y += RegisterF( 1.6666665459E-1f );
+                y *= value;
+                y += RegisterF( 5.0000001201E-1f );
+                y *= value * value;
+                y += value + RegisterF( 1 );
+            }
 
             /* build 2^n */
             RegisterI i = Convert<std::int32_t>( fx );
@@ -613,29 +627,48 @@ namespace FS
             value -= RegisterF( 1 );
             e = MaskedDecrement( mask, e );
 
-            RegisterF y = RegisterF( 7.0376836292E-2f );
-            y *= value;
-            y += RegisterF( -1.1514610310E-1f );
-            y *= value;
-            y += RegisterF( 1.1676998740E-1f );
-            y *= value;
-            y += RegisterF( -1.2420140846E-1f );
-            y *= value;
-            y += RegisterF( 1.4249322787E-1f );
-            y *= value;
-            y += RegisterF( -1.6668057665E-1f );
-            y *= value;
-            y += RegisterF( 2.0000714765E-1f );
-            y *= value;
-            y += RegisterF( -2.4999993993E-1f );
-            y *= value;
-            y += RegisterF( 3.3333331174E-1f );
-            y *= value;
-
             RegisterF xx = value * value;
-            y *= xx;
-            y += e * RegisterF( -2.12194440e-4f );
-            y -= xx * RegisterF( 0.5f );
+            RegisterF y;
+            if constexpr( FastSIMD::IsRelaxed<SIMD>() )
+            {
+                /* Estrin's scheme (with the -x^2/2 term folded in): about half the dependency chain of Horner's,
+                   rounds slightly differently */
+                RegisterF x4 = xx * xx;
+                RegisterF q01 = FMulAdd( RegisterF( 3.3333331174E-1f ), value, RegisterF( -0.5f ) );
+                RegisterF q23 = FMulAdd( RegisterF( 2.0000714765E-1f ), value, RegisterF( -2.4999993993E-1f ) );
+                RegisterF q45 = FMulAdd( RegisterF( 1.4249322787E-1f ), value, RegisterF( -1.6668057665E-1f ) );
+                RegisterF q67 = FMulAdd( RegisterF( 1.1676998740E-1f ), value, RegisterF( -1.2420140846E-1f ) );
+                RegisterF q89 = FMulAdd( RegisterF( 7.0376836292E-2f ), value, RegisterF( -1.1514610310E-1f ) );
+                y = FMulAdd( FMulAdd( q67, xx, q45 ), x4, FMulAdd( q23, xx, q01 ) );
+                y = FMulAdd( q89, x4 * x4, y );
+                y *= xx;
+                y += e * RegisterF( -2.12194440e-4f );
+            }
+            else
+            {
+                y = RegisterF( 7.0376836292E-2f );
+                y *= value;
+                y += RegisterF( -1.1514610310E-1f );
+                y *= value;
+                y += RegisterF( 1.1676998740E-1f );
+                y *= value;
+                y += RegisterF( -1.2420140846E-1f );
+                y *= value;
+                y += RegisterF( 1.4249322787E-1f );
+                y *= value;
+                y += RegisterF( -1.6668057665E-1f );
+                y *= value;
+                y += RegisterF( 2.0000714765E-1f );
+                y *= value;
+                y += RegisterF( -2.4999993993E-1f );
+                y *= value;
+                y += RegisterF( 3.3333331174E-1f );
+                y *= value;
+
+                y *= xx;
+                y += e * RegisterF( -2.12194440e-4f );
+                y -= xx * RegisterF( 0.5f );
+            }
 
             value += y;
             value += e * RegisterF( 0.693359375f );
