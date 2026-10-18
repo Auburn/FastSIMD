@@ -75,9 +75,10 @@ namespace FS
     {
         if constexpr( SIMD & FastSIMD::FeatureFlag::AARCH64 )
         {
-            static const int32_t shift[4] = { 0, 1, 2, 3 };
-            uint32x4_t tmp = vshrq_n_u32( a.native, 31 );
-            return vaddvq_u32( vshlq_u32( tmp, vld1q_s32( shift ) ) );
+            // Weight each lane by its bit and add across. Reads one bit per lane, not the sign bit, so like AnyMask it relies
+            // on each lane being all ones or all zeros
+            static const uint32_t weights[4] = { 1, 2, 4, 8 };
+            return vaddvq_u32( vandq_u32( a.native, vld1q_u32( weights ) ) );
         }
         else
         {
@@ -91,5 +92,15 @@ namespace FS
             return vgetq_lane_u8( paired, 0 ) | ( vgetq_lane_u8( paired, 8 ) << 2 );
         }
     }
-    
+
+    // 8 lane AARCH64 masks (2 x native): narrow both halves into one register of 16 bit lanes (the top half of each lane),
+    // then weight and add across once instead of once per half. Same all ones or all zeros requirement as the 4 lane version
+    template<FastSIMD::FeatureSet SIMD, bool B, typename = std::enable_if_t<SIMD & FastSIMD::FeatureFlag::AARCH64>>
+    FS_FORCEINLINE BitStorage<8> BitMask( const Register<Mask<32, B>, 8, SIMD>& a )
+    {
+        static const uint16_t weights[8] = { 1, 2, 4, 8, 16, 32, 64, 128 };
+        uint16x8_t lanes = vuzp2q_u16( vreinterpretq_u16_u32( a.v0.native ), vreinterpretq_u16_u32( a.v1.native ) );
+        return static_cast<BitStorage<8>>( vaddvq_u16( vandq_u16( lanes, vld1q_u16( weights ) ) ) );
+    }
+
 }
