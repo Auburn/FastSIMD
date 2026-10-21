@@ -82,12 +82,16 @@ namespace FastSIMD
     template<typename T>
     FASTSIMD_API T* NewDispatchClass( FeatureSet maxFeatureSet, MemoryAllocator allocator )
     {
-        // Never go above what the CPU supports, that would hit illegal instructions
         FeatureSet cpuMaxFeatureSet = DetectCpuMaxFeatureSet();
 
-        if( maxFeatureSet > cpuMaxFeatureSet )
+        if( maxFeatureSet == FeatureSet::Max )
         {
             maxFeatureSet = cpuMaxFeatureSet;
+        }
+        // The CPU doesn't support the requested feature set, creating it would hit illegal instructions
+        else if( maxFeatureSet > cpuMaxFeatureSet )
+        {
+            return nullptr;
         }
 
         return DispatchClassFactoryIterator<T, FastSIMD::FASTSIMD_LIBRARY_NAME::CompiledFeatureSets::Minimum>( maxFeatureSet, allocator );
