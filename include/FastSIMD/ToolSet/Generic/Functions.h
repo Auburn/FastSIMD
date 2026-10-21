@@ -353,7 +353,17 @@ namespace FS
     {
         if constexpr( IsNativeV<Register<T, N, SIMD>> )
         {
-            return a - Masked( mask, Register<T, N, SIMD>( -1 ) );
+            // Go through MaskedSub/MaskedAdd so registers with native masked add/sub (AVX512 merge masking) use them.
+            // Floats only do this when relaxed: merge masking leaves masked off lanes untouched, so MaskedDecrement keeps -0
+            // there, while the generic a + Masked( mask, -1 ) adds +0 and gives +0
+            if constexpr( std::is_integral_v<T> || FastSIMD::IsRelaxed<SIMD>() )
+            {
+                return MaskedSub( mask, a, Register<T, N, SIMD>( -1 ) );
+            }
+            else
+            {
+                return a - Masked( mask, Register<T, N, SIMD>( -1 ) );
+            }
         }
         else
         {   
@@ -367,7 +377,15 @@ namespace FS
     {
         if constexpr( IsNativeV<Register<T, N, SIMD>> )
         {
-            return a + Masked( mask, Register<T, N, SIMD>( -1 ) );
+            // See MaskedIncrement
+            if constexpr( std::is_integral_v<T> || FastSIMD::IsRelaxed<SIMD>() )
+            {
+                return MaskedAdd( mask, a, Register<T, N, SIMD>( -1 ) );
+            }
+            else
+            {
+                return a + Masked( mask, Register<T, N, SIMD>( -1 ) );
+            }
         }
         else
         {   
